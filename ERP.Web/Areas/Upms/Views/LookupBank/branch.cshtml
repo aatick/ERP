@@ -1,0 +1,429 @@
+﻿
+@{
+    ViewBag.Title = "branch";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+
+<style>
+
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+
+<script type="text/javascript">
+
+
+    function GetEditData(Id, BankId, ThanaId, DistrictId,DivitionId, BranchName, Address, RoutingNo)
+    {
+
+        $("#divAddBranch").show();
+        $("#hdnMode").val("edit");
+        $("#hdnDistrictId").val(DistrictId);
+        $("#hdnThanaId").val(ThanaId);
+        $("#hdnBankBranchId").val(Id);
+        $("#BankList").val(BankId);
+        $("#txtBranchName").val(BranchName)
+        $("#txtAddress").val(Address)
+        $("#txtRoutingNo").val(RoutingNo)
+        $("#DivisionList").val(DivitionId)
+        GetDistrictList()
+    }
+
+    function BankBranchDelete(Id) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("BankBranchDelete", "LookupBank", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (result) {
+                        $.alert.open("info","Delete successfull");
+                        GetBankwiseBranchList();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+    function GetDistrictList() {
+
+        var DivisionId = $("#DivisionList").val() == "" ? 0 : $("#DivisionList").val();
+        var ddlDistrictlist = $("#ddlDistrictlist");
+
+        if (DivisionId != "" && DivisionId != null) {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetDistrictList", "LookupThana", "http")',
+                data: { DivisionId: DivisionId },
+                dataType: 'json',
+                async: true,
+                success: function (DistrictList) {
+                    // $('#AjaxLoader').hide();
+                    ddlDistrictlist.html('');
+                    ddlDistrictlist.append($('<option></option>').val("0").html("Please select"));
+                    $.each(DistrictList, function (id, option) {
+                        ddlDistrictlist.append($('<option></option>').val(option.Id).html(option.DistrictName));
+                    });
+                    if ($("#hdnMode").val() == "edit")
+                    {
+                        $("#ddlDistrictlist").val($("#hdnDistrictId").val() == "" ? 0 : $("#hdnDistrictId").val());
+                        GetThanaList()
+                    }
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+    }
+
+    function GetThanaList() {
+
+        var DistrictId = $("#ddlDistrictlist").val() == "" ? 0 : $("#ddlDistrictlist").val();
+        var ddlThanalist = $("#ddlThanalist");
+       // alert(DistrictId);
+        if (DistrictId != "0") {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetddlThanaList", "LookupThana", "http")',
+                data: { DistrictId: DistrictId },
+                dataType: 'json',
+                async: true,
+                success: function (ThanaList) {
+                    ddlThanalist.html('');
+                    ddlThanalist.append($('<option></option>').val("0").html("Please select"));
+                    $.each(ThanaList, function (id, option) {
+                        ddlThanalist.append($('<option></option>').val(option.Id).html(option.ThanaName));
+                    });
+                    if ($("#hdnMode").val() == "edit") {
+                        $("#ddlThanalist").val($("#hdnThanaId").val() == "" ? 0 : $("#hdnThanaId").val());
+                    }
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+    }
+
+    function GetBankwiseBranchList() {
+        var BankId = $("#BankList").val()
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetBankwiseBranchList", "LookupBank", "http")',
+                    dataType: "json",
+                    data: { BankId: BankId }
+                }
+            },
+            pageSize: 20
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 800,
+            groupable: true,
+            reorderable: true,
+            resizable: true,
+            // filterable: true,
+            sortable: true,
+            // columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+            {
+                field: "RowSl",
+                title: "SL",
+                width: "10%"
+            },
+            {
+                field: "ThanaId",
+                hidden: true,
+                filterable: false
+            },
+            {
+                field: "BankId",
+                hidden: true,
+                filterable: false
+            },
+            {
+                field: "BranchName",
+                title: "Branch Name",
+            },
+             {
+                 field: "BankName",
+                 title: "Bank Name",
+             },
+              {
+                  field: "ThanaName",
+                  title: "Thana Name",
+              },
+               {
+                   field: "Address",
+                   title: "Address",
+               },
+                {
+                    field: "RoutingNo",
+                    title: "Routing No",
+                },
+
+            {
+
+                title: "Action",
+                width: "10%",
+                template: function (dataItem) {
+
+                    return '<a href="#"  onclick="GetEditData(' + dataItem.Id + ',' + dataItem.BankId + ',' + dataItem.ThanaId + ',' + dataItem.DistrictId + ',' + dataItem.DivitionId + ',' + "'" + dataItem.BranchName + "'" + ',' + "'" + dataItem.Address + "'" + ',' + "'" + dataItem.RoutingNo + "'" + ')"  title="Edit" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a>' //+
+                        //'<a href="#" title="Delete" onclick="BankBranchDelete(' + dataItem.ID + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></a>'
+                }
+            }
+            ],
+        });
+    }
+
+    var AddbranSt = "Yes";
+    $(document).ready(function () {
+
+        $("#btnAdd").hide();
+        $("#divAddBranch").hide();
+        $("#hdnMode").val("Save");
+        $("#hdnBankBranchId").val("0");
+
+
+
+        $("#btnAdd").click(function () {
+            if (AddbranSt == "No")
+            {
+                $("#divAddBranch").hide();
+                AddbranSt = "Yes"
+            }
+            else
+            {
+                $("#divAddBranch").show();
+                AddbranSt = "No";
+            }
+        });
+
+      
+
+
+        $("#BankList").change(function () {
+            if($("#BankList").val() != null && $("#BankList").val() != "")
+            {
+                $("#btnAdd").show();
+               // $("#grid").show();
+                GetBankwiseBranchList();
+            }
+            else
+            {
+                $("#grid").hide();
+                $("#btnAdd").hide();
+            }
+        });
+
+
+
+        $("#DivisionList").change(function () {
+
+            GetDistrictList();
+        });
+
+
+        $("#ddlDistrictlist").change(function()
+        {
+            GetThanaList();
+        });
+       
+
+
+        $("#hdnBankId").val("0");
+
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+            // txtBranchName DivisionList  ddlDistrictlist ddlThanalist txtAddress txtRoutingNo
+            if ($("#txtBranchName").val() != "" && $("#DivisionList").val() != "" && $("#ddlDistrictlist").val() != "" && $("#ddlDistrictlist").val() != "0" && $("#ddlThanalist").val() != "" && $("#ddlThanalist").val() != "0" && $("#txtAddress").val() != "" && $("#txtRoutingNo").val() != "")
+            {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveBankBranchInfo", "LookupBank", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { BankId: $("#BankList").val(), BranchName: $("#txtBranchName").val(), ThanaId: $("#ddlThanalist").val(), Address: $("#txtAddress").val(), RoutingNo: $("#txtRoutingNo").val(), BankBranchId: $("#hdnBankBranchId").val() },
+                    success: function (result) {
+                        if (result == 1) {
+                            $("#hdnMode").val("Save");
+                            $("#hdnBankBranchId").val("0");
+                            $('#txtBranchName').val("");
+                            $("#ddlThanalist").val("0");
+                            $('#txtAddress').val("");
+                            $('#txtRoutingNo').val("");
+                            $(".success").show(800).fadeToggle(3000);
+                            AddbranSt = "No";
+                            $("#divAddBranch").hide();
+                            GetBankwiseBranchList();
+                        }
+                        else {
+                            $(".failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function () {
+                        $(".failed").show(800).fadeToggle(3000);
+                    }
+                });
+            }
+            else
+            {
+                $.alert.open("error","Insert all required field")
+            }
+        });
+    });
+
+</script>
+
+
+@using (Html.BeginForm("Create", "LookupBank", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "LookupBankForm" }))
+{
+
+     <div class="page-title">
+        <div class="title_left PageHeader" style="width:100%;">
+            <h3 style="color: white;padding:2px">Bank branch Info</h3>
+        </div>
+    </div>
+    <div class="x_panel">
+        <div class="x_title">
+            <input type="hidden" id="hdnMode"/>
+            <input type="hidden" id="hdnBankBranchId" />
+            <input type="hidden" id="hdnBankId" />
+            <input type="hidden" id="hdnDistrictId" /> 
+            <input type="hidden" id="hdnThanaId" />
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <br />
+            <form id="demo-form2" data-parsley-validate>
+                <div id="AjaxLoader" class="ajaxLoader"></div>
+                <div class="item form-group">
+                   
+
+                    @Html.Label("Bank", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                    
+                    <div class="col-md-5 col-sm-6 col-xs-12">
+                        @Html.DropDownList("BankList", new SelectList(ViewBag.BankList, "Id", "BankName"), "Please select", new { @class = "form-control bordercss" })
+                    </div>
+                    <div class="col-md-3 col-sm-6 col-xs-12">
+                        <button type="button" id="btnAdd" class="btn btn-primary">Add New Branch</button>
+                    </div>
+                </div>
+                <div id="divAddBranch">
+
+
+                    <div class="item form-group">
+                        @Html.Label("Branch Name", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12 required" })
+                        <div class="col-md-5 col-sm-6 col-xs-12">
+                            @Html.Editor("BranchName", new { htmlAttributes = new { @class = "form-control", @id = "txtBranchName" } })
+                        </div>
+                    </div>
+                    <div class="item form-group">
+                        @Html.Label("Division", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12 required" })
+                        <div class="col-md-5 col-sm-6 col-xs-12">
+                            @Html.DropDownList("DivisionList", new SelectList(ViewBag.DivisionList, "Id", "DivisionName"), "Please select", new { @class = "form-control bordercss" })
+
+                        </div>
+                    </div>
+                    <div class="item form-group">
+                        @Html.Label("District", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12 required" })
+                        <div class="col-md-5 col-sm-6 col-xs-12">
+                            @Html.DropDownList("Districtlist", null, new { @id = "ddlDistrictlist", @class = "form-control bordercss" })
+                        </div>
+                    </div>
+                    <div class="item form-group">
+                        @Html.Label("Thana", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12 required" })
+                        <div class="col-md-5 col-sm-6 col-xs-12">
+                            @Html.DropDownList("Thanalist", null, new { @id = "ddlThanalist", @class = "form-control bordercss" })
+                        </div>
+                    </div>
+                   
+                    <div class="item form-group">
+                        @Html.Label("Address", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12 required" })
+                        <div class="col-md-5 col-sm-6 col-xs-12">
+                            @Html.Editor("Address", new { htmlAttributes = new { @class = "form-control", @id = "txtAddress" } })
+                        </div>
+                    </div>
+                    <div class="item form-group">
+                        @Html.Label("Routing No", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12 required" })
+                        <div class="col-md-5 col-sm-6 col-xs-12">
+                            @Html.Editor("RoutingNo", new { htmlAttributes = new { @class = "form-control", @id = "txtRoutingNo" } })
+                        </div>
+                    </div>
+
+                    <div class="item form-group">
+                        <div class="col-md-3 col-sm-6 col-xs-12">
+                        </div>
+                        <div class="col-md-3 col-sm-6 col-xs-12">
+                            <button type="submit" id="btnSave" class="btn btn-success">Save</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="ln_solid"></div>
+                <div class="item form-group">
+                    <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                        <div class="success" role="alert" style="display:none">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <p class="message-content">Saved Sucessfully</p>
+                        </div>
+                        <div class="failed" role="alert" style="display:none">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <p class="message-content">Fail to save</p>
+                        </div>
+                        <br />
+
+                    </div>
+                </div>
+                <div class="block_content">
+                    <div id="grid"> </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+}
+
+
+
