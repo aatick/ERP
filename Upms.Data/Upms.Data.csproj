@@ -1,0 +1,241 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{310B64F8-640A-475E-92E3-15810B4E2EB5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Upms.Data</RootNamespace>
+    <AssemblyName>UCAS.Upms.Data</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CodeFirstStoreFunctions">
+      <HintPath>..\packages\CodeFirstStoreFunctions.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.EntityFramework, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.Identity.EntityFramework.2.2.1\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UPMSDataModel\AccCollection.cs" />
+    <Compile Include="UPMSDataModel\AccPayment.cs" />
+    <Compile Include="UPMSDataModel\AccPaymentRequisition.cs" />
+    <Compile Include="UPMSDataModel\AccReceiptPaymentMapping.cs" />
+    <Compile Include="UPMSDataModel\BrokerbranchDPBranchMapping.cs" />
+    <Compile Include="UPMSDataModel\BrokerDepositoryPariticipant.cs" />
+    <Compile Include="UPMSDataModel\BrokerDPBranch.cs" />
+    <Compile Include="UPMSDataModel\BrokerTrader.cs" />
+    <Compile Include="UPMSDataModel\CheckDishonourCause.cs" />
+    <Compile Include="UPMSDataModel\CompanyDepository.cs" />
+    <Compile Include="UPMSDataModel\CompanyEpsNavChangeHistory.cs" />
+    <Compile Include="UPMSDataModel\CompanyGroupChangeHistory.cs" />
+    <Compile Include="UPMSDataModel\CompanyInformation.cs" />
+    <Compile Include="UPMSDataModel\CompanyListedToDepositoryCompany.cs" />
+    <Compile Include="UPMSDataModel\CompanyLoanStatusChangeHistory.cs" />
+    <Compile Include="UPMSDataModel\CompanySharePriceHistory.cs" />
+    <Compile Include="UPMSDataModel\EmailSMSDPAccess.cs" />
+    <Compile Include="UPMSDataModel\EmailSMSInvestorAccess.cs" />
+    <Compile Include="UPMSDataModel\FileTradeStatusCSE.cs" />
+    <Compile Include="UPMSDataModel\FileTradeStatusDSE.cs" />
+    <Compile Include="UPMSDataModel\FundTransferMaster.cs" />
+    <Compile Include="UPMSDataModel\InvestorAccount.cs" />
+    <Compile Include="UPMSDataModel\InvestorAccountType.cs" />
+    <Compile Include="UPMSDataModel\InvestorBalanceDaily.cs" />
+    <Compile Include="UPMSDataModel\InvestorBalanceHistory.cs" />
+    <Compile Include="UPMSDataModel\InvestorBOCategory.cs" />
+    <Compile Include="UPMSDataModel\InvestorBOType.cs" />
+    <Compile Include="UPMSDataModel\InvestorBrokerageRateHistory.cs" />
+    <Compile Include="UPMSDataModel\InvestorCheckDishonourInformation.cs" />
+    <Compile Include="UPMSDataModel\InvestorCompany.cs" />
+    <Compile Include="UPMSDataModel\InvestorDetail.cs" />
+    <Compile Include="UPMSDataModel\InvestorInterestRateHistory.cs" />
+    <Compile Include="UPMSDataModel\InvestorIntroducer.cs" />
+    <Compile Include="UPMSDataModel\InvestorJointHolder.cs" />
+    <Compile Include="UPMSDataModel\InvestorManualCharge.cs" />
+    <Compile Include="UPMSDataModel\InvestorNominee.cs" />
+    <Compile Include="UPMSDataModel\InvestorNomineeGuardian.cs" />
+    <Compile Include="UPMSDataModel\InvestorOperationType.cs" />
+    <Compile Include="UPMSDataModel\InvestorPortfolioDaily.cs" />
+    <Compile Include="UPMSDataModel\InvestorPortfolioHistory.cs" />
+    <Compile Include="UPMSDataModel\InvestorPowerOfAttorney.cs" />
+    <Compile Include="UPMSDataModel\InvestorPowerOfAttorneyMapping.cs" />
+    <Compile Include="UPMSDataModel\InvestorsStatus.cs" />
+    <Compile Include="UPMSDataModel\InvestorSubAccountType.cs" />
+    <Compile Include="UPMSDataModel\InvestorTransactionDaily.cs" />
+    <Compile Include="UPMSDataModel\InvestorType.cs" />
+    <Compile Include="UPMSDataModel\InvestorWiseTransactionCharge.cs" />
+    <Compile Include="UPMSDataModel\InvestorWiseTransactionChargeHistory.cs" />
+    <Compile Include="UPMSDataModel\InvestorWiseTransactionChargeSlab.cs" />
+    <Compile Include="UPMSDataModel\InvestorWiseTransactionChargeSlabHistory.cs" />
+    <Compile Include="UPMSDataModel\IPOAllocation.cs" />
+    <Compile Include="UPMSDataModel\IPOApplication.cs" />
+    <Compile Include="UPMSDataModel\IPOCurrencyMapping.cs" />
+    <Compile Include="UPMSDataModel\IPODeclaration.cs" />
+    <Compile Include="UPMSDataModel\IPODraft.cs" />
+    <Compile Include="UPMSDataModel\IPOGroupDetail.cs" />
+    <Compile Include="UPMSDataModel\IPOGroupMaster.cs" />
+    <Compile Include="UPMSDataModel\IPOIssueMethod.cs" />
+    <Compile Include="UPMSDataModel\LookupBank.cs" />
+    <Compile Include="UPMSDataModel\LookupBankBranch.cs" />
+    <Compile Include="UPMSDataModel\LookupCurrency.cs" />
+    <Compile Include="UPMSDataModel\MarketGroup.cs" />
+    <Compile Include="UPMSDataModel\MarketInformation.cs" />
+    <Compile Include="UPMSDataModel\MarketInstrumentType.cs" />
+    <Compile Include="UPMSDataModel\MarketSector.cs" />
+    <Compile Include="UPMSDataModel\MarketType.cs" />
+    <Compile Include="UPMSDataModel\Prcs_DayEnd_Result.cs" />
+    <Compile Include="UPMSDataModel\Prcs_DayInitial_Result.cs" />
+    <Compile Include="UPMSDataModel\SavingSummary.cs" />
+    <Compile Include="UPMSDataModel\SavingTrx.cs" />
+    <Compile Include="UPMSDataModel\TradeDetailsDaily.cs" />
+    <Compile Include="UPMSDataModel\TradeDetailsHistory.cs" />
+    <Compile Include="UPMSDataModel\TradeTransactionCharge.cs" />
+    <Compile Include="UPMSDataModel\TradeTransactionChargeHistory.cs" />
+    <Compile Include="UPMSDataModel\TradeTransactionChargeSlab.cs" />
+    <Compile Include="UPMSDataModel\TradeTransactionChargeSlabHistory.cs" />
+    <Compile Include="UPMSDataModel\TradeTransactionType.cs" />
+    <Compile Include="UPMSDataModel\TradeTransactionTypeHistory.cs" />
+    <Compile Include="UPMSDataModel\TradeUploadFileAccess.cs" />
+    <Compile Include="UPMSDataModel\TradeUploadFileInformation.cs" />
+    <Compile Include="UPMSDataModel\UPMSDbContext.cs" />
+    <Compile Include="UPMSRepository\AccCollectionRepository.cs" />
+    <Compile Include="UPMSRepository\AccountCloseRepository.cs" />
+    <Compile Include="UPMSRepository\AccPaymentRepository.cs" />
+    <Compile Include="UPMSRepository\AccPaymentRequisitionRepository.cs" />
+    <Compile Include="UPMSRepository\AccReceiptPaymentMappingRepository.cs" />
+    <Compile Include="UPMSRepository\BrokerDepositoryParticipantRepository.cs" />
+    <Compile Include="UPMSRepository\BrokerDPBranchRepository.cs" />
+    <Compile Include="UPMSRepository\BrokerTraderRepository.cs" />
+    <Compile Include="UPMSRepository\CheckDishonourCauseRepository.cs" />
+    <Compile Include="UPMSRepository\CompanyDepositoryRepository.cs" />
+    <Compile Include="UPMSRepository\CompanyEpsNavChangeHistoryRepository.cs" />
+    <Compile Include="UPMSRepository\CompanyGroupChangeHistoryRepository.cs" />
+    <Compile Include="UPMSRepository\CompanyInfoRepository.cs" />
+    <Compile Include="UPMSRepository\CompanyListedToDepositoryCompanyRepository.cs" />
+    <Compile Include="UPMSRepository\CompanyLoanStatusHistoryRepository.cs" />
+    <Compile Include="UPMSRepository\CompanySharePriceHistoryRepository.cs" />
+    <Compile Include="UPMSRepository\DayEndRepository.cs" />
+    <Compile Include="UPMSRepository\DayInitialRepository.cs" />
+    <Compile Include="UPMSRepository\EmailSMSDPAccessesRepository.cs" />
+    <Compile Include="UPMSRepository\EmailSMSInvestorAccessesRepository.cs" />
+    <Compile Include="UPMSRepository\FundTransferMasterRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorAccountRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorAccountTypeRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorBalanceDailyRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorBOCategoryRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorBOTypeRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorCheckDishonourInfoRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorCompanyRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorInfoRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorIntroducerRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorJoinHolderRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorManualChargeRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorNomineeRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorOperationTypeRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorPowerOfAttorneyMappingRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorPowerOfAttorneyRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorStatusRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorSubAccountTypeRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorTransactionDailyRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorTypeRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorWiseTransactionChargeHistoryRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorWiseTransactionChargeRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorWiseTransactionChargeSlabHistoryRepository.cs" />
+    <Compile Include="UPMSRepository\InvestorWiseTransactionChargeSlabRepository.cs" />
+    <Compile Include="UPMSRepository\IPOApplicationRepository.cs" />
+    <Compile Include="UPMSRepository\IPOCurrencyMappingRepository.cs" />
+    <Compile Include="UPMSRepository\IPODeclarationRepository.cs" />
+    <Compile Include="UPMSRepository\IPODraftRepository.cs" />
+    <Compile Include="UPMSRepository\IPOGroupDetailsRepository.cs" />
+    <Compile Include="UPMSRepository\IPOGroupMasterRepository.cs" />
+    <Compile Include="UPMSRepository\IPOIssueMethodRepository.cs" />
+    <Compile Include="UPMSRepository\LookupBankBranchRepository.cs" />
+    <Compile Include="UPMSRepository\LookupBankRepository.cs" />
+    <Compile Include="UPMSRepository\LookupCurrencyRepository.cs" />
+    <Compile Include="UPMSRepository\MarketGroupRepository.cs" />
+    <Compile Include="UPMSRepository\MarketInfoRepository.cs" />
+    <Compile Include="UPMSRepository\MarketInstrumentTypeRepository.cs" />
+    <Compile Include="UPMSRepository\MarketSectorRepository.cs" />
+    <Compile Include="UPMSRepository\MarketTypeRepository.cs" />
+    <Compile Include="UPMSRepository\NomineeGuardianRepository.cs" />
+    <Compile Include="UPMSRepository\TradeTransactionChargeHistoryRepository.cs" />
+    <Compile Include="UPMSRepository\TradeTransactionChargeRepository.cs" />
+    <Compile Include="UPMSRepository\TradeTransactionChargeSlabHistoryRepository.cs" />
+    <Compile Include="UPMSRepository\TradeTransactionChargeSlabRepository.cs" />
+    <Compile Include="UPMSRepository\TradeTransactionTypeRepository.cs" />
+    <Compile Include="UPMSRepository\TradeUploadFileAccessRepository.cs" />
+    <Compile Include="UPMSRepository\TradeUploadFileInformationRepository.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common.Data\Common.Data.csproj">
+      <Project>{aa2fef50-98a8-4354-9482-c5b8be7964b4}</Project>
+      <Name>Common.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Common.Service\Common.Service.csproj">
+      <Project>{ed55c5fc-8808-4f6a-9288-8b0deda9999f}</Project>
+      <Name>Common.Service</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
