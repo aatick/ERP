@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="urn:SmsControllerwsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap-enc="http://schemas.xmlsoap.org/soap/encoding/" xmlns="http://schemas.xmlsoap.org/wsdl/" name="SmsController" targetNamespace="urn:SmsControllerwsdl" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="urn:SmsControllerwsdl">
+      <xsd:complexType name="ServiceClass">
+        <xsd:all>
+          <xsd:element name="MessageID" type="xsd:integer" />
+          <xsd:element name="Status" type="xsd:integer" />
+          <xsd:element name="StatusText" type="xsd:string" />
+          <xsd:element name="ErrorCode" type="xsd:integer" />
+          <xsd:element name="ErrorText" type="xsd:string" />
+          <xsd:element name="SMSCount" type="xsd:integer" />
+          <xsd:element name="CurrentCredit" type="xsd:float" />
+        </xsd:all>
+      </xsd:complexType>
+      <xsd:complexType name="ServiceClassArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="soap-enc:Array">
+            <xsd:attribute arrayType="tns:ServiceClass[]" ref="soap-enc:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="GetMessageStatusIn">
+    <wsdl:part name="Username" type="xsd:string" />
+    <wsdl:part name="Password" type="xsd:string" />
+    <wsdl:part name="MessageId" type="xsd:string" />
+  </wsdl:message>
+  <wsdl:message name="GetMessageStatusOut">
+    <wsdl:part name="return" type="tns:ServiceClass" />
+  </wsdl:message>
+  <wsdl:message name="SendTextMultiMessageIn">
+    <wsdl:part name="Username" type="xsd:string" />
+    <wsdl:part name="Password" type="xsd:string" />
+    <wsdl:part name="From" type="xsd:string" />
+    <wsdl:part name="To" type="xsd:string" />
+    <wsdl:part name="Message" type="xsd:string" />
+  </wsdl:message>
+  <wsdl:message name="SendTextMultiMessageOut">
+    <wsdl:part name="return" type="tns:ServiceClassArray" />
+  </wsdl:message>
+  <wsdl:message name="SendTextMessageIn">
+    <wsdl:part name="Username" type="xsd:string" />
+    <wsdl:part name="Password" type="xsd:string" />
+    <wsdl:part name="From" type="xsd:string" />
+    <wsdl:part name="To" type="xsd:string" />
+    <wsdl:part name="Message" type="xsd:string" />
+  </wsdl:message>
+  <wsdl:message name="SendTextMessageOut">
+    <wsdl:part name="return" type="tns:ServiceClass" />
+  </wsdl:message>
+  <wsdl:portType name="SmsControllerPortType">
+    <wsdl:operation name="GetMessageStatus">
+      <wsdl:documentation>
+      </wsdl:documentation>
+      <wsdl:input message="tns:GetMessageStatusIn" />
+      <wsdl:output message="tns:GetMessageStatusOut" />
+    </wsdl:operation>
+    <wsdl:operation name="SendTextMultiMessage">
+      <wsdl:documentation>
+      </wsdl:documentation>
+      <wsdl:input message="tns:SendTextMultiMessageIn" />
+      <wsdl:output message="tns:SendTextMultiMessageOut" />
+    </wsdl:operation>
+    <wsdl:operation name="SendTextMessage">
+      <wsdl:documentation>
+      </wsdl:documentation>
+      <wsdl:input message="tns:SendTextMessageIn" />
+      <wsdl:output message="tns:SendTextMessageOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="SmsControllerBinding" type="tns:SmsControllerPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc" />
+    <wsdl:operation name="GetMessageStatus">
+      <soap:operation soapAction="urn:SmsControllerwsdl#GetMessageStatus" style="rpc" />
+      <wsdl:input>
+        <soap:body use="encoded" namespace="urn:SmsControllerwsdl" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="encoded" namespace="urn:SmsControllerwsdl" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendTextMultiMessage">
+      <soap:operation soapAction="urn:SmsControllerwsdl#SendTextMultiMessage" style="rpc" />
+      <wsdl:input>
+        <soap:body use="encoded" namespace="urn:SmsControllerwsdl" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="encoded" namespace="urn:SmsControllerwsdl" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendTextMessage">
+      <soap:operation soapAction="urn:SmsControllerwsdl#SendTextMessage" style="rpc" />
+      <wsdl:input>
+        <soap:body use="encoded" namespace="urn:SmsControllerwsdl" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="encoded" namespace="urn:SmsControllerwsdl" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="SmsControllerService">
+    <wsdl:port name="SmsControllerPort" binding="tns:SmsControllerBinding">
+      <soap:address location="http://user.mobireach.com.bd/index.php?r=sms/service&amp;ws=1" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
