@@ -1,0 +1,109 @@
+﻿@{
+    ViewBag.Title = "TabulationSheet";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<script type="text/javascript">
+
+    function GetProgramList() {
+        var ddlProgram = $("#ddlProgram")
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("ProgramInfoList", "MISReport", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { },
+            success: function (data) {
+                ddlProgram.html('');
+                $.each(data, function (id, option) {
+                    ddlProgram.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                $("#ddlProgram").val(1);
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+    function GetBatch() {
+        var ddlBatch = $("#ddlBatch");
+        $('#AjaxLoader').show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBatchList", "UltimateReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $('#AjaxLoader').hide();
+                ddlBatch.html('');
+                $.each(data, function (id, option) {
+                    ddlBatch.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+
+    }
+    $(document).ready(function () {
+
+        GetProgramList();
+        GetBatch();
+        $("#btnTblView").click(function (e) {
+
+            e.preventDefault();
+            var ProgramId = $("#ddlProgram").val();
+            var BatchId = $("#ddlBatch").val();
+            var url;
+
+            url = '/MISReport/GETStudentTabulationSheet?ProgramId=' + ProgramId + '&BatchId=' + BatchId;
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+    });
+</script>
+
+@using (Html.BeginForm("TabulationSheet", "MISReport", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left",id= "TabulationSheetProfile"}))
+{
+    <div class="page-title">
+        <div class="title_left">
+            <h3>Tabulation Sheet</h3>
+        </div>
+    </div>
+    <div class="x_panel" style="min-height:600px">
+        <div class="x_title">
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <div class="row">
+                <div class="item form-group">
+                    <div>
+                        @Html.Label("Program", new { @class = "control-label col-md-2" })
+                    </div>
+                    <div class="col-md-4">
+                        @Html.DropDownList("ProgramList",null, new { @ID = "ddlProgram", @class = "form-control"})
+                    </div>                    
+                </div>
+            </div>
+            <div class="row">
+                <div class="item form-group">
+                    <div>
+                        @Html.Label("Batch", new { @class = "control-label col-md-2" })
+                    </div>
+                    <div class="col-md-4">
+                        @Html.DropDownList("BatchList", null, new { @ID = "ddlBatch", @class = "form-control" })
+                    </div>
+                    <button type="submit" id="btnTblView" class="btn btn-success">View</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

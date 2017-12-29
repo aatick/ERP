@@ -1,0 +1,317 @@
+﻿@using Common.Data.CommonDataModel
+@{
+    ViewBag.Title = "Upload";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var brokerBranches = (List<BrokerBranch>)ViewBag.BrokerBranch;
+    var businessDay = (DateTime)ViewBag.BusinessDate;
+    var reports = (List<ReportInformation>)ViewBag.Reports;
+}
+<style type="text/css">
+    .panel-custom > .panel-heading {
+        /*background: #26B99A !important;*/
+        color: #FFFFFF !important;
+    }
+
+    .panel-custom .panel-body .row:not(:last-child) {
+        margin-bottom: 10px;
+    }
+
+    .panel-custom .panel-body .radio {
+        margin-top: 0px;
+    }
+
+    .panel-custom .panel-body .radio-text, .panel-custom .panel-body input[type=text] {
+        color: #73879C;
+    }
+
+    .panel-custom .label-container {
+        text-align: right;
+    }
+
+    input[type=text]:read-only {
+        background: #FFFFFF;
+        cursor: default;
+    }
+
+    #error > .panel {
+        margin-bottom: 20px;
+    }
+
+        #error > .panel > .panel-heading {
+            padding: 0px 5px 0px 15px;
+        }
+
+    .radio-container label {
+        cursor: pointer;
+        padding: 5px;
+    }
+
+        .radio-container label.active {
+            background: #0e73a9;
+            border-radius: 4px;
+            /*margin-left: 10px;*/
+        }
+
+            .radio-container label.active span.radio-text {
+                color: #FFFFFF;
+            }
+
+    .loader {
+        border: 16px solid #1ABB9C;
+        border-radius: 50%;
+        border-top: 16px solid #3498db;
+        width: 120px;
+        height: 120px;
+        -webkit-animation: spin 2s linear infinite;
+        animation: spin 2s linear infinite;
+        position: absolute;
+        top: 40%;
+        left: 40%;
+    }
+
+    @@-webkit-keyframes spin {
+        0% {
+            -webkit-transform: rotate(0deg);
+        }
+
+        100% {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="panel panel-success panel-custom">
+            <div class="panel-heading PageHeader">
+                <h3 class="panel-title">Client Trade Report</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Date From :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="text" placeholder="dd/mm/yyyy" name="transactionDateFrom" id="txtTransactionDateFrom" class="input-sm form-control DateInput check-date" required="required" value="@businessDay.ToString("dd/MM/yyyy")" />
+                    </div>
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Date To :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="text" placeholder="dd/mm/yyyy" name="transactionDateTo" id="txtTransactionDateTo" class="input-sm form-control DateInput check-date" required="required" value="@businessDay.ToString("dd/MM/yyyy")" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Report Name :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-10 radio-container">
+                        <div class="row">
+                            @for (var r = 0; r < reports.Count; r++)
+                            {
+                                <label class="col-sm-6 @(r==0?"active":"")">
+                                    <input type="radio" class="radio radio-inline" @(r == 0 ? "checked='checked'" : "") name="fileType" value="@reports[r].SerialNo" /> <span class="radio-text">@reports[r].ReportName</span>
+                                </label>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Investor Code :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-10">
+                        <input type="text" class="input-sm form-control" id="txtInvestorCode" />
+                    </div>
+                </div>
+                <div class="row" id="divBranch">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Broker Branch :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-10">
+                        <select class="input-sm form-control" id="cmbBrokerBranch">
+                            <option value="0" selected="selected">Select Broker Branch</option>
+                            @foreach (var branch in brokerBranches)
+                            {
+                                <option value="@branch.Id">@branch.BrokerBranchName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="row" id="divBalance" style="display: none;">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Commisssion From :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="number" id="txtBalanceFrom" class="input-sm form-control" />
+                    </div>
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Commisssion To :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="number" id="txtBalanceTo" class="input-sm form-control" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Report Type :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-10">
+                        <select class="input-sm form-control" id="cmbReportType">
+                            <option value="Pdf" selected="selected">Pdf</option>
+                            <option value="ExcelBook">Microsoft Excel</option>
+                            <option value="Excel">Microsoft Excel (97-2003)</option>
+                            <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                            <option value="Word">Microsoft Word (97-2003)</option>
+                            <option value="XML">XML</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <div class="row">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <input type="button" name="btnShow" id="btnShow" class="btn btn-sm btn-success" value="Show" />
+                        <input type="button" name="btnEmail" id="btnEmail" class="btn btn-sm btn-success" value="Send Email" style="display: none;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="loader" id="divLoader" style="display: none;"></div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#txtTransactionDateFrom").on("change", function () {
+            var fromDate = $("#txtTransactionDateFrom").val();
+            $("#txtTransactionDateTo").datepicker('option', { minDate: fromDate });
+        });
+        $("#txtTransactionDateTo").on("change", function () {
+            var toDate = $("#txtTransactionDateTo").val();
+            $("#txtTransactionDateFrom").datepicker('option', { maxDate: toDate });
+        });
+
+        $("input[type=radio][name=fileType]").on("change", function () {
+            $(".radio-container label").removeClass("active");
+            $("input[type=radio][name=fileType]:checked").parents("label").addClass("active");
+            var reportNo = parseInt($("input[type=radio][name=fileType]:checked").val());
+            $("#divBalance").hide();
+            $("#divBranch").show();
+            $("#btnEmail").hide();
+            if (reportNo > 2) {
+                $("#divBranch").hide();
+            }
+            if (reportNo == 6) {
+                $("#divBalance").show();
+            }
+
+            if (reportNo == 2) {
+                $("#btnEmail").show();
+            }
+        });
+        $(document).on("click", "#btnShow", function () {
+            if ($("input[type=radio][name=fileType]:checked").length == 0) {
+                $.alert.open("Warning!", "No report selected.");
+                return false;
+            }
+            var reportNo = parseInt($("input[type=radio][name=fileType]:checked").val());
+            var dateFrom = $("#txtTransactionDateFrom").val().trim();
+            var dateTo = $("#txtTransactionDateTo").val().trim();
+            var reportType = $("#cmbReportType").val();
+            var brokerBranchId = $("#cmbBrokerBranch").val();
+            var investorCode = $("#txtInvestorCode").val().trim();
+            var balanceFrom = $("#txtBalanceFrom").val().trim();
+            var balanceTo = $("#txtBalanceTo").val().trim();
+            if (dateFrom == "") {
+                $.alert.open("Error", "Please enter from date.");
+            } else if (dateTo == "") {
+                $.alert.open("Error", "Please enter to date.");
+            } else {
+                if (reportNo == 1)
+                    window.open('/UPMS/TradeReport/ShowClientTradeSummaryReport?transactionDateFrom=' + dateFrom + '&transactionDateTo=' + dateTo + '&brokerBranch=' + brokerBranchId + '&investorCode=' + investorCode + '&type=' + reportType + "&reportNo=" + reportNo);
+                else if (reportNo == 2)
+                    window.open('/UPMS/TradeReport/ShowTradeConfirmationReport?transactionDateFrom=' + dateFrom + '&transactionDateTo=' + dateTo + '&brokerBranch=' + brokerBranchId + '&investorCode=' + investorCode + '&type=' + reportType + "&reportNo=" + reportNo);
+                else if (reportNo == 3)
+                    window.open('/UPMS/TradeReport/ShowBrokerageCommissionReport?transactionDateFrom=' + dateFrom + '&transactionDateTo=' + dateTo + '&reportType=0&investorCode=' + investorCode + '&type=' + reportType + "&reportNo=" + reportNo);
+                else if (reportNo == 4)
+                    window.open('/UPMS/TradeReport/ShowBrokerageCommissionReport?transactionDateFrom=' + dateFrom + '&transactionDateTo=' + dateTo + '&reportType=1&investorCode=' + investorCode + '&type=' + reportType + "&reportNo=" + reportNo);
+                else if (reportNo == 5)
+                    window.open('/UPMS/TradeReport/ShowBrokerageCommissionReport?transactionDateFrom=' + dateFrom + '&transactionDateTo=' + dateTo + '&reportType=2&investorCode=' + investorCode + '&type=' + reportType + "&reportNo=" + reportNo);
+                else if (reportNo == 6)
+                    window.open('/UPMS/TradeReport/ShowBrokerageCommissionSummary?transactionDateFrom=' + dateFrom + '&transactionDateTo=' + dateTo + '&investorCode=' + investorCode + '&type=' + reportType + '&balanceFrom=' + balanceFrom + '&balanceTo=' + balanceTo + "&reportNo=" + reportNo);
+                else if (reportNo == 7)
+                    window.open('/UPMS/TradeReport/ShowBrokerageCommissionClientWiseReport?transactionDateFrom=' + dateFrom + '&transactionDateTo=' + dateTo + '&investorCode=' + investorCode + '&type=' + reportType + "&reportNo=" + reportNo);
+                else if (reportNo == 8)
+                    window.open('/UPMS/TradeReport/ShowBrokerageCommissionClientWiseSummary?transactionDateFrom=' + dateFrom + '&transactionDateTo=' + dateTo + '&investorCode=' + investorCode + '&type=' + reportType + "&reportNo=" + reportNo);
+            }
+            return true;
+        });
+
+        $(document).on("click", "#btnEmail", function () {
+            if ($("input[type=radio][name=fileType]:checked").length == 0) {
+                $.alert.open("Warning!", "No report selected.");
+                return false;
+            }
+            var reportNo = parseInt($("input[type=radio][name=fileType]:checked").val());
+            var dateFrom = $("#txtTransactionDateFrom").val().trim();
+            var dateTo = $("#txtTransactionDateTo").val().trim();
+            var reportType = $("#cmbReportType").val();
+            var brokerBranchId = $("#cmbBrokerBranch").val();
+            var investorCode = $("#txtInvestorCode").val().trim();
+            var balanceFrom = $("#txtBalanceFrom").val().trim();
+            var balanceTo = $("#txtBalanceTo").val().trim();
+            if (investorCode.trim() == "") {
+                $.alert.open("Error", "Please enter investor code.");
+                return false;
+            }
+            if (investorCode.indexOf(",") > 0 || investorCode.indexOf("-") > 0) {
+                $.alert.open("Error", "Please type single investor.");
+                return false;
+            }
+            if (dateFrom == "") {
+                $.alert.open("Error", "Please enter from date.");
+                return false;
+            } else if (dateTo == "") {
+                $.alert.open("Error", "Please enter to date.");
+                return false;
+            } else {
+                if (reportNo == 2) {
+                    $("#divLoader").show();
+                    $("body").css("pointer-events", "none");
+                    var jsonData = { transactionDateFrom: dateFrom, transactionDateTo: dateTo, brokerBranch: brokerBranchId, investorCode: investorCode, type: reportType };
+                    $.ajax({
+                        type: "Post",
+                        url: '@Url.Action("EmailTradeConfirmationReport", "TradeReport")',
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify(jsonData),
+                        dataType: "json",
+                        success: function (data) {
+                            $("#divLoader").hide();
+                            $("body").css("pointer-events", "");
+                            if (data.Status == true) {
+                                $.alert.open("Success", data.Message);
+                            } else {
+                                $.alert.open("Error", data.Message);
+                            }
+                        },
+                        error: function (request, status, error) {
+                            $("#divLoader").hide();
+                            $("body").css("pointer-events", "");
+                            $.alert.open("Status", "An error occurred.<br/<br/>Please contact to your vendor.");
+                        }
+                    });
+                }
+            }
+            return true;
+        });
+    });
+</script>

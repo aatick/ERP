@@ -1,0 +1,180 @@
+﻿@using Upms.Data.UPMSDataModel
+@{
+    ViewBag.Title = "CapitalGain";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var companies = (List<CompanyInformation>)ViewBag.Companies;
+}
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script type="text/javascript">
+
+
+
+    function GetInvestorInfo() {
+
+        var InvestorCode = $('#InvestorCode').val();
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorByCode", "IPOGroup", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { InvestorCode: InvestorCode },
+            success: function (InvInfo) {
+
+                if (InvInfo.length == 1) {
+                    $.each(InvInfo, function (id, option) {
+
+
+                        $("#InvestorCode").val(option.InvestorCode);
+                        $("#hdnInvestorId").val(option.Id)
+                    });
+                }
+                else {
+                    $("#InvestorCode").val("");
+                    $.alert.open("info", "Not found!");
+                }
+
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+
+
+
+    $(document).ready(function () {
+
+        $("#hdnInvestorId").val(0);
+
+        $("#InvestorCode").blur(function () {
+            if ($('#InvestorCode').val() != "") {
+                GetInvestorInfo();
+            }
+        });
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+
+            var FromDate = $("#FromDate").val();
+            var ToDate = $("#ToDate").val();
+
+            if (FromDate == "" || ToDate == "") {
+                FromDate = "";
+                ToDate = "";
+            }
+
+            var url = '/UPMS/Report/InvestorCompanywiseGain?InvestorId=' + $("#hdnInvestorId").val() + '&CompanyId=' + $("#cmbCompany").val() + '&FirstDate=' + FromDate + '&EndDate=' + ToDate + '&ddlReportview=' + $("#ddlReportview").val() + "&reportNo=1";
+            $("#InvestorCode").val("");
+            $("#hdnInvestorId").val(0);
+            window.open(url);
+
+        });
+
+
+
+        $("#FromDate").on("change", function () {
+            var fromDate = $("#FromDate").val();
+            $("#ToDate").datepicker('option', { minDate: fromDate });
+        });
+        $("#ToDate").on("change", function () {
+            var toDate = $("#ToDate").val();
+            $("#FromDate").datepicker('option', { maxDate: toDate });
+        });
+
+
+    });
+</script>
+
+@using (Html.BeginForm("CapitalGain", "Report", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "IPOGroupForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="row">
+        <div class="col-sm-12">
+            <div id="AjaxLoader" class="ajaxLoader"></div>
+            <div class="panel panel-success panel-custom">
+                <div class="page-title">
+                    <div class="title_left PageHeader" style="width:90%;">
+                        <h3 style="color: white;padding:2px">&nbsp;&nbsp;Investor Capital Gain</h3>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <input type="hidden" id="hdnInvestorId" />
+                    <div class="row">
+                        <div class="col-sm-12 info-container">
+                            <br />
+                            <div class="row">
+                                <div class="row form-group">
+                                    @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4">
+                                        @Html.Editor("InvestorCode", new { htmlAttributes = new { @class = "form-control", @autofocus = "autofocus" } })
+                                    </div>
+
+                                    @Html.Label("Company", htmlAttributes: new { @class = "control-label col-md-1" })
+                                    <div class="col-md-4">
+                                        <select class="input-sm form-control bordercss" id="cmbCompany">
+                                            <option value="0">Select Company</option>
+                                            @foreach (var company in companies)
+                                            {
+                                                <option value="@company.Id">@(company.CompanyName)</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="row form-group">
+                                    @Html.Label("From Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4">
+                                        @Html.Editor("FromDate", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                                    </div>
+
+                                    @Html.Label("To Date", htmlAttributes: new { @class = "control-label col-md-1" })
+                                    <div class="col-md-4">
+                                        @Html.Editor("ToDate", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="row form-group">
+                                    @Html.Label("Report view", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4">
+                                        <select class="form-control bordercss" id="ddlReportview">
+                                            <option value="0" selected>Date wise</option>
+                                            <option value="1">Summary</option>
+                                        </select>
+                                    </div>
+
+
+                                </div>
+                            </div>
+                            <br />
+                            <div class="row">
+                                <div class="col-sm-11 text-center">
+                                    <input type="button" name="btnSubmit" id="btnView" class="btn btn-sm btn-success" value="View" />
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+
+
+

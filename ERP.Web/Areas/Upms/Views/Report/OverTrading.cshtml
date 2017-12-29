@@ -1,0 +1,67 @@
+﻿
+@{
+    ViewBag.Title = "OverTrading";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+<script type="text/javascript">
+    $(document).ready(function () {// Rpt_Investor_Overtrading
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            if ($("#TransactionDate").val() != "") {
+                var url = '/UPMS/Report/Rpt_Investor_Overtrading?TransactionDate=' + $("#TransactionDate").val() + '&InvestorCode=' + $("#InvestorCode").val();
+                window.open(url);
+            }
+            else {
+                $.alert.open("error", "Please Insert Date");
+            }
+
+        });
+
+    });
+</script>
+@using (Html.BeginForm("OverTrading", "Report", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "AccVoucherReportForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="row">
+        <div class="col-sm-12">
+            <div id="AjaxLoader" class="ajaxLoader"></div>
+            <div class="panel panel-success panel-custom">
+                <div class="page-title">
+                    <div class="title_left PageHeader" style="width:90%;">
+                        <h3 style="color: white;padding:2px">&nbsp;&nbsp;&nbsp; Over Trading</h3>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 col-sm-6 col-xs-12">
+                        <div class="x_panel">
+                            <div class="x_content">
+                                <br />
+                                    <div class="item form-group">
+                                        @Html.Label("Transaction Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                            @Html.Editor("TransactionDate", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                                        </div>
+                                    </div>
+                                    <div class="item form-group">
+                                        @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2" })
+                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                            @Html.Editor("InvestorCode", new { htmlAttributes = new { @class = "form-control" } })
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <div class="ln_solid"></div>
+                                    <div class="form-group">
+                                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                            <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                                        </div>
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+

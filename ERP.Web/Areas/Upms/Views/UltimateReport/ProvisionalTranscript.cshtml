@@ -1,0 +1,120 @@
+﻿
+@{
+    ViewBag.Title = "ProvisionalTranscript";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+<script type="text/javascript">
+    function GetBatch() {
+        var ddlBatch = $("#ddlBatch");
+        $('#AjaxLoader').show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBatchList", "UltimateReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $('#AjaxLoader').hide();
+                ddlBatch.html('');
+                $.each(data, function (id, option) {
+                    ddlBatch.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.status + "/" + error);
+            }
+        });
+
+    }
+
+    function GetStudent() {
+        var ddlStudent = $("#ddlStudent");
+        $('#AjaxLoader').show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetStudentList", "UltimateReport", "http")',
+            data: { batchId: $("#ddlBatch option:selected").val() },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $('#AjaxLoader').hide();
+                ddlStudent.html('');
+                $.each(data, function (id, option) {
+                    ddlStudent.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        GetBatch();
+        $("#ddlBatch").change(function () {
+            var ddlBatch = $("#ddlBatch option:selected").val();
+            if (ddlBatch > 0) {
+                GetStudent();
+            }
+            else {
+                GetStudent();
+            }
+        });
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var url;
+            var batch = $("#ddlBatch").val();
+            var student = $("#ddlStudent").val();
+            if (student > 0) {
+                url = '/UltimateReport/GenerateProvisionalTranscriptReport?StudentId=' + student;
+                   }
+            
+            window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+        });
+    });
+</script>
+<h2 class="page-title">Provisional Transcript</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Select Batch", new { @class = "control-label" })
+                    @Html.DropDownList("BatchList", null, new { @ID = "ddlBatch", @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.Label("Student", htmlAttributes: new { @class = "control-label" })
+                    @Html.DropDownList("StudentList", null, new { @ID = "ddlStudent", @class = "form-control" })
+
+                </div>
+            </div>
+            <div class="col-md-8">&nbsp;</div>
+        </div>
+
+
+        <h2 class="page-title"></h2>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group from-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+

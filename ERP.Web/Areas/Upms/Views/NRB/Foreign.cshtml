@@ -1,0 +1,845 @@
+﻿@using Upms.Data.UPMSDataModel
+@{
+    ViewBag.Title = "Foreign";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    //var companies = (List<ERP.Web.IPOController.IpoCompanyModel>)ViewBag.Companies;
+    var companies = (List<IPODeclaration>)ViewBag.Companies;
+    var currencies = (List<LookupCurrency>)ViewBag.Currencies;
+}
+
+<style>
+    .ui-autocomplete {
+        cursor: pointer;
+        height: 400px;
+        width: 300px;
+        overflow-y: scroll;
+        background-color: white;
+        color: rgb(0,188,212);
+        /*outline-style:outset;*/
+    }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .required::after {
+        content: " *";
+        color: red;
+    }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+<script type="text/javascript">
+
+    function GetIPODraftInformation() {
+        var DeclarationId = $("#cmbCompany").val();
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetIPODraftInformation_Foreign", "NRB", "http")',
+                    dataType: "json",
+                    data: { DeclarationId: DeclarationId }
+                }
+            },
+            pageSize: 1000,
+        });
+
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 600,
+            groupable: true,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 100
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+            {
+                field: "RowSl",
+                title: "SL",
+            },
+             {
+                 field: "CompanyName",
+                 title: "Securities",
+                 hidden: true
+             },
+            {
+                field: "InvestorName",
+                title: "Investor Name",
+            },
+            {
+                field: "FDDNumber",
+                title: "FDD Number",
+            },
+             {
+                 field: "Amount",
+                 title: "Amount",
+                 width: "12%"
+             },
+            {
+                field: "CurrencyName",
+                title: "Currency",
+            },
+            {
+                field: "BankName",
+                title: "Bank",
+            },
+            {
+                field: "BranchName",
+                title: "Bank Branch",
+                hidden: true
+
+            },
+             {
+                 field: "DraftDateMsg",
+                 title: "Draft Date",
+             },
+              {
+                  title: "Action",
+                  width: "10%",
+                  template: function (dataItem) {
+                      if (dataItem.ApplicationStatus != 0) {
+                          return '<label>Applied</label>';
+                      }
+                      else {
+                          return '<a href="#" title="Edit" onclick="EditIPODraft(' + dataItem.Id + ',' + dataItem.IPODeclarationId + ',' + dataItem.InvestorId + ',' + dataItem.IssuerBankBranchId + ',' + dataItem.BankId + ',' + dataItem.CurrencyId + ',' + dataItem.Amount + ',' + dataItem.InvestorShareQty + ',' + "'" + dataItem.InvestorName + "'" + ',' + "'" + dataItem.FDDNumber + "'" + ',' + "'" + dataItem.DraftDateMsg + "'" + ')" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a>' +
+                                '<a href="#" title="Order cancel" onclick="DeleteNRBDraft(' + dataItem.Id + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i>'
+                      }
+                  }
+              },
+            ]
+        });
+    }
+
+    function EditIPODraft(Id, IPODeclarationId, InvestorId, IssuerBankBranchId, BankId, CurrencyId, Amount, InvestorShareQty, InvestorName, FDDNumber, DraftDateMsg) {
+
+        $("#hdnInvestorId").val(InvestorId);
+        $("#hdnDraftId").val(Id);
+        $("#cmbCompany").val(IPODeclarationId);
+        $("#InvestorCode").val(InvestorName);
+        $("#ddlBankId").val(BankId);
+        GetBankBranchList(Mode = IssuerBankBranchId);
+        $("#ddlCurrency").val(CurrencyId);
+        $("#txtFddNumber").val(FDDNumber);
+        $("#txtAmount").val(Amount);
+        $("#txtDraftDate").val(DraftDateMsg);
+        $("#txtInvShareQty").val(InvestorShareQty);
+        $("#InvestorCode").attr("disabled", true);
+        $("#cmbCompany").attr("disabled", true);
+    }
+
+
+    function DeleteNRBDraft(Id) {
+        $.alert.open('confirm', 'Are you sure you want to Delete This IPO order?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("DeleteNRBDraft", "NRB", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (Result) {
+                        GetIPODraftInformation();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                        return false
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+
+
+
+    function GetBankList() {
+
+        var ddlBankList = $("#ddlBankId");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBankInfo", "LookupBank", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (BankList) {
+                ddlBankList.html('');
+                ddlBankList.append($('<option></option>').val("0").html("Please select"));
+                $.each(BankList, function (id, option) {
+                    ddlBankList.append($('<option></option>').val(option.Id).html(option.BankName));
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetBankBranchList(Mode) {
+        var ddlBankBranch = $("#ddlBankBranchId");
+        var BankId = $("#ddlBankId").val();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBankBranchList", "InvestorDetail", "http")',
+            data: { BankId: BankId },
+            dataType: 'json',
+            async: true,
+            success: function (BankBrach) {
+                ddlBankBranch.html('');
+                ddlBankBranch.append($('<option></option>').val(" ").html("Please select"));
+                $.each(BankBrach, function (id, option) {
+                    ddlBankBranch.append($('<option></option>').val(option.Id).html(option.BranchName));
+                });
+                if (Mode != "C") {
+                    $("#ddlBankBranchId").val(Mode);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    function GetInvestorbyCode() {
+
+        var IPODeclarationId = $("#cmbCompany").val();
+        var InvestorCode = $('#InvestorCode').val().trim().indexOf("-") > 0 ? $('#InvestorCode').val().trim().split("-")[0].trim() : $('#InvestorCode').val().trim(); //$('#InvestorCode').val();
+       
+          if (IPODeclarationId != 0)
+          {
+              $.ajax({
+                  contentType: "application/json; charset=utf-8",
+                  url: '@Url.Action("GetInvestorListForeign", "NRB", "http")',
+                  type: "GET",
+                  dataType: "json",
+                  async: true,
+                  data: { InvestorCode: InvestorCode, IPODeclarationId: IPODeclarationId },
+                  success: function (InvestorList) {
+                      if (InvestorList.length != 0)
+                      {
+                          $.each(InvestorList, function (id, option) {
+                              if (option.InvestorCode == "NotFound") {
+                                  $("#InvestorCode").val("");
+
+                                  $.alert.open("error", "Please Insert Foreign Investor Code");
+                              }
+                              else if (option.InvestorCode == "AlreadyIPOOrder") {
+                                  $("#InvestorCode").val("");
+
+                                  $.alert.open("error", "IPO Order is already create");
+                              }
+                              else {
+                                  $("#InvestorCode").val(option.InvestorCode);
+                                  $("#hdnInvestorId").val(option.Id);
+
+                              }
+                          });
+                      }
+                      else
+                      {
+                          $.alert.open("error", "Investor not found or he.she in not foreign investor");
+                      }
+                     
+                  },
+                  failure: function () {
+                      $.alert.open("error", "Failed!");
+                  }
+              });
+          }
+          else
+          {
+              $.alert.open("error", "Select Instrument IPO");
+          }
+
+      
+    }
+
+    function clearArray(AllInvestorList) {
+        while (AllInvestorList.length) {
+            AllInvestorList.pop();
+        }
+    }
+
+
+    var AllInvestorList = [];
+
+    function GetInvestorList() {
+
+        clearArray(AllInvestorList);
+
+        $('#InvestorCode').attr("placeholder", "Loading . .. ... ....")
+        var IPODeclarationId = $("#cmbCompany").val();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorListForeign", "NRB", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { InvestorCode: "", IPODeclarationId: IPODeclarationId },
+            success: function (InvestorList) {
+                $.each(InvestorList, function (id, option) {
+                    var obj2 = new Object();
+                    obj2.key = option.Id;
+                    obj2.value = option.InvestorCode;
+
+                    AllInvestorList[AllInvestorList.length] = obj2;
+                });
+                $('#InvestorCode').removeAttr("placeholder")
+            },
+            failure: function () {
+                $('#InvestorCode').removeAttr("placeholder")
+                $.alert.open("error", "Failed!");
+            }
+        });
+
+        $('#InvestorCode').autocomplete({
+            source: AllInvestorList,
+            select: function (event, ui) {
+
+                $("#InvestorCode").val(ui.item.value);
+                $("#hdnInvestorId").val(ui.item.key);
+                $("#hdnMode").val("A");
+            }
+        });
+    }
+
+    function CheckFddNumber() {
+        var BankId = $("#ddlBankId").val();
+        var FddNumber = $("#txtFddNumber").val();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("CheckFddNumber", "NRB", "http")',
+            data: { BankId: BankId, FddNumber: FddNumber },
+            dataType: 'json',
+            async: true,
+            success: function (Retult) {
+                if (Retult == "1") {
+                    return true
+                }
+                else {
+                    $("#txtFddNumber").val("");
+                    $.alert.open("error", "DFF number duplicate");
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    function Refresh() {
+        $("#InvestorCode").focus();
+        $("#InvestorCode").attr("disabled", false);
+        $("#cmbCompany").attr("disabled", false);
+        $("#ddlCurrency").val("0");
+        $("#txtFddNumber").val("");
+        $("#txtAmount").val(0);
+        $("#InvestorCode").val("");
+        $("#hdnInvestorId").val("0");
+
+    }
+
+    $(document).ready(function () {
+
+
+        $("#hdnDraftId").val(0);
+        $("#hdnMode").val("B");
+        $("#hdnModeJoin").val("B");
+        $("#hdnInvestorId").val("0");
+
+        GetBankList();
+        GetIPODraftInformation();
+
+        $("#ddlBankId").change(function () {
+            if ($("#ddlBankId").val() != "0" && $("#ddlBankId").val() != null) {
+                GetBankBranchList(Mode = "C");
+            }
+            if ($("#txtFddNumber").val() != "") {
+                CheckFddNumber();
+            }
+        });
+        $("#txtFddNumber").blur(function () {
+            if ($("#ddlBankId").val() != 0) {
+                CheckFddNumber();
+            }
+
+        });
+
+        $("#InvestorCode").focus(function () {
+            $("#hdnMode").val("B");
+        });
+
+        $("#InvestorCode").blur(function () {
+
+
+            if ($("#hdnMode").val() != "A" && $("#InvestorCode").val() != "") {
+                GetInvestorbyCode();
+            }
+            if ($("#ddlCurrency").val() != 0 && $("#ddlCurrency").val() != 1) {
+                var Investor = $("#hdnInvestorId").val();
+
+                if ($("#ddlCurrency").val() == 2) //USD
+                {
+                    if (Investor != 0 ) {
+                        $("#txtAmount").val(parseFloat($("#lblRequiredAmountUSD").html()));
+                    }
+                    else {
+                        $("#txtAmount").val($("#lblRequiredAmountUSD").html());
+                    }
+                }
+                else if ($("#ddlCurrency").val() == 3) //GBP
+                {
+                    if (Investor != 0 ) {
+                        $("#txtAmount").val(parseFloat($("#lblRequiredAmountGBP").html()));
+                    }
+                    else {
+                        $("#txtAmount").val($("#lblRequiredAmountGBP").html());
+                    }
+                }
+                else if ($("#ddlCurrency").val() == 4) //EURO
+                {
+                    if (Investor != 0 ) {
+                        $("#txtAmount").val(parseFloat($("#lblRequiredAmountEUR").html()));
+                    }
+                    else {
+                        $("#txtAmount").val($("#lblRequiredAmountEUR").html());
+                    }
+                }
+                else {
+                    $("#txtAmount").val();
+                }
+
+            }
+        });
+
+        $("#cmbCompany").on("change", function () {
+
+            GetInvestorList();
+            GetIPODraftInformation();
+
+            $("#hdnInvestorId").val("0");
+            $("#InvestorCode").val("");
+
+            var DeclarationId = $(this).val();
+            if (DeclarationId == "0") {
+                $("#lblAppEndDate").html("");
+                $("#lblNRBAppEndDate").html("");
+                $("#lblLot").html("");
+                $("#lblFaceValue").html("");
+                return false;
+            }
+            var jsonData = { DeclarationId: DeclarationId };
+            $.ajax({
+                type: "Post",
+                url: '@Url.Action("GetDeclarationInfoForNrb", "IPO")',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(jsonData),
+                dataType: "json",
+                success: function (dt) {
+                    var data = dt.Declaration;
+                    var appEndDate = "";
+                    var nrbAppEnddate = "";
+                    if (data.ApplicationEndDate != null)
+                        appEndDate = $.datepicker.formatDate("mm/dd/yy", new Date(parseInt(data.ApplicationEndDate.toString().substr(6))));
+                    if (data.NRBApplicationLastDate != null)
+                        nrbAppEnddate = $.datepicker.formatDate("mm/dd/yy", new Date(parseInt(data.NRBApplicationLastDate.toString().substr(6))));
+
+                    $("#lblAppEndDate").html(appEndDate);
+                    $("#lblNRBAppEndDate").html(nrbAppEnddate);
+                    $("#lblLot").html(data.Lot);
+                    $("#txtQuantity").val(data.Lot);
+                    $("#txtInvShareQty").val(data.Lot);
+                    $("#hdnIssueMethodId").val(data.IssueMethodId);
+                    if (data.IssueMethodId == 1) { $("#lblIssueMethodId").html("Fixed Price"); } else { $("#lblIssueMethodId").html("Book building"); }
+
+                    $("#lblFaceValue").html(data.FaceValue);
+                    var RequiredAmt = ((parseFloat(data.Premium) + parseFloat(data.FaceValue)) - parseFloat(data.Discount)) * parseFloat(data.Lot);
+                    $("#lblRequiredAmt").html(RequiredAmt);
+
+                    var currency = dt.Currency;
+                    $.each(currency, function (i, d) {
+                        if (d.CurrencyId == 2) {
+                            $("#lblRequiredAmountUSD").html(d.LotAmount);
+                        }
+                        if (d.CurrencyId == 3) {
+                            $("#lblRequiredAmountGBP").html(d.LotAmount);
+                        }
+                        if (d.CurrencyId == 4) {
+                            $("#lblRequiredAmountEUR").html(d.LotAmount);
+                        }
+                    });
+                },
+            });
+            return true;
+        });
+
+
+        $("#ddlCurrency").change(function () {
+
+            var Investor = $("#hdnInvestorId").val();
+
+
+            if ($("#ddlCurrency").val() == 2) //USD
+            {
+                if (Investor != 0 ) {
+                    $("#txtAmount").val(parseFloat($("#lblRequiredAmountUSD").html()) * 2);
+                }
+                else {
+                    $("#txtAmount").val($("#lblRequiredAmountUSD").html());
+                }
+            }
+            else if ($("#ddlCurrency").val() == 3) //GBP  lblRequiredAmountUSD   lblRequiredAmountGBP
+            {
+                if (Investor != 0 ) {
+                    $("#txtAmount").val(parseFloat($("#lblRequiredAmountGBP").html()) * 2);
+                }
+                else {
+                    $("#txtAmount").val($("#lblRequiredAmountGBP").html());
+                }
+            }
+            else if ($("#ddlCurrency").val() == 4) //EURO
+            {
+                if (Investor != 0 ) {
+                    $("#txtAmount").val(parseFloat($("#lblRequiredAmountEUR").html()) * 2);
+                }
+                else {
+                    $("#txtAmount").val($("#lblRequiredAmountEUR").html());
+                }
+            }
+            else {
+                $("#txtAmount").val();
+            }
+        });
+
+        $("#txtAmount").keyup(function () {
+
+            if ($("#ddlCurrency").val() == 2) //USD 
+            {
+                var Qty = (parseFloat($("#lblLot").html() * $("#txtAmount").val()) / parseFloat($("#lblRequiredAmountUSD").html()));
+                $("#txtInvShareQty").val(Qty)
+            }
+            else if ($("#ddlCurrency").val() == 3) //GBP    
+            {
+                var Qty = (parseFloat($("#lblLot").html()) * $("#txtAmount").val()) / parseFloat($("#lblRequiredAmountGBP").html())
+                $("#txtInvShareQty").val(Qty)
+               
+            }
+            else if ($("#ddlCurrency").val() == 4) //EURO 
+            {
+                var Qty = (parseFloat($("#lblLot").html()) * $("#txtAmount").val()) / parseFloat($("#lblRequiredAmountEUR").html())
+                $("#txtInvShareQty").val(Qty)
+               
+            }
+            else {
+                $("#txtInvShareQty").val(0);
+            }
+        });
+
+
+        $("#btnRefresh").click(function (e) {
+            e.preventDefault();
+            Refresh();
+        });
+
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+
+            var NRBDraftId = $("#hdnDraftId").val();
+            var IpoDeclarationId = $("#cmbCompany").val();
+            var InvestorId = $("#hdnInvestorId").val();
+            //var JoinHolderId = $("#hdnJoinHolderId").val();
+            var BankBranchId = $("#ddlBankBranchId").val();
+            var CurrencyId = $("#ddlCurrency").val();
+            var FddNumber = $("#txtFddNumber").val();
+            var Amount = $("#txtAmount").val() == "" ? 0 : $("#txtAmount").val();
+            var DraftDate = $("#txtDraftDate").val();
+            var InvestorShareQty = $("#txtInvShareQty").val() == "" ? 0 : $("#txtInvShareQty").val();
+
+
+
+                if (IpoDeclarationId != "0" && InvestorId != "0" && BankBranchId != null && BankBranchId != "" && CurrencyId != 0 && FddNumber != "" && Amount != "" && DraftDate != "" && InvestorShareQty != "") {
+                    $.ajax({
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("SaveIPODraftForeign", "NRB", "http")',
+                        type: "GET",
+                        dataType: "json",
+                        async: true,
+                        data: { NRBDraftId: NRBDraftId, IpoDeclarationId: IpoDeclarationId, InvestorId: InvestorId, BankBranchId: BankBranchId, CurrencyId: CurrencyId, FddNumber: FddNumber, Amount: Amount, DraftDate: DraftDate, InvestorShareQty: InvestorShareQty },
+                        success: function (Result) {
+                            $("#hdnDraftId").val(0);
+
+                            // AllInvestorList.length = 0;
+
+                            // console.log(AllInvestorList);
+                            GetInvestorList();
+                            if (Result == "1") {
+                                GetIPODraftInformation();
+                                Refresh();
+                                $(".success").show(800).fadeToggle(3000);
+
+                            }
+                            else {
+                                $.alert.open("error", Result);
+                            }
+                        },
+                        failure: function (Result) {
+                            $.alert.open("error", Result);
+                        }
+                    });
+                }
+                else {
+                    $.alert.open("error", "Insert required field");
+                }
+
+        });
+
+        $("#txtInvShareQty").focusout(function () {
+
+            if ($("#txtInvShareQty").val() < parseFloat($("#lblLot").html())) {
+                $("#txtInvShareQty").val(parseFloat($("#lblLot").html()))
+                //  $("#lblRequiredAmt").html($("#lblRequiredAmount").html());
+            };
+        });
+
+      
+
+        //$("#txtDraftDate").datepicker(
+        //  {
+        //      dateFormat: "dd-M-yy",
+        //      showAnim: "scale",
+        //      changeMonth: true,
+        //      changeYear: true,
+        //      yearRange: "1920:2025"
+        //  });
+
+    });
+
+</script>
+
+@using (Html.BeginForm("Foreign", "NRB", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "NrbApoForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color:white;padding:2px">&nbsp;&nbsp;&nbsp; Foreign Draft</h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div id="AjaxLoader" class="ajaxLoader"></div>
+                <div class="x_title">
+                    <div class="clearfix"></div>
+                    <input type="hidden" id="hdnInvestorId" />
+                    <input type="hidden" id="hdnMode" />
+                    @*<input type="hidden" id="hdnJoinHolderId" />*@
+                    <input type="hidden" id="hdnModeJoin" />
+                    <input type="hidden" id="hdnDraftId" />
+                </div>
+                <div class="x_content">
+                    <div class="row">
+                        <div class="col-sm-12 info-container">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">Instrument IPO Information</div>
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-sm-1 label-container text-right">
+                                            @Html.Label("Instrument", new { @class = "control-label required" })
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <select class="input-sm form-control bordercss" id="cmbCompany">
+                                                <option value="0">Select Instrument</option>
+                                                @foreach (var company in companies)
+                                                {
+                                                    <option value="@company.Id">@(company.CompanyName + " (" + company.TradingCode + ")")</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-2 label-container text-right">
+                                            @Html.Label("Application End Date :", new { @class = "control-label" })
+                                        </div>
+                                        <div class="col-sm-1">
+                                            <label class="control-label" id="lblAppEndDate"></label>
+                                        </div>
+                                        <div class="col-sm-2 label-container text-right">
+                                            @Html.Label("Issue Method :", new { @class = "control-label" })
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <label class="control-label" id="lblIssueMethodId"></label>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-sm-1 label-container text-right">
+                                            @Html.Label("Lot :", new { @class = "control-label" })
+                                        </div>
+                                        <div class="col-sm-1">
+                                            <label class="control-label" id="lblLot"></label>
+                                        </div>
+                                        <div class="col-sm-2 label-container text-right">
+                                            @Html.Label("Face Value :", new { @class = "control-label" })
+                                        </div>
+                                        <div class="col-sm-1 text-left">
+                                            <label class="control-label" id="lblFaceValue"></label>
+                                        </div>
+                                        @*<div class="col-sm-1 label-container text-right">
+                                                @Html.Label("Premium :", new { @class = "control-label" })
+                                            </div>
+                                            <div class="col-sm-1">
+                                                <label class="control-label" id="lblPremium"></label>
+                                            </div>
+                                            <div class="col-sm-1 label-container text-right">
+                                                @Html.Label("Discount :", new { @class = "control-label" })
+                                            </div>
+                                            <div class="col-sm-1">
+                                                <label class="control-label" id="lblDiscount"></label>
+                                            </div>*@
+                                        <div class="col-sm-2 label-container text-right">
+                                            @Html.Label("Required Amount :", new { @class = "control-label" })
+                                        </div>
+                                        <div class="col-sm-1">
+                                            <span>USD</span>&nbsp;<label class="control-label" id="lblRequiredAmountUSD"></label>
+                                        </div>
+                                        <div class="col-sm-1">
+                                            <span>GBP</span>&nbsp;<label class="control-label" id="lblRequiredAmountGBP"></label>
+                                        </div>
+                                        <div class="col-sm-1">
+                                            <span>EUR</span>&nbsp;<label class="control-label" id="lblRequiredAmountEUR"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @* <br />*@
+
+                    <div class="row">
+                        <div class="col-sm-12 info-container">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">Draft Information</div>
+                                <div class="panel-body">
+                                    <div class="row form-group">
+                                        @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                            <input type="text" class="input-sm form-control" id="InvestorCode" />
+                                        </div>
+                                        @Html.Label("Bank", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                        <div class="col-md-4">
+                                            @Html.DropDownList("BankList", null, new { @id = "ddlBankId", @class = "form-control bordercss" })
+                                        </div>
+                                    </div>
+                                    <div class="row form-group">
+                                       
+                                        @Html.Label("Bank Branch", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                            @Html.DropDownList("BankBranchlist", null, new { @id = "ddlBankBranchId", @class = "form-control bordercss" })
+                                        </div>
+                                        <div class="col-sm-2 label-container text-right">
+                                            @Html.Label("Currency", new { @class = "control-label required" })
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <select class="input-sm form-control bordercss" id="ddlCurrency">
+                                                <option value="0">Select Currency</option>
+                                                @foreach (var Currency in currencies)
+                                                {
+                                                    <option value="@Currency.Id">@Currency.CurrencyShortName</option>
+                                                    //<option value="@Currency.Id">@(Currency.CurrencyName + " (" + Currency.CurrencyShortName + ")")</option>
+
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row form-group">
+                                        
+                                        @Html.Label("FDD Number", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                            <input type="text" class="input-sm form-control" id="txtFddNumber" />
+                                        </div>
+                                        @Html.Label("Amount", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                            <input type="number" class="input-sm form-control" id="txtAmount" />
+                                        </div>
+                                    </div>
+                                    <div class="row form-group">
+                                       
+                                        @Html.Label("Draft Date", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                            <input type="text" class="input-sm form-control DateInput check-date" id="txtDraftDate" />
+                                        </div>
+                                        @Html.Label("Investor Share Qty", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                            <input type="number" class="input-sm form-control" id="txtInvShareQty" readonly="readonly"/>
+                                        </div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-md-4">
+                                        </div>
+                                        <div class="col-md-1">
+                                            <button type="submit" id="btnSave" class="btn btn-success">Save</button>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="submit" id="btnRefresh" class="btn btn-primary">Refresh</button>
+                                        </div>
+                                    </div>
+                                    <div class="item form-group">
+                                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                            <div class="success" role="alert" style="display:none">
+                                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                <p class="message-content">Saved Sucessfully</p>
+                                            </div>
+                                            <div class="failed" role="alert" style="display:none">
+                                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                <p class="message-content">Fail to save</p>
+                                            </div>
+                                            @*<br />*@
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="x_content">
+                    <div class="row">
+                        <div id="grid"> </div>
+                    </div>
+                    <div class="ln_solid"></div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+

@@ -1,0 +1,208 @@
+﻿@using Upms.Data.UPMSDataModel
+@{
+    ViewBag.Title = "Process CDBL Files";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var fileList = (List<TradeUploadFileInformation>)ViewBag.FileList;
+    var businessDay = (DateTime)ViewBag.BusinessDate;
+    var cdblFileLocation = ViewBag.CDBLFileLocation.ToString();
+}
+<style type="text/css">
+    .panel-custom > .panel-heading {
+        /*background: #26B99A !important;*/
+        color: #FFFFFF !important;
+    }
+
+    .panel-custom .panel-body .row:not(:last-child) {
+        margin-bottom: 10px;
+    }
+
+    .panel-custom .panel-body .radio {
+        margin-top: 0px;
+    }
+
+    .panel-custom .panel-body .radio-text, .panel-custom .panel-body input[type=text] {
+        color: #73879C;
+    }
+
+    .panel-custom .label-container {
+        text-align: right;
+    }
+
+    input[type=text]:read-only {
+        background: #FFFFFF;
+        cursor: default;
+    }
+
+    #error > .panel {
+        margin-bottom: 20px;
+    }
+
+        #error > .panel > .panel-heading {
+            padding: 0px 5px 0px 15px;
+        }
+
+    .radio-container {
+        margin-top: -5px;
+    }
+
+        .radio-container label {
+            cursor: pointer;
+            padding: 5px;
+        }
+
+            .radio-container label.active {
+                background: #0e73a9;
+                border-radius: 4px;
+            }
+
+                .radio-container label.active span.radio-text {
+                    color: #FFFFFF;
+                }
+
+    .form-control[readonly], .form-control[disabled] {
+        background: #FFFFFF;
+    }
+
+
+    #smartAlertBox {
+        max-width: 700px !important;
+    }
+
+    #smartAlertScroll {
+        max-height: 350px !important;
+    }
+
+    .loader {
+        border: 16px solid #1ABB9C;
+        border-radius: 50%;
+        border-top: 16px solid #3498db;
+        width: 120px;
+        height: 120px;
+        -webkit-animation: spin 2s linear infinite;
+        animation: spin 2s linear infinite;
+        position: absolute;
+        top: 40%;
+        left: 40%;
+    }
+
+    @@-webkit-keyframes spin {
+        0% {
+            -webkit-transform: rotate(0deg);
+        }
+
+        100% {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+<form id="frmFileUpload" name="frmFileUpload" action="" method="POST" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-success panel-custom">
+                <div class="panel-heading PageHeader">
+                    <h3 class="panel-title">Process CDBL Files</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-sm-2 label-container">
+                            @Html.Label("Date :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-4">
+                            <input type="text" readonly="readonly" disabled="disabled" placeholder="dd/mm/yyyy" name="transactionDate" id="txtTransactionDate" class="input-sm form-control DateInput check-date" required="required" value="@businessDay.ToString("dd/MM/yyyy")" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2 label-container">
+                            @Html.Label("File Name :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-10">
+                            <div class="row radio-container">
+                                <label class="col-sm-12">
+                                    <input type="checkbox" class="radio checkbox-inline" id="fileAllSelect" /> <span class="radio-text">Select All</span>
+                                </label>
+
+                                <div class="col-sm-12" style="height: 1px; border-bottom: 1px solid #DDDDDD;"></div>
+
+                                @foreach (var file in fileList)
+                                {
+                                    <label class="col-sm-4">
+                                        <input type="checkbox" class="radio checkbox-inline" value="@file.Id" name="fileType" /> <span class="radio-text">@file.FileName</span>
+                                    </label>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="row">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <input type="submit" name="btnProcess" id="btnProcess" class="btn btn-sm btn-success" value="Process" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="loader" id="divLoader" style="display: none;"></div>
+</form>
+<script type="text/javascript" src="~/Scripts/jquery.maskedinput-1.3.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(document).on("click", "#btnProcess", function () {
+            var trxDate = $("#txtTransactionDate").val().trim();
+            if (trxDate == "") {
+                $.alert.open("Error", "Please enter transaction date.");
+                return false;
+            }
+            var fileTypeIndex = [];
+            $("input[type=checkbox][name=fileType]:checked").each(function (i, d) {
+                fileTypeIndex.push($(this).val());
+            });
+            if (fileTypeIndex.length == 0) {
+                $.alert.open("Error", "please select process file names.");
+                return false;
+            }
+            $("#divLoader").show();
+            $("body").css("pointer-events", "none");
+            var jsonData = { files: fileTypeIndex, transDate: trxDate };
+            $.ajax({
+                type: "Post",
+                url: '@Url.Action("ProcessFile", "Trade")',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(jsonData),
+                dataType: "json",
+                success: function (data) {
+                    var messages = "";
+                    $.each(data, function (i, d) {
+                        messages += (i > 0 ? "<br/><br/>" : "") + "<span style='color:" + (d.Code == -1 ? "green" : "red") + ";'>" + d.Text + "</span>";
+                    });
+                    $("#divLoader").hide();
+                    $("body").css("pointer-events", "");
+                    $.alert.open("Status", messages, function () {
+                        location.reload();
+                    });
+                },
+                error: function (request, status, error) {
+                    $("#divLoader").hide();
+                    $("body").css("pointer-events", "");
+                    $.alert.open("Status", "An error occurred.<br/<br/>Please contact to your vendor.");
+                }
+            });
+            return false;
+        });
+
+        $("#fileAllSelect").on("change", function () {
+            $("input[type=checkbox][name=fileType]").prop("checked", $(this).is(":checked"));
+        });
+    });
+</script>

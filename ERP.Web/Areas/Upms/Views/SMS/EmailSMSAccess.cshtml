@@ -1,0 +1,322 @@
+﻿
+@{
+    ViewBag.Title = "EmailSMSAccess";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .radio-container label {
+        cursor: pointer;
+        padding: 5px;
+    }
+
+        .radio-container label.active {
+            background: #0e73a9;
+            border-radius: 4px;
+            /*margin-left: 10px;*/
+        }
+
+            .radio-container label.active span.radio-text {
+                color: #FFFFFF;
+            }
+
+    textarea {
+        color: black;
+    }
+
+    * {
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .option-input {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        -ms-appearance: none;
+        -o-appearance: none;
+        appearance: none;
+        position: relative;
+        top: 13.33333px;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: 40px;
+        width: 40px;
+        transition: all 0.15s ease-out 0s;
+        background: #cbd1d8;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        display: inline-block;
+        margin-right: 0.5rem;
+        outline: none;
+        position: relative;
+        z-index: 1000;
+    }
+
+        .option-input:hover {
+            background: #9faab7;
+        }
+
+        .option-input:checked {
+            background: #40e0d0;
+        }
+
+            .option-input:checked::before {
+                height: 40px;
+                width: 40px;
+                position: absolute;
+                content: '✔';
+                /*display: inline-block;*/
+                font-size: 26.66667px;
+                text-align: center;
+                line-height: 40px;
+            }
+
+            .option-input:checked::after {
+                /*-webkit-animation: click-wave 0.65s;
+                -moz-animation: click-wave 0.65s;
+                animation: click-wave 0.65s;*/
+                background: #40e0d0;
+                content: '';
+                /*display: block;*/
+                position: relative;
+                /*z-index: 100;*/
+            }
+
+        .option-input.radio {
+            border-radius: 50%;
+        }
+
+            .option-input.radio::after {
+                border-radius: 50%;
+            }
+
+
+
+    /*///////////*/
+    
+     
+
+
+
+</style>
+
+<script type="text/javascript">
+
+    function GetEmailSMSType()
+    {
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetEmailSMSType", "SMS", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (emailsmsType) {
+                var parentDiv = $('#divEmailSMSType');
+                
+                $.each(emailsmsType, function (Index, e) {
+                    parentDiv.append(
+                        '<div class="col-md-6" style="float:left">'+
+                                '<input type="checkbox" class="option-input radio clChEmSMSType" id="'+ e.Id + '"/>&nbsp;&nbsp;<span class="radio-text">' + e.EmailSMSTypeName + '</span>' +
+                            '</div>'
+                        );
+                });   
+               
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetInvestorbyCode() {
+
+       // var AccTypeId = [];
+        $(".clChEmSMSType").prop("checked", false);
+
+        //$(".clChEmSMSType").each(function () {
+
+        //    AccTypeId[AccTypeId.length] = $(this).val();
+        //});
+
+        var code = $('#InvestorCode').val().trim().indexOf("-") > 0 ? $('#InvestorCode').val().trim().split("-")[0].trim() : $('#InvestorCode').val().trim();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorByCode", "SMS", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { InvestorCode: code },
+            success: function (InvestorList) {
+                if (InvestorList.length == 1) {
+                    $.each(InvestorList, function (id, option) {
+                        if (option.InvestorName != "0")
+                        {
+                            $("#InvestorCode").val(option.InvestorCode + '- ' + option.InvestorName);
+                            $("#hdnInvestorId").val(option.Id);
+                            // Acce_Dp  EmailSMSTypeAccessId_Dp
+                            var Acce = option.EmailSMSTypeAccessId.split(",");
+                            var Acce_Dp = option.EmailSMSType_NOT_AccessId_Dp.split(",");
+                           
+                            for (i = 0; i <= Acce.length; i++) {
+                                $("#" + Acce[i]).prop("checked", true);
+
+                            }
+
+                            for (i = 0; i <= Acce_Dp.length; i++) {
+
+                                $("#" + Acce_Dp[i]).prop("checked", false);
+                                $("#" + Acce_Dp[i]).attr("disabled", true);
+
+                            }
+
+                           
+                        }
+                        else
+                        {
+                            $.alert.open("error","Your DP has no permission for Email,SMS service ");
+                        }
+
+                      
+                    });
+
+                }
+                else {
+                    $("#InvestorCode").val("");
+                    $.alert.open("info", "No found");
+                }
+
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+
+
+    function EmaulSMSAccessSave()
+    {
+     
+        var InvestorId = $("#hdnInvestorId").val();
+
+        var AllTypeId = new Array();
+
+        $(".clChEmSMSType").each(function () {
+            if ($(this).is(":checked") == true) {
+
+                AllTypeId[AllTypeId.length] = $(this).attr("Id");
+            }
+        });
+            var allTrx = new Object();
+
+            allTrx.InvestorId = InvestorId;
+            allTrx.AllTypeId = AllTypeId;
+
+
+            var json = JSON.stringify(allTrx);
+            if(InvestorId != 0 && $("#InvestorCode").val() != "")
+            {
+               // if (AllTypeId.length != 0) {
+
+                    $.ajax({
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("EmaulSMSAccessSave", "SMS", "http")',
+                        type: "POST",
+                        dataType: 'json',
+                        async: true,
+                        data: json,
+                        success: function (Result) {
+                            $("#hdnInvestorId").val(0);
+                            $("#InvestorCode").val("");
+                            $(".clChEmSMSType").prop("checked", false);
+                            $.alert.open("info", "Save successfull .....");
+
+                        },
+                        error: function (Result) {
+                            $("#AjaxLoader").hide();
+                            $.alert.open("error", Result);
+                        }
+                    });
+                //}
+                //else {
+                //    $.alert.open("error", "check at least 1");
+                //}
+            }
+            else
+            {
+                $.alert.open("error","Insert Investor code");
+            }
+           
+    
+    }
+    $(document).ready(function () {
+
+        $("#hdnInvestorId").val(0);
+
+        GetEmailSMSType();
+
+        $("#InvestorCode").blur(function () {
+            if ($("#InvestorCode").val().trim() != "") {
+                GetInvestorbyCode();
+            }
+        });
+
+        $("#btnSubmit").click(function (e) {
+            e.preventDefault();
+            EmaulSMSAccessSave();
+        });
+
+    });
+
+</script>
+    @Html.AntiForgeryToken()
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">&nbsp;&nbsp; Email & SMS Access Configuration</h3>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <br />
+                <input type="hidden" id="hdnInvestorId" />
+                <div class="row">
+                    @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                        @Html.Editor("InvestorCode", new { htmlAttributes = new { @class = "form-control", @autofocus = "autofocus" } })
+                    </div>
+                </div>
+                <br />
+                <br />
+                <div class="row">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-8" id="divEmailSMSType">
+                    </div>
+                </div>
+                    <br />                 
+                <div class="panel-footer">
+
+                  
+                    <div class="row">
+                        <div class="col-sm-12 text-center">
+                            <input type="button" name="btnSubmit" id="btnSubmit" class="btn btn-sm btn-success" value="Save" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+

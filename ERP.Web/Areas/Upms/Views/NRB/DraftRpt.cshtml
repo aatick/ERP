@@ -1,0 +1,317 @@
+﻿@using Upms.Data.UPMSDataModel
+@{
+    ViewBag.Title = "Draft";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var companies = (List<IPODeclaration>)ViewBag.Companies;
+}
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+
+<link href="~/Content/css/bpopupStyle.css" rel="stylesheet" />
+<script src="~/Content/js/jquery.bpopup.min.js"></script>
+
+<script type="text/javascript">
+
+    function GetEmployeebyCode() {
+
+        var EmployeeCode = $("#txtEmployee").val();
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBrokerEmoloyeeList", "IPO", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { EmployeeCode: EmployeeCode },
+            success: function (EmployeeList) {
+                $.each(EmployeeList, function (id, option) {
+                    $("#txtEmployee").val(option.EmployeeName);
+                    $("#hdnEmployeeId").val(option.Id);
+
+                });
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+    var AllEmployeeList = [];
+
+    function GetBrokerEmoloyeeList() {
+
+        $('#txtEmployee').attr("placeholder", "Loading . .. ... ....")
+        var IPODeclarationId = $("#cmbCompany").val();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBrokerEmoloyeeList", "IPO", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { EmployeeCode: "" },
+            success: function (EmployeeList) {
+                $.each(EmployeeList, function (id, option) {
+                    var obj2 = new Object();
+                    obj2.key = option.Id;
+                    obj2.value = option.EmployeeName;
+
+                    AllEmployeeList[AllEmployeeList.length] = obj2;
+                });
+                $('#txtEmployee').removeAttr("placeholder")
+            },
+            failure: function () {
+                $('#txtEmployee').removeAttr("placeholder")
+                $.alert.open("error", "Failed!");
+            }
+        });
+
+        $('#txtEmployee').autocomplete({
+            source: AllEmployeeList,
+            select: function (event, ui) {
+
+                $("#txtEmployee").val(ui.item.value);
+                $("#hdnEmployeeId").val(ui.item.key);
+                $("#hdnMode").val("A");
+            }
+        });
+    }
+
+
+
+    function GetBankList() {
+
+        var ddlBankList = $("#ddlBankId");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBankInfo", "LookupBank", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (BankList) {
+                ddlBankList.html('');
+                ddlBankList.append($('<option></option>').val("0").html("All"));
+                $.each(BankList, function (id, option) {
+                    ddlBankList.append($('<option></option>').val(option.Id).html(option.BankName));
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetBankBranchList() {
+        var ddlBankBranch = $("#ddlBankBranchId");
+        var BankId = $("#ddlBankId").val();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBankBranchList", "InvestorDetail", "http")',
+            data: { BankId: BankId },
+            dataType: 'json',
+            async: true,
+            success: function (BankBrach) {
+                ddlBankBranch.html('');
+                ddlBankBranch.append($('<option></option>').val("0").html("All"));
+                $.each(BankBrach, function (id, option) {
+                    ddlBankBranch.append($('<option></option>').val(option.Id).html(option.BranchName));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+    $(document).ready(function () {
+
+        GetBankList();
+
+        GetBrokerEmoloyeeList();
+
+        $("#hdnEmployeeId").val(0)
+        $("#txtEmployee").focus(function () {
+            $("#hdnMode").val("B");
+        });
+
+        $("#ddlBankId").change(function () { if ($("#ddlBankId").val() != "" && $("#ddlBankId").val() != null) { GetBankBranchList(); } });
+
+
+        $("#cmbCompany").focus();
+        $(".IpoApplication").show();
+
+        $("#txtEmployee").blur(function () {
+            if ($("#hdnMode").val() != "A" && $("#txtEmployee").val() != "") {
+                GetEmployeebyCode();
+            }
+
+        });
+
+
+        
+        
+        $("#txtFromDate").on("change", function () {
+            var fromDate = $("#txtFromDate").val();
+            $("#txtToDate").datepicker('option', { minDate: fromDate });
+        });
+        $("#txtToDate").on("change", function () {
+            var toDate = $("#txtToDate").val();
+            $("#txtFromDate").datepicker('option', { maxDate: toDate });
+        });
+
+
+
+       
+
+       
+
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+
+            var IpoDeclarationId = $("#cmbCompany").val(); 
+            var UserId = 0;
+            if ($("#hdnEmployeeId").val() != "")
+            {
+                UserId = $("#hdnEmployeeId").val();
+            }
+            else
+            {
+                UserId = 0;
+            }
+            var FromDate = $("#txtFromDate").val();
+            var ToDate = $("#txtToDate").val();
+            var BankId = $("#ddlBankId").val();
+            var BankBranchId = 0;
+            if($("#ddlBankBranchId").val() != "")
+            {
+                BankBranchId = $("#ddlBankBranchId").val();
+            }
+            else
+            {
+                BankBranchId = 0;
+            }
+            
+            var OrderBy = $("#ddlOrderBy").val();
+
+            var url = '/NRB/IPO_NRB_DraftReport?reportNo=1&IpoDeclarationId=' + IpoDeclarationId + '&UserId=' + UserId + '&FromDate=' + FromDate + '&ToDate=' + ToDate + '&BankId=' + BankId + '&BankBranchId=' + BankBranchId + '&OrderBy=' + OrderBy + '&exportType=' + $("#cmbReportType").val();
+            $("#hdnEmployeeId").val(0);
+            window.open(url);
+
+        });
+    });
+
+</script>
+@using (Html.BeginForm("IpoRpt", "IPO", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "ApoForm" }))
+{
+    @Html.AntiForgeryToken()
+
+
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">&nbsp;&nbsp; Draft Report</h3>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div id="AjaxLoader" class="ajaxLoader"></div>
+                <div class="x_title">
+                    <input type="hidden" id="hdnEmployeeId" />
+                    <input type="hidden" id="hdnMode" />
+                </div>
+                <div class="x_content">
+                    <br />
+
+                    <div class="row form-group">
+                        @Html.Label("IPO Company", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <select class="input-sm form-control bordercss" id="cmbCompany">
+                                <option value="0">All</option>
+                                @foreach (var company in companies)
+                                {
+                                    <option value="@company.Id">@(company.CompanyName + " (" + company.TradingCode + ")")</option>
+                                }
+                            </select>
+                        </div>
+                        @Html.Label("User", htmlAttributes: new { @class = "control-label col-md-1" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <input type="text" class="input-sm form-control" id="txtEmployee" />
+                        </div>
+                    </div>
+                    <div class="row form-group IpoApplication">
+                        @Html.Label("From Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <input type="text" class="input-sm form-control DateInput check-date" id="txtFromDate" />
+                        </div>
+                        @Html.Label("To Date", htmlAttributes: new { @class = "control-label col-md-1" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <input type="text" class="input-sm form-control DateInput check-date" id="txtToDate" />
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Bank", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4">
+                            @Html.DropDownList("BankList", null, new { @id = "ddlBankId", @class = "form-control bordercss" })
+                        </div>
+                        @Html.Label("Branch", htmlAttributes: new { @class = "control-label col-md-1" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.DropDownList("BankBranchlist", null, new { @id = "ddlBankBranchId", @class = "form-control bordercss" })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Order By", new { @class = "control-label col-sm-2" })
+                        <div class="col-sm-4">
+                            <select class="input-sm form-control bordercss" id="ddlOrderBy">
+                                <option value="1" selected="selected">Investor</option>
+                                <option value="2">Bank</option>
+                                <option value="3">FDD Number</option>
+                            </select>
+                        </div>
+                        @Html.Label("Report Type", new { @class = "control-label col-sm-1" })
+                        <div class="col-sm-4">
+                            <select class="input-sm form-control bordercss" id="cmbReportType">
+                                <option value="Pdf" selected="selected">Pdf</option>
+                                <option value="ExcelBook">Microsoft Excel</option>
+                                <option value="Excel">Microsoft Excel (97-2003)</option>
+                                <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                                <option value="Word">Microsoft Word (97-2003)</option>
+                                <option value="XML">XML</option>
+                            </select>
+                        </div>
+                        
+                    </div>
+                    <div class="ln_solid"></div>
+                    <div class="row form-group">
+                        <div class="col-md-3"></div>
+                        <div class="col-md-3">
+                            <button type="submit" id="btnSearch" class="btn btn-primary">View</button>
+                        </div>
+                    </div>
+
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+
+

@@ -1,0 +1,277 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+
+<style>
+    .required {
+        color: red;
+    }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+
+<script type="text/javascript">
+
+    @*function GetMarketSector() {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetMarketSector", "MarketSector", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { },
+            success: function (SectorInfo) {
+                var dtTable = $('#tblSector');
+                var tableBody = dtTable.find('tbody');
+                tableBody.empty();
+                var Index = 1;
+                $.each(SectorInfo, function (id, e) {
+                    tableBody.append('<tr id="' + e.Id + '">' +
+                                    '<td>' + Index + '</td>' +
+                                    '<td>' + e.SectorName + '</td>' +
+                                    '<td>' + e.ShortName + '</td>' +
+                                    '<td> <a href="#" title="Edit" onclick=" LoadEditData(' + e.Id + ',' + "'" + e.ShortName + "'" + ',' + "'" + e.SectorName + "'" + ')" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i><a href="#" title="Delete" onclick="MarketSectorDelete(' + e.Id + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></a></td>' +
+                                    '</tr>')
+                    Index = Index + 1;
+                });
+            },
+            failure: function () {
+
+            }
+        });
+    }*@
+    var record = 0;
+    function GetMarketSector() {
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetMarketSector", "MarketSector", "http")',
+                    dataType: "json",
+                    data: {}
+                }
+            },
+            pageSize: 20,
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 600,
+            groupable: true,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+             {
+                 template: "#= ++record #",
+                 title: "SL",
+                 width: 90
+             },
+            {
+                field: "SectorName",
+                title: "Sector Name",
+                groupable: false
+            },
+            {
+                field: "ShortName",
+                title: "Short Name"
+
+            },
+             {
+                 title: "Action",
+                 width: "10%",
+                 template: function (dataItem) {
+                     return '<a href="#" title="Edit" onclick=" LoadEditData(' + dataItem.Id + ',' + "'" + dataItem.ShortName + "'" + ',' + "'" + dataItem.SectorName + "'" + ')" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a>';//<a href="#" title="Delete" onclick="MarketSectorDelete(' + e.Id + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i>
+                 }
+             },
+            ],
+            dataBinding: function () {
+                record = (this.dataSource.page() - 1) * this.dataSource.pageSize();
+            }
+        });
+    }
+
+
+
+
+    function LoadEditData(Id, ShortName, SectorName) {
+        $("#hdnMarketSectorId").val(Id);
+        $("#txtSectorName").val(SectorName)
+        $("#txtShortName").val(ShortName)
+    }
+
+    function MarketSectorDelete(Id) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("MarketSectorDelete", "MarketSector", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (result) {
+                        $.alert.open("info", "Delete successfull");
+                        GetMarketSector();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+
+
+
+    $(document).ready(function () {
+        GetMarketSector();
+
+        $("#hdnMarketSectorId").val("");
+
+        $("#btnSave").click(function (e) {
+
+            e.preventDefault();
+            var sectorName = $("#txtSectorName").val().trim();
+            var shortName = $("#txtShortName").val().trim();
+            if (sectorName != "" && shortName != "") {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveMarketSector", "MarketSector", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { SectorName: sectorName, ShortName: shortName, MarketSectorId: $("#hdnMarketSectorId").val() },
+                    success: function (data) {
+                        $("#txtSectorName").val("")
+                        $("#txtShortName").val("");
+                        $.alert.open(data.Result, data.Message);
+                    },
+                    error: function () {
+                        $(".failed").show(800).fadeToggle(3000);
+                    }
+                });
+            }
+            else {
+                $.alert.open("error", "Insert required field");
+            }
+
+
+        });
+        $("#btnNew").on("click", function () {
+            location.reload();
+        });
+
+    });
+
+</script>
+
+
+@using (Html.BeginForm("Index", " MarketSector", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "MarketSectorForm" }))
+{
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:100%;">
+            <h3 style="color: white;padding:2px">Securities Sector Information</h3>
+        </div>
+    </div>
+
+    <div class="x_panel">
+        <div class="x_title">
+
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <br />
+            <form id="demo-form2" data-parsley-validate>
+                <div id="AjaxLoader" class="ajaxLoader"></div>
+                <div class="item form-group">
+                    <input type="hidden" id="hdnMarketSectorId" />
+
+                    @Html.Label("Sector Name", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                    <span class="required"></span>
+                    <div class="col-md-5 col-sm-6 col-xs-12">
+                        @Html.Editor("SectorName", new { htmlAttributes = new { @class = "form-control", @id = "txtSectorName" } })
+                    </div>
+
+                </div>
+                <div class="item form-group">
+                    @Html.Label("Short Name", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                    <span class="required"></span>
+                    <div class="col-md-5 col-sm-6 col-xs-12">
+                        @Html.Editor("ShortName", new { htmlAttributes = new { @class = "form-control", @id = "txtShortName" } })
+                    </div>
+                </div>
+                <div class="item form-group">
+                    <div class="col-md-3 col-sm-6 col-xs-12">
+                    </div>
+                    <div class="col-md-3 col-sm-6 col-xs-12">
+                        <button type="submit" id="btnSave" class="btn btn-success">Save</button>
+                        <input type="button" id="btnNew" class="btn btn-success" value="Add New" />
+                    </div>
+
+                </div>
+
+                <div class="ln_solid"></div>
+                <div class="item form-group">
+                    <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                        <div class="success" role="alert" style="display:none">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <p class="message-content">Saved Sucessfully</p>
+                        </div>
+                        <div class="failed" role="alert" style="display:none">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <p class="message-content">Fail to save</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="block_content">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div id="grid"></div>
+                        </div>
+                    </div>
+                    @*<table id="tblSector" class="table table-striped jambo_table bulk_action">
+                            <thead>
+                                <tr>
+                                    <th>SL</th>
+                                    <th>Sector Name</th>
+                                    <th>Short Name</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>*@
+                </div>
+            </form>
+        </div>
+    </div>
+
+}
+
+
+
+

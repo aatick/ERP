@@ -1,0 +1,279 @@
+﻿@using Upms.Data.UPMSDataModel
+@{
+    ViewBag.Title = "CDBL Share In Rate Setup";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var files = (List<TradeUploadFileInformation>)ViewBag.Files;
+    var companies = (List<CompanyInformation>)ViewBag.Companies;
+}
+<style type="text/css">
+    .panel-custom > .panel-heading {
+        color: #FFFFFF !important;
+    }
+
+    .panel-custom .panel-body .row:not(:last-child) {
+        margin-bottom: 10px;
+    }
+
+    .panel-custom .radio {
+        margin-top: 0px;
+    }
+
+    .panel-custom .radio-text, .panel-custom .panel-body input[type=text] {
+        color: #73879C;
+    }
+
+    .panel-custom .label-container {
+        text-align: right;
+    }
+
+    input[type=text]:read-only {
+        background: #FFFFFF;
+        cursor: default;
+    }
+
+    #error > .panel {
+        margin-bottom: 20px;
+    }
+
+        #error > .panel > .panel-heading {
+            padding: 0px 5px 0px 15px;
+        }
+
+    .radio-container label {
+        cursor: pointer;
+        padding: 5px;
+    }
+
+        .radio-container label.active {
+            background: #0e73a9;
+            border-radius: 4px;
+            /*margin-left: 10px;*/
+        }
+
+            .radio-container label.active span.radio-text {
+                color: #FFFFFF;
+            }
+
+    .market {
+        width: 70px;
+    }
+
+    .account-type {
+        width: 170px;
+    }
+</style>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="panel panel-success panel-custom">
+            <div class="panel-heading PageHeader">
+                <h3 class="panel-title">CDBL Share In Rate Setup</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Transaction Date :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-8">
+                        <input type="text" id="txtTransactionDate" class="input-sm form-control DateInput check-date" placeholder="dd/mm/yyyy" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Share Type :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-8">
+                        <select class="input-sm form-control" id="cmbFiles">
+                            <option value="0">Select File</option>
+                            @foreach (var file in files)
+                            {
+                                <option value="@file.Id">@file.FileName (@file.CDBLFileName)</option>
+
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Company :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-8">
+                        <select class="input-sm form-control" id="cmbCompany">
+                            <option value="0">Select Company</option>
+                            @foreach (var company in companies.OrderBy(x => x.CompanyName).ToList())
+                            {
+                                <option value="@company.Id" data-market-rate="@company.MarketPrice">@company.CompanyName (@company.CompanyShortName)</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Investor Code :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="text" id="txtInvestorCode" class="input-sm form-control" />
+                    </div>
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("BO ID :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="text" id="txtBOID" class="input-sm form-control" />
+                    </div>
+                    @*<div class="col-sm-12" style="height: 1px; border-bottom: 1px solid #DDDDDD; margin-top: 10px;"></div>*@
+                </div>
+
+
+            </div>
+            <div class="panel-footer">
+                <div class="row">
+                    <div class="col-sm-12 text-center">
+                        <input type="button" name="btnSearch" id="btnSearch" class="btn btn-sm btn-success" value="Search" />
+                    </div>
+                </div>
+                <div class="row" style="background: #FFFFFF; border: 1px solid #DDDDDD; padding: 10px; margin-bottom: 10px;">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Rate Type :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="row radio-container">
+                            <label class="col-sm-6">
+                                <input type="radio" class="radio radio-inline" value="1" name="rateType" /> <span class="radio-text">Market Rate</span>
+                            </label>
+                            <label class="col-sm-6">
+                                <input type="radio" checked="checked" class="radio radio-inline" value="0" name="rateType" /> <span class="radio-text">User Defined</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Rate :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="number" class="form-control input-sm" id="txtRate" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12 text-center">
+                        <input type="button" name="btnSubmit" id="btnSubmit" class="btn btn-sm btn-success" value="Submit" />
+                        <input type="button" name="btnReset" id="btnReset" class="btn btn-sm btn-success" value="Reset" />
+                    </div>
+                </div>
+                <table data-file-id="0" class="table table-bordered table-responsive" id="tblShares" style="background: #FFF;">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Sl.</th>
+                            <th class="text-center">Transaction Date</th>
+                            <th class="text-center">Investor Code</th>
+                            <th>Investor Name</th>
+                            <th>Company Name</th>
+                            <th class="text-center">Share In Type</th>
+                            <th class="text-right">Quantity</th>
+                            <th class="text-right">Rate</th>
+                            <th class="text-center"><input type="checkbox" class="checkbox checkbox-inline" id="chkAll" /></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("[name=rateType],#cmbCompany").on("change", function () {
+            marketRateSetup();
+        });
+
+        function marketRateSetup() {
+            if ($("[name=rateType]:checked").val() == "1") {
+                $("#txtRate").prop("readonly", true).prop("disabled", true).val($("#cmbCompany option:selected").attr("data-market-rate"));
+            } else {
+                $("#txtRate").prop("readonly", false).prop("disabled", false).val("");
+            }
+        }
+
+        $("#btnSearch").on("click", function () {
+            return getShareInInformation();
+        });
+
+        function getShareInInformation() {
+            var transDate = $("#txtTransactionDate").val().trim();
+            var fileId = $("#cmbFiles").val();
+            var comId = $("#cmbCompany").val();
+            var code = $("#txtInvestorCode").val().trim();
+            var bo = $("#txtBOID").val().trim();
+            if (transDate == "") {
+                $.alert.open("Error!", "Please enter transaction date.");
+                return false;
+            }
+            if (fileId == "0") {
+                $.alert.open("Error!", "Please select share in type.");
+                return false;
+            }
+            //if (comId == "0") {
+            //    $.alert.open("Error!", "Please select a company.");
+            //    return false;
+            //}
+            var jsonData = { fileId: fileId, transactionDate: transDate, companyId: comId, code: code, bo: bo };
+            $.ajax({
+                type: "Post",
+                url: '@Url.Action("GetShareInInformation", "Trade")',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(jsonData),
+                dataType: "json",
+                success: function (data) {
+                    var html = "";
+                    $.each(data, function (i, d) {
+                        html += '<tr>';
+                        html += '<td>' + (i + 1) + '</td>';
+                        html += '<td class="text-center">' + d.Date + '</td>';
+                        html += '<td class="text-center">' + d.InvestorCode + '</td>';
+                        html += '<td>' + d.Name + '</td>';
+                        html += '<td>' + d.Company + '</td>';
+                        html += '<td  class="text-center">' + d.Type + '</td>';
+                        html += '<td  class="text-right">' + d.Quantity + '</td>';
+                        html += '<td  class="text-right">' + d.Rate + '</td>';
+                        html += '<td  class="text-center"><input type="checkbox" value="' + d.Id + '" class="checkbox checkbox-inline check-box" /></td>';
+                        html += '</tr>';
+                    });
+                    $("#tblShares tbody").html(html);
+                    $("#tblShares").attr("data-file-id", fileId);
+                },
+            });
+            return true;
+        }
+
+        $("#chkAll").on("change", function () {
+            $(".check-box").prop("checked", $(this).is(":checked"));
+        });
+        $("#btnSubmit").on("click", function () {
+            var rate = $("#txtRate").val().trim();
+            if (rate == "") {
+                $.alert.open("Error!", "Please enter share in rate.");
+                return false;
+            }
+            var idList = [];
+            $(".check-box:checked").each(function (i, d) {
+                idList.push($(this).val());
+            });
+            if (idList.length == 0) {
+                $.alert.open("Error!", "No row selected to update rate.");
+                return false;
+            }
+            var jsonData = { fileId: $("#tblShares").attr("data-file-id"), rate: rate, id: idList.join(",") };
+            $.ajax({
+                type: "Post",
+                url: '@Url.Action("SetShareInRate", "Trade")',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(jsonData),
+                dataType: "json",
+                success: function (data) {
+                    $.alert.open("Successfull!", "Rate set up completed successfully.", function () {
+                        $("#chkAll").prop("checked", false);
+                        getShareInInformation();
+                    });
+                },
+            });
+            return true;
+        });
+    });
+</script>

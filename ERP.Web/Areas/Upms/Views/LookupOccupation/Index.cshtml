@@ -1,0 +1,251 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+<style>
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+<script type="text/javascript">
+
+    @*function GetOccupation() {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetOccupation", "LookupOccupation", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { },
+            success: function (OccupationInfo) {
+                var dtTable = $('#tblOccupation');
+                var tableBody = dtTable.find('tbody');
+                tableBody.empty();
+                var Index = 1;
+                $.each(OccupationInfo, function (id, e) {
+                    tableBody.append('<tr id="' + e.Id + '">' +
+                                    '<td>' + Index + '</td>' +
+                                    '<td>' + e.Occupation + '</td>' +
+                                    '<td><a href="#" title="Edit" onclick=" LoadEditData(' + e.Id + ',' + "'" + e.Occupation + "'" + ')" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i><a href="#" title="Delete" onclick="OccupationDelete(' + e.Id + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></a></td>' +
+                                    '</tr>')
+                    Index = Index + 1;
+                });
+            },
+            failure: function () {
+
+            }
+        });
+    }*@
+    function GetOccupation() {
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetOccupation", "LookupOccupation", "http")',
+                    dataType: "json",
+                    data: {}
+                }
+            },
+            pageSize: 20,
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 700,
+            groupable: true,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+           {
+               field: "RowSl",
+               title: "SL",
+               width: "15%"
+           },
+
+            {
+                field: "Occupation",
+                title: "Occupation ",
+            },
+           
+             {
+                 title: "Action",
+                 width: "10%",
+                 template: function (dataItem) {
+                     return '<a href="#" title="Edit" onclick="LoadEditData(' + dataItem.Id + ',' + "'" + dataItem.Occupation + "'" + ')" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a>';
+                 }
+             },
+            ]
+        });
+    }
+
+
+
+
+    function LoadEditData(Id, Occupation)
+    {
+        $("#hdnOccupationId").val(Id);
+        $("#txtOccupation").val(Occupation)
+    }
+
+    function OccupationDelete(Id) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("OccupationDelete", "LookupOccupation", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (result) {
+                        $.alert.open("info","Delete successfull");
+                        GetOccupation();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+
+
+
+    $(document).ready(function () {
+        GetOccupation();
+
+        $("#hdnOccupationId").val("0");
+
+        $("#btnSave").click(function (e) {
+
+            e.preventDefault();
+
+            if ($("#txtOccupation").val() != "") {
+                    $.ajax({
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("SaveOccupation", "LookupOccupation", "http")',
+                        type: "GET",
+                        dataType: 'json',
+                        async: true,
+                        data: { OccupationName: $("#txtOccupation").val(), OccupationId: $("#hdnOccupationId").val() },
+                        success: function (result) {
+                            if (result == 1) {
+                                $("#txtOccupation").val("");
+                               
+                                $("#hdnOccupationId").val("0");
+                                $(".success").show(800).fadeToggle(3000);
+                                GetOccupation();
+                            }
+                            else {
+                                $(".failed").show(800).fadeToggle(3000);
+                            }
+                        },
+                        error: function () {
+                            // alert("Fail to save");
+                            $(".failed").show(800).fadeToggle(3000);
+                        }
+                    });
+
+
+                }
+                else {
+                    $.alert.open("error", "Insert required field");
+                }
+
+
+        });
+
+    });
+
+</script>
+
+
+@using (Html.BeginForm("Create", "LookupOccupation", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "LookupOccupationForm" }))
+{
+     <div class="page-title">
+        <div class="title_left PageHeader" style="width:100%;">
+            <h3 style="color: white;padding:2px">Occupation Info</h3>
+        </div>
+       </div>
+    
+    <div class="x_panel">
+        <div class="x_title">
+            <input type="hidden" id="hdnOccupationId" />
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <br />
+            <form id="demo-form2" data-parsley-validate>
+                <div id="AjaxLoader" class="ajaxLoader"></div>
+                <div class="item form-group">
+                    @Html.Label("Occupation", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12 required" })
+                    <div class="col-md-5 col-sm-6 col-xs-12">
+                        @Html.Editor("Occupation", new { htmlAttributes = new { @class = "form-control", @placeholder = "Occupation",@id="txtOccupation" } })
+                    </div>
+                    <div class="col-md-3 col-sm-6 col-xs-12">
+                        <button type="submit" id="btnSave" class="btn btn-success">Save</button>
+                    </div>
+
+                </div>
+
+                <div class="ln_solid"></div>
+                <div class="item form-group">
+                    <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                        <div class="success" role="alert" style="display:none">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <p class="message-content">Saved Sucessfully</p>
+                        </div>
+                        <div class="failed" role="alert" style="display:none">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <p class="message-content">Fail to save</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="block_content">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div id="grid"></div>
+                        </div>
+                    </div>
+                    @*<table id="tblOccupation" class="table table-striped jambo_table bulk_action">
+                        <thead>
+                            <tr>
+                                <th>SL</th>
+                                <th>Occupation Name</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>*@
+                </div>
+            </form>
+        </div>
+    </div>
+
+}
+
+
+

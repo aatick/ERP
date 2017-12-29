@@ -1,0 +1,251 @@
+﻿@using Common.Data.CommonDataModel
+@using Upms.Data.UPMSDataModel
+@{
+    ViewBag.Title = "Investor Closing Balance Report";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var businessDay = (DateTime)ViewBag.BusinessDate;
+    //var reports = (List<ReportInformation>)ViewBag.Reports;
+    var branches = (List<BrokerBranch>)ViewBag.Branch;
+    var dpList = (List<BrokerDepositoryPariticipant>)ViewBag.DP;
+    var InvestorStatus = (List<InvestorsStatus>)ViewBag.InvestorStatus;
+}
+<style type="text/css">
+    .panel-custom > .panel-heading {
+        /*background: #26B99A !important;*/
+        color: #FFFFFF !important;
+    }
+
+    .panel-custom .panel-body .row:not(:last-child) {
+        margin-bottom: 10px;
+    }
+
+    .panel-custom .panel-body .radio {
+        margin-top: 0px;
+    }
+
+    .panel-custom .panel-body .radio-text, .panel-custom .panel-body input[type=text] {
+        color: #73879C;
+    }
+
+    .panel-custom .label-container {
+        text-align: right;
+    }
+
+    input[type=text]:read-only {
+        background: #FFFFFF;
+        cursor: default;
+    }
+
+    #error > .panel {
+        margin-bottom: 20px;
+    }
+
+        #error > .panel > .panel-heading {
+            padding: 0px 5px 0px 15px;
+        }
+
+    .radio-container label {
+        cursor: pointer;
+        padding: 5px;
+    }
+
+        .radio-container label.active {
+            background: #0e73a9;
+            border-radius: 4px;
+            /*margin-left: 10px;*/
+        }
+
+            .radio-container label.active span.radio-text {
+                color: #FFFFFF;
+            }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .condition-container > input[type=radio] {
+        margin-right: 10px;
+    }
+</style>
+<div class="row">
+    @*<div class="col-sm-offset-1 col-sm-12">*@
+    <div class="panel panel-success panel-custom">
+        <div class="panel-heading PageHeader">
+            <h3 class="panel-title">Closing Balance Report</h3>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-2 label-container">
+                    @Html.Label("As On Date :", new { @class = "control-label" })
+                </div>
+                <div class="col-sm-8">
+                    <input type="text" placeholder="dd/mm/yyyy" name="transactionDate" id="txtTransactionDate" class="input-sm form-control DateInput check-date" required="required" value="@businessDay.ToString("dd/MM/yyyy")" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-2 label-container">
+                    @Html.Label("Branch :", new { @class = "control-label" })
+                </div>
+                <div class="col-sm-8">
+                    <select class="input-sm form-control bordercss" id="cmbBranch">
+                        <option value="0">Select Branch</option>
+                        @foreach (var branch in branches)
+                        {
+                            <option value="@branch.Id">@branch.BrokerBranchName</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2 label-container">
+                    @Html.Label("DP :", new { @class = "control-label" })
+                </div>
+                <div class="col-sm-8">
+                    <select class="input-sm form-control bordercss" id="cmbDp">
+                        <option value="0">Select DP</option>
+                        @foreach (var dp in dpList)
+                        {
+                            <option value="@dp.Id">@dp.DepositoryParticipantName</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2 label-container">
+                    @Html.Label("Investor status", new { @class = "control-label" })
+                </div>
+                <div class="col-sm-8">
+                    <select class="input-sm form-control bordercss" id="ddlInvestorStatus">
+                        <option value="0">Select Investor Status</option>
+                        @foreach (var inv in InvestorStatus)
+                        {
+                            <option value="@inv.Id">@inv.InvestorStatus</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2 label-container">
+                    @Html.Label("Balance Type :", new { @class = "control-label" })
+                </div>
+                <div class="col-sm-8">
+                    <div class="row">
+                        <label class="col-sm-4">
+                            <input type="radio" class="radio radio-inline" checked="checked" name="balanceType" value="0" /> <span class="radio-text">All</span>
+                        </label>
+                        <label class="col-sm-4">
+                            <input type="radio" class="radio radio-inline" name="balanceType" value="1" /> <span class="radio-text">Debit Balance</span>
+                        </label>
+                        <label class="col-sm-4">
+                            <input type="radio" class="radio radio-inline" name="balanceType" value="2" /> <span class="radio-text">Credit Balance</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2 label-container">
+                    @Html.Label("Zero Share :", new { @class = "control-label" })
+                </div>
+                <div class="col-sm-8">
+                    <input type="checkbox" class="checkbox checkbox-inline" id="chkShare" /> <span class="radio-text">Yes</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2 label-container">
+                    @Html.Label("Condition :", new { @class = "control-label" })
+                </div>
+                <div class="col-sm-8">
+                    <select class="form-control input-sm bordercss" id="cmbCondition">
+                        <option value="0">Select Condition</option>
+                        <option value="1">Negative Balance (Debit&gt;Share Value)</option>
+                        <option value="2">Negative Balance (Debit&lt;=Share Value)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2 label-container">
+                    @Html.Label("Balance Range :", new { @class = "control-label" })
+                </div>
+                <div class="col-sm-3">
+                    <input type="number" class="form-control input-sm" id="txtBalanceFrom" />
+                </div>
+                <div class="col-sm-2 label-container">
+                    @Html.Label("To", new { @class = "control-label" })
+                </div>
+                <div class="col-sm-3">
+                    <input type="number" class="form-control input-sm" id="txtBalanceTo" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2 label-container">
+                    @Html.Label("Investor Code :", new { @class = "control-label" })
+                </div>
+                <div class="col-sm-8">
+                    <input type="text" id="txtInvestorCode" class="form-control input-sm" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2 label-container">
+                    @Html.Label("Report Type :", new { @class = "control-label" })
+                </div>
+                <div class="col-sm-8">
+                    <select class="input-sm form-control bordercss" id="cmbReportType">
+                        <option value="Pdf" selected="selected">Pdf</option>
+                        <option value="ExcelBook">Microsoft Excel</option>
+                        <option value="Excel">Microsoft Excel (97-2003)</option>
+                        <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                        <option value="Word">Microsoft Word (97-2003)</option>
+                        <option value="XML">XML</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="panel-footer">
+            <div class="row">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <input type="submit" name="btnShow" id="btnShow" class="btn btn-sm btn-success" value="Show" />
+                </div>
+            </div>
+        </div>
+    </div>
+    @*</div>*@
+</div>
+<script type="text/javascript" src="~/Scripts/jquery.maskedinput-1.3.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(document).on("click", "#btnShow", function () {
+            var date = $("#txtTransactionDate").val().trim();
+            var reportType = $("#cmbReportType").val();
+            var branchId = parseInt($("#cmbBranch").val());
+            var dpId = parseInt($("#cmbDp").val());
+            var code = $("#txtInvestorCode").val().trim();
+            var balanceType = parseInt($("input[type=radio][name=balanceType]:checked").val());
+            var hasZeroShare = $("#chkShare").is(":checked") ? 1 : 0;
+            var conditionType = parseInt($("#cmbCondition").val());
+            var balanceFrom = $("#txtBalanceFrom").val().trim();
+            var balanceTo = $("#txtBalanceTo").val();
+            var InvestorStatusId = $("#ddlInvestorStatus").val();
+            //if (balanceFrom == "")
+            //    balanceFrom = "NULL";
+            //if (balanceTo == "")
+            //    balanceTo = "NULL";
+            if (date == "") {
+                $.alert.open("Error", "Please enter as on date.");
+                return false;
+            }
+            //if (reportNo == 1)
+            //    window.open('/Report/ShowInstrumentWiseStockReport?date=' + date + '&dpId=' + dpId + '&branchId=' + branchId + '&companyId=' + companyId + '&code=' + code + '&type=' + reportType);
+            //if (reportNo == 2 || reportNo == 3)
+            window.open('/UPMS/Report/ShowClosingBalanceReport?date=' + date + '&dpId=' + dpId + '&branchId=' + branchId + '&code=' + code + '&balanceType=' + balanceType + '&zeroShare=' + hasZeroShare + '&condition=' + conditionType + '&balanceFrom=' + balanceFrom + '&balanceTo=' + balanceTo + '&type=' + reportType + '&InvestorStatusId=' + InvestorStatusId + "&reportNo=1");
+
+            return true;
+        });
+    });
+</script>

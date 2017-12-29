@@ -1,0 +1,268 @@
+﻿@using Common.Data.CommonDataModel
+@{
+    ViewBag.Title = "Client Ledger Report";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var businessDay = (DateTime)ViewBag.BusinessDate;
+    var reports = (List<ReportInformation>)ViewBag.Reports;
+}
+<style type="text/css">
+    .panel-custom > .panel-heading {
+        /*background: #26B99A !important;*/
+        color: #FFFFFF !important;
+    }
+
+    .panel-custom .panel-body .row:not(:last-child) {
+        margin-bottom: 10px;
+    }
+
+    .panel-custom .panel-body .radio {
+        margin-top: 0px;
+    }
+
+    .panel-custom .panel-body .radio-text, .panel-custom .panel-body input[type=text] {
+        color: #73879C;
+    }
+
+    .panel-custom .label-container {
+        text-align: right;
+    }
+
+    input[type=text]:read-only {
+        background: #FFFFFF;
+        cursor: default;
+    }
+
+    #error > .panel {
+        margin-bottom: 20px;
+    }
+
+        #error > .panel > .panel-heading {
+            padding: 0px 5px 0px 15px;
+        }
+
+    .radio-container label {
+        cursor: pointer;
+        padding: 5px;
+    }
+
+        .radio-container label.active {
+            background: #0e73a9;
+            border-radius: 4px;
+            /*margin-left: 10px;*/
+        }
+
+            .radio-container label.active span.radio-text {
+                color: #FFFFFF;
+            }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+    .loader {
+        border: 16px solid #1ABB9C;
+        border-radius: 50%;
+        border-top: 16px solid #3498db;
+        width: 120px;
+        height: 120px;
+        -webkit-animation: spin 2s linear infinite;
+        animation: spin 2s linear infinite;
+        position: absolute;
+        top: 40%;
+        left: 40%;
+    }
+
+    @@-webkit-keyframes spin {
+        0% {
+            -webkit-transform: rotate(0deg);
+        }
+
+        100% {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+<div class="row">
+    <div class="col-sm-offset-1 col-sm-10">
+        <div class="panel panel-success panel-custom">
+            <div class="panel-heading PageHeader">
+                <h3 class="panel-title">Client Ledger Report</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Report Name :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-10 radio-container">
+                        <div class="row">
+                            @for (var r = 0; r < reports.Count; r++)
+                            {
+                                <label class="col-sm-4 @(r==0?"active":"")">
+                                    <input type="radio" class="radio radio-inline" @(r == 0 ? "checked='checked'" : "") name="fileType" value="@reports[r].SerialNo" /> <span class="radio-text">@reports[r].ReportName</span>
+                                </label>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" id="divDateRange">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("From Date :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="text" placeholder="dd/mm/yyyy" name="transactionDateFrom" id="txtTransactionDateFrom" class="input-sm form-control DateInput check-date" required="required" value="@businessDay.ToString("dd/MM/yyyy")" />
+                    </div>
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("To Date :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="text" placeholder="dd/mm/yyyy" name="transactionDateTo" id="txtTransactionDateTo" class="input-sm form-control DateInput check-date" required="required" value="@businessDay.ToString("dd/MM/yyyy")" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Investor Code :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-8">
+                        <input type="text" id="txtInvestorCode" class="form-control input-sm" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Report Type :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-8">
+                        <select class="input-sm form-control bordercss" id="cmbReportType">
+                            <option value="Pdf" selected="selected">Pdf</option>
+                            <option value="ExcelBook">Microsoft Excel</option>
+                            <option value="Excel">Microsoft Excel (97-2003)</option>
+                            <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                            <option value="Word">Microsoft Word (97-2003)</option>
+                            <option value="XML">XML</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <div class="row">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <input type="submit" name="btnShow" id="btnShow" class="btn btn-sm btn-success" value="Show" />
+                        <input type="button" name="btnEmail" id="btnEmail" class="btn btn-sm btn-success" value="Send Email" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="loader" id="divLoader" style="display: none;"></div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("input[type=radio][name=fileType]").on("change", function () {
+            $(".radio-container label").removeClass("active");
+            $("input[type=radio][name=fileType]:checked").parents("label").addClass("active");
+        });
+        $(document).on("click", "#btnShow", function () {
+            if ($("input[type=radio][name=fileType]:checked").length == 0) {
+                $.alert.open("Warning!", "No report selected.");
+                return false;
+            }
+            var reportNo = parseInt($("input[type=radio][name=fileType]:checked").val());
+            var fromDate = $("#txtTransactionDateFrom").val().trim();
+            var toDate = $("#txtTransactionDateTo").val().trim();
+            var reportType = $("#cmbReportType").val();
+            var code = $("#txtInvestorCode").val().trim();
+            if (fromDate == "") {
+                $.alert.open("Error", "Please enter from date.");
+                return false;
+            }
+            if (toDate == "") {
+                $.alert.open("Error", "Please enter from date.");
+                return false;
+            }
+            if (code == "") {
+                $.alert.open("Error", "Please enter investor codes.");
+                return false;
+            }
+            if (reportNo == 1)
+                window.open('/UPMS/Report/ShowClientLedger?fromDate=' + fromDate + '&toDate=' + toDate + '&code=' + code + '&isHawlaWise=0&type=' + reportType + "&reportNo=" + reportNo);
+            else if (reportNo == 2)
+                window.open('/UPMS/Report/ShowClientLedger?fromDate=' + fromDate + '&toDate=' + toDate + '&code=' + code + '&isHawlaWise=1&type=' + reportType + "&reportNo=" + reportNo);
+
+            return true;
+        });
+        $(document).on("click", "#btnEmail", function () {
+            if ($("input[type=radio][name=fileType]:checked").length == 0) {
+                $.alert.open("Warning!", "No report selected.");
+                return false;
+            }
+            var reportNo = parseInt($("input[type=radio][name=fileType]:checked").val());
+            var fromDate = $("#txtTransactionDateFrom").val().trim();
+            var toDate = $("#txtTransactionDateTo").val().trim();
+            var reportType = $("#cmbReportType").val();
+            var code = $("#txtInvestorCode").val().trim();
+            if (fromDate == "") {
+                $.alert.open("Error", "Please enter from date.");
+                return false;
+            }
+            if (toDate == "") {
+                $.alert.open("Error", "Please enter from date.");
+                return false;
+            }
+            if (code == "") {
+                $.alert.open("Error", "Please enter investor code.");
+                return false;
+            }
+            if (code.indexOf(",") > 0 || code.indexOf("-") > 0) {
+                $.alert.open("Error", "Please type single investor.");
+                return false;
+            }
+            var isHawlaWise = 0;
+            if (reportNo == 1) {
+                isHawlaWise = 0;
+            }
+            else if (reportNo == 2) {
+                isHawlaWise = 1;
+            }
+            $("#divLoader").show();
+            $("body").css("pointer-events", "none");
+            var jsonData = { fromDate: fromDate, toDate: toDate, code: code, isHawlaWise: isHawlaWise, type: reportType };
+            $.ajax({
+                type: "Post",
+                url: '@Url.Action("EmailClientLedger", "Report")',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(jsonData),
+                dataType: "json",
+                success: function (data) {
+                    $("#divLoader").hide();
+                    $("body").css("pointer-events", "");
+                    if (data.Status == true) {
+                        $.alert.open("Success", data.Message);
+                    } else {
+                        $.alert.open("Error", data.Message);
+                    }
+                },
+                error: function (request, status, error) {
+                    $("#divLoader").hide();
+                    $("body").css("pointer-events", "");
+                    $.alert.open("Status", "An error occurred.<br/<br/>Please contact to your vendor.");
+                }
+            });
+            return true;
+        });
+    });
+</script>

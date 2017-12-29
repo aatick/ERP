@@ -1,0 +1,176 @@
+﻿
+@{
+    ViewBag.Title = "BlankReport";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<script type="text/javascript">
+    function SemesterLoad() {
+        var ddlSemester = $("#drpSemester");
+        $('#AjaxLoader').show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetSemesterListforTeacher", "PaymentSlip", "http")',
+            data: { ProgramId: 1 },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $('#AjaxLoader').hide();
+                ddlSemester.html('');
+                $.each(data, function (id, option) {
+                    ddlSemester.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });        
+    }
+
+    function SemesterwiseTeacherLoad(SemesterId) {
+        var ddlTeacher = $("#drpTeacher");
+        $('#AjaxLoader').show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetSemesterwiseTeacher", "MISReport", "http")',
+            data: { SemesterId: SemesterId },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $('#AjaxLoader').hide();
+                ddlTeacher.html('');
+                ddlTeacher.append($('<option></option>').val('0').html('Please Select'));
+                $.each(data, function (id, option) {                    
+                    ddlTeacher.append($('<option></option>').val(option.StaffId).html(option.StaffName));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function LoadCourse(SemesterId, StaffId) {
+        var ddlCourse = $("#drpCourse");
+        $('#AjaxLoader').show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetSemesterTeacherwiseCourse", "MISReport", "http")',
+            data: { SemesterId: SemesterId, StaffId: StaffId },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $('#AjaxLoader').hide();
+                ddlCourse.html('');
+                ddlCourse.append($('<option></option>').val('0').html('Please Select'));
+                $.each(data, function (id, option) {
+                    ddlCourse.append($('<option></option>').val(option.Course_Id).html(option.CourseName));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    $(document).ready(function () {
+        SemesterLoad();
+        $("#drpSemester").change(function () {
+            var SemId = $("#drpSemester option:selected").val();
+            SemesterwiseTeacherLoad(SemId);
+        });
+        $("#drpTeacher").change(function () {
+            var SemId = $("#drpSemester option:selected").val();
+            var StaffId = $("#drpTeacher option:selected").val();
+            LoadCourse(SemId, StaffId);
+        });
+        $("#btnView").click(function (e) {
+           
+            e.preventDefault();
+            var secCour = $("#drpCourse").val();
+
+            var cropPart = secCour.split("-");
+
+            var SectionId = cropPart[0];
+            var CourseId = cropPart[1];
+            var url;
+            var CourseId = CourseId;
+            var SectionId = SectionId;
+            if ($("#drpReport").val() == 'C') {
+                url = '/MISReport/GenerateAttendanceClassBlankReport?SemesterId=' + $("#drpSemester").val() + '&CourseId=' + CourseId + '&StaffId=' + $("#drpTeacher").val() + '&SectionId=' + SectionId;
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            }
+            else if ($("#drpReport").val() == 'E') {
+                url = '/MISReport/GenerateAttendanceExamBlankReport?SemesterId=' + $("#drpSemester").val() + '&CourseId=' + CourseId + '&StaffId=' + $("#drpTeacher").val() + '&SectionId=' + SectionId;
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            }
+            else if ($("#drpReport").val() == 'G') {
+                url = '/MISReport/GradeSheetTeacherwiseBlankSheet?SemesterId=' + $("#drpSemester").val() + '&CourseId=' + CourseId + '&SectionId=' + SectionId;
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+            }
+        });
+    });
+</script>
+@using (Html.BeginForm("Create", "MISReport", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "MisReportView" }))
+{
+    <div class="page-title">
+        <div class="title_left">
+            <h2>MIS Reports</h2>
+        </div>
+    </div>
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>Blank Reports</h2>
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <br />
+            <form id="demo-form2" data-parsley-validate>
+                <div id="AjaxLoader" class="ajaxLoader"></div>
+                <div class="form-inline" style="margin-left:15%">
+                    <div class="row">
+                        <div class="form-group" style="padding:10px;">
+                            <label style="padding-right: 20px; text-align: right">Semester</label>
+                            <select id="drpSemester" class="form-control" style="width: 200px;margin-left:12px"></select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group" style="padding:10px;">
+                            <label style="padding-right: 20px; text-align: right">Teacher</label>
+                            <select id="drpTeacher" class="form-control" style="width:200px;margin-left:20px"></select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group" style="padding:10px;">
+                                <label style="padding-right: 20px; text-align: right;">Course</label>
+                                <select id="drpCourse" class="form-control" style="width: 200px; margin-left: 25px"></select>                                
+                            </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group" style="padding:10px;">
+                            <label style="padding-right: 20px;">Reports</label>
+                            <select id="drpReport" class="form-control" style="width: 200px; margin-left: 20px">
+                                <option value="C">Blank Class Attendance</option>
+                                <option value="E">Blank Exam Attendance</option>
+                                <option value="G">Blank Grade Sheet</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group" style="margin-left:20%;">
+                            <button type="submit" id="btnView" class="btn btn-success" style="width:100px">View</button>
+                        </div>
+                    </div>                                        
+                </div>              
+            </form>
+        </div>
+    </div>
+}
+
