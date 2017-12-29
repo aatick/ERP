@@ -1,0 +1,165 @@
+﻿@model ERP.Web.ViewModels.AccAutoVoucherCollectionViewModel
+
+@{
+    ViewBag.Title = "AutoVoucherCollection";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var office = Model == null ? null : Model.officeListItems;
+}
+
+<h2></h2>
+
+<script type="text/javascript">
+
+    function displayLoanSummaryReport()
+    {
+
+        var startDate = $("#startDate").val();
+        var endDate = $("#endDate").val();
+        var reportParam = startDate + ',' + endDate;
+        var url = '/Report/Print?reportId=LoanSummary&reportparams=' + reportParam;
+        window.open(url, "_blank");
+    }
+
+    function displayProductReport() {
+
+        var processtDate = $("#processtDate").val();
+        var endDate = $("#endDate").val();
+        var reportParam = startDate + ',' + endDate;
+        var url = '/Report/Print?reportId=Product&reportparams=' + reportParam;
+        window.open(url, "_blank");
+    }
+
+
+    function autoVoucherCollection()
+    {
+
+        var businessDate = $("#BusinessDate").val();
+
+        $("#loading").show();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("AutoVoucherCollectionProcess", "AccAutoVoucherCollection", "http")',
+            data: {  businessDate: businessDate },
+            dataType: 'json',
+            async: true,
+            success: function (Result) {
+                $("#loading").hide();
+                if (Result == "1") {
+                    $.alert.open("error", "Please run the start work process");
+                }
+                else if (Result == "OK")
+                {
+                    $.alert.open("info", "Voucher Collection Process Completed Successfully");
+                }
+                else
+                {
+                    $.alert.open("error", "Please try again");
+                }
+            },
+            error: function (Result) {
+                $.alert.open("error", "Error: " + Result + "");
+            }
+        });
+    }
+    $(document).ready(function () {
+
+        confirmDayInitiated();
+        $("#confirmDlg").dialog({
+            autoOpen: false,
+            height: 150,
+            width: 400,
+            modal: true,
+            title: 'Confirmation',
+            buttons: {
+                "Yes": function () {
+                    autoVoucherCollection();
+                    $(this).dialog("close");
+                },
+                "No": function () {
+                    //alert("No Office selected. Employee office will be used.");
+                    $(this).dialog("close");
+                }
+            }
+        });
+        $('#BusinessDate').bind('focus', function (e) {
+            $("#dvMessage").hide();
+        });
+        $("#OfficeId").change(function () {
+            var officeId = $("#OfficeId").val();
+        });
+
+        $('#btnProcess').click(function (e) {
+           
+            e.preventDefault();
+            var bdate = $("#BusinessDate").val();
+            var msg = "Do you want to run the VoucherCollection Process? " + bdate.toString();
+            $("#lblMsg").text(msg);
+            $("#confirmDlg").dialog('open');
+        });
+
+    });
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        // $("#BusinessDate").datepicker();
+        $("#BusinessDate").datepicker({
+            dateFormat: "dd/mm/yy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true,
+            //yearRange: "2010:@DateTime.Today.Year",
+            //maxDate: "@DateTime.Today.ToString("dd/MM/yyyy")"
+        });
+     
+    });
+
+
+</script>
+
+@using (Html.BeginForm("Index", "AccCollection", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "AccCollectionForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">&nbsp;&nbsp;&nbsp; Auto Voucher Collection Process</h3>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                @Html.Label("Business Day", htmlAttributes: new { @class = "control-label" })
+
+                                @Html.EditorFor(model => model.BusinessDate, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => model.BusinessDate, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ln_solid"></div>
+                    <div class="form-group">
+                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            <input id="btnProcess" type="submit" value="Process" class="btn btn-primary" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@*@section Scripts {
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/gbUtility")
+
+}*@

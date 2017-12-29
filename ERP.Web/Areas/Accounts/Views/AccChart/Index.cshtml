@@ -1,0 +1,381 @@
+﻿@model ERP.Web.ViewModels.AccChartViewModel
+@{
+    ViewBag.Title = "Acc Code List";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    @*<link href="~/Content/jtable-custom.css" rel="stylesheet" />*@
+}
+
+<style>
+    /* Modal Content */
+    .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 40%;
+        height: 40%;
+        overflow: auto;
+    }
+    /* The Close Button */
+    .close {
+        color: red;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script type="text/javascript">
+
+    @*function grid_load() {
+        var dtTable = $('#tblTrxDetails');
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetVoucherList", "AccVoucherEntry", "http")',
+                data: {},
+                dataType: 'json',
+                async: true,
+                success: function (List_AccTrxMaster) {
+                    var tableBody = dtTable.find('tbody');
+                    tableBody.empty();
+                    $.each(List_AccTrxMaster, function (index, acc) {
+                        var sl = index + 1;
+                        tableBody.append('<tr id="tableRow">' +
+                                             '<td style="text-align:center;">' + sl + '</td>' +
+                                             '<td>' + acc.VoucherNo + '</td>' +
+                                             '<td>' + acc.TrxDtMsg + '</td>' +
+                                             '<td style="text-align:right;">' + acc.VoucherType + '</td>' +
+                                             '<td style="text-align:right;">' + acc.VoucherDesc + '</td>' +
+                                             '<td>' + acc.Reference + '</td>' +
+                                             '<td></td>' +
+                                             '</tr>')
+                    })
+                    $("#DivTableView").show();
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.status + "/" + error);
+                }
+            });
+        }*@
+
+
+    //function GetEditDataById(AccID,AccName,IsTransaction ,ModuleID)
+    //{
+    //    $("#hdnAccId").val(AccID);
+    //    if (IsTransaction == 'true')
+    //    {
+    //        $("#ckIsTransaction").prop("checked", true);
+    //    }
+
+    //    $("#AccName").val(AccName);
+    //    $("#ddlModule option:selected").val(ModuleID);
+
+    //    $("#ChartEdit").show();
+    //}
+
+    function GetEditDataById(Id) {
+        //window.location.href = "/Batch/Edit/" + BatchId;
+        var link = '@Url.Action("Edit", "AccChart", new { Area="Accounts",Id = -1 }, "http")';
+        link = link.replace("-1", Id);
+        window.location.href = link;
+    }
+
+
+    function GetAccCodeList() {
+        //alert("1")
+
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetAccCodeList", "AccChart", "http")',
+                    dataType: "json",
+                    data: {}
+                }
+            },
+            pageSize: 30,
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 1000,
+            groupable: true,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "AccID",
+                hidden: true,
+                filterable: false
+            },
+            //{
+            //    field: "RowSl",
+            //    title: "SL",
+            //    width: 90
+            //},
+            {
+                field: "AccCode",
+                title: "Account Code",
+                //groupable: false
+            },
+
+            {
+                field: "AccName",
+                title: "Name"
+
+            },
+             {
+                 field: "AccLevel",
+                 title: "Account Level"
+
+             },
+              {
+                  field: "FirstLevel",
+                  title: "First Level",
+
+              },
+            {
+                field: "SecondLevel",
+                title: "Second Level",
+            },
+             {
+                 field: "ThirdLevel",
+                 title: "Third Level"
+
+             },
+              {
+                  field: "FourthLevel",
+                  title: "Fourth Level",
+              },
+             {
+                 field: "CategoryName",
+                 title: "Category"
+
+             },//
+              //{
+              //    field: "ModuleID",
+              //    title: "Module",
+              //    template: function (dataItem)
+              //    {
+              //        if (dataItem.ModuleID == 1)
+              //        {
+              //            return 'Accounting';
+              //        }
+              //        else
+              //        {
+              //            return 'Portfolio'
+              //        }
+
+              //    },
+              //},
+               {
+                   field: "IsTransaction",
+                   title: "Transaction",
+                   template: function (dataItem) {
+                       return dataItem.IsTransaction;
+                   }
+               },
+
+            {
+                title: "Commands",
+                template: function (dataItem) {
+                    return '<a href="#"  onclick="GetEditDataById(' + dataItem.AccID + ')"  title="Edit" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a>'
+                    // return "<a href='#' data-toggle='tooltip' class='k-button k-button-icontext k-grid-Edit' title='Edit' onclick='GetEditDataById(" + dataItem.Id + ")'><i class='fa fa-pencil-square-o fa'></i></a>";
+                    //<a href='#' data-toggle='tooltip' class='k-button k-button-icontext k-grid-Edit' title='Delete' onclick='DeleteEmployeeInfoById(" + dataItem.Id + ")'><i class='fa fa-trash-o fa'></i></a>  <a href='#' data-toggle='tooltip'class='k-button k-button-icontext k-grid-Edit' title='Print' onclick='GetPrintDataById(" + dataItem.Id + ")'><i class='fa fa-print'></i></a>"
+
+                }
+            }
+            ]
+        });
+
+        $("#autoSearch").keyup(function () {
+            var selecteditem = $('#autoSearch').val();
+            var kgrid = $("#grid").data("kendoGrid");
+            selecteditem = selecteditem.toUpperCase();
+            var selectedArray = selecteditem.split(" ");
+            if (selecteditem) {
+                //kgrid.dataSource.filter({ field: "UserName", operator: "eq", value: selecteditem });
+                var orfilter = { logic: "or", filters: [] };
+                var andfilter = { logic: "and", filters: [] };
+                $.each(selectedArray, function (i, v) {
+                    if (v.trim() == "") {
+                    }
+                    else {
+                        $.each(selectedArray, function (i, v1) {
+                            if (v1.trim() == "") {
+                            }
+                            else {
+                                orfilter.filters.push({ field: "AccCode", operator: "contains", value: v1 },//;,
+                                                      { field: "AccName", operator: "contains", value: v1 },
+                                                     { field: "CategoryName", operator: "contains", value: v1 });
+                                andfilter.filters.push(orfilter);
+                                orfilter = { logic: "or", filters: [] };
+                            }
+
+                        });
+                    }
+                });
+                kgrid.dataSource.filter(andfilter);
+            }
+            else {
+                kgrid.dataSource.filter({});
+            }
+
+        });
+
+
+    }
+
+    $(document).ready(function () {
+        GetAccCodeList()
+
+        $(".close").click(function () {
+            $("#ChartEdit").hide();
+        });
+
+
+        $("#btnAccChartEdit").click(function () {
+
+
+            var AccID = $("#hdnAccId").val();
+            var IsTransaction = $("#ckIsTransaction").is(":checked");
+            var AccName = $("#AccName").val();
+            var ModuleID = $("#ddlModule option:selected").val();
+
+
+            $("#ChartEdit").hide();
+
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("AccChartEdit", "AccChart", "http")',
+                data: { AccID: AccID, IsTransaction: IsTransaction, AccName: AccName, ModuleID: ModuleID },
+                dataType: 'json',
+                async: true,
+                success: function (result) {
+                    $.alert.open("info", result);
+                    $("#grid").data("kendoGrid").dataSource.read();
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+
+        });
+
+    });
+
+</script>
+
+
+
+<div class="page-title">
+    <div class="title_left PageHeader" style="width:90%;">
+        <h3 style="color: white;padding:2px"> &nbsp;&nbsp;&nbsp; Account Code List</h3>
+
+    </div>
+    @Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-primary btn-sm pull-right" })
+</div>
+<div class="x_panel">
+    @*<div class="x_title">
+
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>*@
+    <div class="x_content">
+        <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left">
+            <div class="row">
+                <div class="form-group">
+                    @Html.Label("First Level", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-5">
+                        <input type="text" id="autoSearch" class="form-control" placeholder="Search by Account code,name,level,category" />
+                    </div>
+                    @*@Html.Label("Auto Search", htmlAttributes: new { @class = "control-label col-md-2"})
+                        <div class="col-md-5">
+                            <input type="text" id="autoSearch" class="form-control" placeHolder="Search by Account code,name,level,category" />
+                        </div>*@
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-sm-12">
+                    <div id="grid"></div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div id="ChartEdit" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+
+        <div style="padding:4px;height:30px;background-color:rgb(26,187, 156)"><span style="color:white;font-size:large">Account chart edit</span><span class="close">&times;</span></div>
+        <br />
+        <br />
+        <input type="hidden" id="hdnAccId" />
+        <fieldset>
+            <div class="row form-group">
+                @Html.Label("Acc Name", htmlAttributes: new { @class = "control-label col-md-3" })
+                <div class="col-md-8 col-sm-6 col-xs-12">
+                    @Html.Editor("AccName", new { htmlAttributes = new { @class = "form-control" } })
+                </div>
+            </div>
+            <div class="row form-group">
+                @Html.Label("Transaction", htmlAttributes: new { @class = "control-label col-md-3" })
+                <div class="col-md-8 col-sm-6 col-xs-12">
+                    @Html.CheckBox("ckIsTransaction", new { htmlAttributes = new { @class = "form-control" } })
+                </div>
+            </div>
+            <div class="row form-group">
+                @Html.Label("Module", htmlAttributes: new { @class = "control-label col-md-3" })
+                <div class="col-md-8 col-sm-6 col-xs-12">
+                    <select class="form-control bordercss" id="ddlModule">
+                        <option value="1">Accounting</option>
+                        <option value="2">Portfolio</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row form-group">
+                <div class="col-md-3 col-sm-6 col-xs-12">
+
+                </div>
+                <div class="col-md-8 col-sm-6 col-xs-12">
+                    <button type="submit" id="btnAccChartEdit" class="btn btn-success">Save</button>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+</div>

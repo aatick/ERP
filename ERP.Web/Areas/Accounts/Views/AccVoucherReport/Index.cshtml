@@ -1,0 +1,213 @@
+﻿@model ERP.Web.ViewModels.AccVoucherEntryViewModel
+
+@{
+    ViewBag.Title = "Vouchers";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var Vtype = Model == null ? null : Model.VoucherTypeList;
+    var VNo = Model == null ? null : Model.VoucherNoList;
+}
+
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#VoucherType").change(function () {
+            var voucherTypeId = $("#VoucherType").val();//
+            var trxDt = $("#txtDateFrom").val();
+            var trxDateTo = $("#txtDateTo").val();
+            ///var offcId = $("#OfficeID").val();
+            var ddlVoucher = $("#VoucherNo");
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetVoucherList", "AccVoucherReport", "http")',
+                data: { voucherTypeId: voucherTypeId, trxDt: trxDt, trxDateTo: trxDateTo },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    ddlVoucher.html('');
+                    ddlVoucher.append($('<option></option>').val('0').html('Please Select'));
+                    $.each(data, function (id, option) {
+                        ddlVoucher.append($('<option></option>').val(option.TrxMasterID).html(option.VoucherNo));
+                    });
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.status + "/" + error);
+                }
+            });
+        });
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+
+            var FromDate = $("#txtDateFrom").val();
+            var DateTo = $("#txtDateTo").val();
+            var VoucherTypeId = $("#VoucherType").val();
+
+
+            if (FromDate != "" && DateTo != "") {
+
+                var url = '/Accounts/AccVoucherReport/GenerateVoucherReport?rptslnx=1&FromDate=' + FromDate + '&DateTo=' + DateTo + '&VoucherTypeId=' + VoucherTypeId + '&voucher_id=' + $("#VoucherNo").val();//
+                    window.open(url);
+                
+                }
+            else {
+
+                $.alert.open("error","Insert date");
+            }
+            
+           
+            
+
+            //
+        });
+
+        $("#btnViewAuto").click(function (e) {
+            e.preventDefault();
+            if ($("#FromDate").val() != "" && $("#ToDate").val() != "")
+            {
+                var url = '/Accounts/AccVoucherReport/Auto_Voucher_Info?rptslnx=1&FromDate=' + $("#FromDate").val() + '&ToDate=' + $("#ToDate").val();
+                window.open(url);
+            }
+            else {
+                $.alert.open("error", "Insert Date");
+            }
+
+        });
+
+        //$("#FromDate").on("change", function () {
+        //    var fromDate = $("#FromDate").val();
+        //    $("#ToDate").datepicker('option', { minDate: fromDate });
+        //});
+        //$("#ToDate").on("change", function () {
+        //    var toDate = $("#ToDate").val();
+        //    $("#FromDate").datepicker('option', { maxDate: toDate });
+        //});
+    });
+</script>
+
+@using (Html.BeginForm("Index", "AccVoucherReport", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "AccVoucherReportForm" }))
+{    
+      @Html.AntiForgeryToken()
+    <div class="row">
+        <div class="col-sm-12">
+            <div id="AjaxLoader" class="ajaxLoader"></div>
+            <div class="panel panel-success panel-custom">
+                <div class="page-title">
+                    <div class="title_left PageHeader" style="width:90%;">
+                        <h3 style="color: white;padding:2px">&nbsp;&nbsp;&nbsp; Vouchers</h3>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-sm-12 info-container">
+                            <div class="col-md-12 col-sm-6 col-xs-12">
+                                <div class="x_panel">
+                                    <div class="x_content">
+                                        <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                                            <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                                               
+                                                <li role="presentation" class="active">
+                                                    <a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(26,187,156)">Manual Voucher</span>  &nbsp;&nbsp;&nbsp;&nbsp;</a>
+                                                </li>
+                                                <li role="presentation" class="">
+                                                    <a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(26,187,156)">Auto Vouchers</span>  &nbsp;&nbsp;&nbsp;&nbsp;</a>
+                                                </li>
+                                               
+                                            </ul>
+                                            <div id="myTabContent" class="tab-content">
+                                                <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+                                                    <br />
+
+                                                    <div class="item form-group">
+                                                        @Html.Label("Date From", new { @class = "control-label col-md-2 required" })
+                                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                                            <input type="text" class="input-sm form-control  DateInput check-date" id="txtDateFrom" />
+                                                            @*@Html.TextBox("txtDateFrom", new { @ID = "txtDateFrom", @class = "form-control DateInputRpt" })*@
+                                                            @Html.TextBoxFor(model => model.OfficeID, new { style = "display:none;" })
+                                                        </div>
+                                                    </div>
+                                                    <div class="item form-group">
+                                                        @Html.Label("Date To", new { @class = "control-label col-md-2 required" })
+                                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                                            <input type="text" class="input-sm form-control  DateInput check-date" id="txtDateTo" />
+                                                            @*@Html.TextBox("txtDateFrom", new { @ID = "txtDateFrom", @class = "form-control DateInputRpt" })*@
+                                                           
+                                                        </div>
+                                                    </div>
+                                                    <div class="item form-group">
+                                                        @Html.LabelFor(model => model.VoucherType, htmlAttributes: new { @class = "control-label col-md-2" })
+                                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                                            @Html.DropDownListFor(model => model.VoucherType, Vtype, new { @class = "form-control bordercss" })
+                                                            @Html.ValidationMessageFor(model => model.VoucherType, "", new { @class = "text-danger" })
+                                                        </div>
+                                                    </div>
+                                                    <div class="item form-group">
+                                                        @Html.LabelFor(model => model.VoucherNo, htmlAttributes: new { @class = "control-label col-md-2" })
+                                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                                            @Html.DropDownListFor(model => model.VoucherNo, VNo, new { @class = "form-control bordercss" })
+                                                            @Html.ValidationMessageFor(model => model.VoucherNo, "", new { @class = "text-danger" })
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="row">
+                                                        <div class="col-sm-2">
+
+                                                        </div>
+                                                        <div class="col-md-10" style="display:none">
+                                                            @Html.CheckBox("View", false, new { @ID = "chkDetail" })
+                                                            &nbsp;
+                                                            @Html.Label("View All Voucher", new { htmlAttributes = new { @class = "checkbox" } })
+                                                        </div>
+                                                    </div>
+                                                    <div class="ln_solid"></div>
+                                                    <div class="form-group">
+                                                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                                            <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+                                                    <br />
+                                                    
+                                                    <div class="item form-group">
+                                                        @Html.Label("Date From", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                                            @Html.Editor("FromDate", new { htmlAttributes = new { @class = "form-control  DateInput check-date" } })
+                                                        </div>
+                                                    </div>
+                                                    <div class="item form-group">
+                                                        @Html.Label("Date To", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                                            @Html.Editor("ToDate", new { htmlAttributes = new { @class = "form-control  DateInput check-date" } })
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div class="ln_solid"></div>
+                                                    <div class="form-group">
+                                                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                                            <input type="submit" value="View" class="btn btn-primary" id="btnViewAuto" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

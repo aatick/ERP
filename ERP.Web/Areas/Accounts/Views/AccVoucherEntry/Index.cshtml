@@ -1,0 +1,330 @@
+﻿@using Accounts.Data.AccountsDataModel
+@{
+    ViewBag.Title = "Voucher List";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var VoucherType = (List<AccVoucherType>)ViewBag.VoucherType;
+}
+
+
+
+<style type="text/css">
+    .tHead {
+        /*background-color: #D8D8D8;*/
+        font-family: Calibri;
+        color: Black;
+        font-weight: bold;
+        font-size: 15px;
+        padding: 3px 18px 3px 10px;
+        border-bottom: 1px solid black;
+        background: -webkit-linear-gradient(top, #FFFFFF, #ACACAC);
+        margin: 50px;
+        /*vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;*/
+    }
+
+    .tFoot {
+        background: linear-gradient(to bottom,#78b1ed 0%,#417bb5 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#78b1ed',endColorstr='#417bb5',GradientType=0);
+        border-color: #2b5177;
+        font-family: Arial;
+        color: #fff;
+        font-weight: bold;
+        font-size: 12px;
+        padding: 3px 18px 3px 10px;
+        border-bottom: 1px solid black;
+    }
+
+    #tableRow {
+        font-family: Arial;
+        color: Black;
+        font-size: 12px;
+        /*height:25px;*/
+    }
+
+        #tableRow:nth-child(odd) {
+            background-color: #E2E4FF;
+        }
+
+        #tableRow:nth-child(even) {
+            background-color: white;
+        }
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+</style>
+<script type="text/javascript">
+
+
+    function VoucherDelete(TrxMasterID) {
+
+
+        $.alert.open('confirm', 'Are you sure you want DELETE this voucher?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("VoucherDelete", "AccVoucherEntry", "http")',
+                    //url: 'AccVoucherEntry/VoucherDelete?TrxMasterID=' + TrxMasterID,
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { TrxMasterID: TrxMasterID },
+                    success: function (Result) {
+                        $("#grid").data("kendoGrid").dataSource.read();
+                    },
+                    error: function (Result) {
+                        alert(Result);
+                    }
+                });
+
+                return true;
+            }
+            else {
+                alert("Insert Cause");
+                return false;
+            }
+        });
+
+
+
+        @*if (confirm('Are you sure, you want to delete?') == true) {
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("VoucherDelete", "AccVoucherEntry", "http")',
+                //url: 'AccVoucherEntry/VoucherDelete?TrxMasterID=' + TrxMasterID,
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { TrxMasterID: TrxMasterID },
+                success: function (Result) {
+                    $("#grid").data("kendoGrid").dataSource.read();
+                },
+                error: function (Result) {
+                    alert(Result);
+                }
+            });
+        }*@
+    }
+   
+
+
+
+    function GetVoucherList() {
+        //alert("1")
+        //TrxFromDate  TrxToDate  ddlVoucherTypeId
+
+
+        var FromDate = $("#TrxFromDate").val();
+        var ToDate = $("#TrxToDate").val();
+        var VoucherTypeId = $("#ddlVoucherTypeId").val();
+        if (FromDate != "" && ToDate != "")
+        {
+            var dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: '@Url.Action("GetVoucherList", "AccVoucherEntry", "http")',
+                        dataType: "json",
+                        data: { FromDate: FromDate, ToDate: ToDate, VoucherTypeId: VoucherTypeId }
+                    }
+                },
+                pageSize: 30,
+            });
+            $("#grid").kendoGrid({
+                dataSource: dataSource,
+                height: 1000,
+                groupable: true,
+                reorderable: true,
+                filterable: true,
+                sortable: true,
+                resizable: true,
+                columnMenu: true,
+                noRecords: {
+                    template: "No data available."
+                },
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 5
+                },
+                columns: [{
+                    field: "TrxMasterID",
+                    hidden: true,
+                    filterable: false
+                },
+                 {
+                     field: "RowSl",
+                     title: "SL",
+                     Width: "5%"
+                 },
+                  {
+                      field: "VoucherNo",
+                      title: "Voucher No",
+                      Width: "10%"
+                  },
+                   {
+                       field: "TrxDtMsg",
+                       title: "Trx Date",
+                       Width: "20%"
+                   },
+                   {
+                       field: "VoucherType",
+                       title: "Voucher Type",
+                       Width: "5%"
+                   },
+                    {
+                        field: "VoucherDesc",
+                        title: "Description",
+                        Width: "10%"
+                    },
+                     {
+                         field: "Reference",
+                         title: "Reference",
+                         Width: "10%"
+                     },
+                {
+                    field: "TotDebit",
+                    title: "Debit",
+                    Width: "10%"
+                },
+                 {
+                     field: "TotCredit",
+                     title: "Credit",
+                     Width: "10%"
+                 },
+                  //{
+                  //    field: "IsAutoVoucherMsg",
+                  //    title: "AutoVoucher",
+                  //    Width: "5%"
+                  //}, BusinessDateData SpecialAccess
+                {
+                    title: "Commands",
+                    Width: "15%",
+                    template: function (dataItem) {
+
+                        if (dataItem.IsEditable == "Edit") {
+                            return '<a href="/Accounts/AccVoucherEntry/VoucherEdit/' + dataItem.TrxMasterID + '"  title="Edit" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a><a href="#" onclick="VoucherDelete(' + dataItem.TrxMasterID + ');" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i> </a>'
+                        }
+                        else {
+                            return '<a href="#" onclick="GetVoucherDetails(' + dataItem.TrxMasterID + ');"  title="Details" class="btn btn-primary btn-xs"><i class="fa fa-print"></i></a>'
+                        }
+
+                        //if (dataItem.BusinessDateData == "Y") {
+                        //    return '<a href="/AccVoucherEntry/VoucherEdit/' + dataItem.TrxMasterID + '"  title="Edit" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a><a href="#" onclick="VoucherDelete(' + dataItem.TrxMasterID + ');" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i> </a>'
+                        //}
+                        //else {
+                        //    if (dataItem.SpecialAccess == 1) {
+                        //        return '<a href="/AccVoucherEntry/VoucherEdit/' + dataItem.TrxMasterID + '"  title="Edit" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a><a href="#" onclick="VoucherDelete(' + dataItem.TrxMasterID + ');" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i> </a>'
+                        //    }
+                        //    else {
+                        //        return '<a href="#" onclick="GetVoucherDetails(' + dataItem.TrxMasterID + ');"  title="Details" class="btn btn-primary btn-xs"><i class="fa fa-print"></i></a>'
+                        //    }
+                        //}
+
+                    }
+                }
+                ]
+            });
+        }
+        else {
+            $.alert.open("error", "Insert date");
+        }
+    }
+
+
+    function GetVoucherDetails(TrxMasterID) {
+        var url = '/Accounts/AccVoucherReport/GenerateMasterWiseVoucherReport?voucher_id=' + TrxMasterID;
+        window.open(url);
+    }
+
+    $(document).ready(function () {
+
+        GetVoucherList();
+
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+            GetVoucherList();
+        });
+
+        $("#TrxFromDate").on("change", function () {
+            var fromDate = $("#TrxFromDate").val();
+            $("#TrxToDate").datepicker('option', { minDate: fromDate });
+        });
+        $("#TrxToDate").on("change", function () {
+            var toDate = $("#TrxToDate").val();
+            $("#TrxFromDate").datepicker('option', { maxDate: toDate });
+        });
+
+
+    });
+
+
+</script>
+
+<div class="page-title">
+    <div class="title_left PageHeader" style="width:90%;">
+        <h3 style="color: white;padding:2px">&nbsp;&nbsp; Voucher List</h3>
+    </div>
+    @Html.ActionLink("Add New", "Voucher", "AccVoucherEntry", null, new { @class = "btn btn-primary btn-sm pull-right" })
+</div>
+<div class="x_panel">
+    <div class="x_title">
+        <div class="clearfix"></div>
+    </div>
+    <div class="x_content">
+        <div class="row">
+            <div class="item form-group">
+                @Html.Label("Date From", new { @class = "control-label col-md-1 text-right required" })
+                <div class="col-md-2 col-sm-6 col-xs-12">
+                    @Html.Editor("TrxFromDate", new { htmlAttributes = new { @class = "form-control  DateInput check-date", @Value = @ViewData["BusinessDate"] } })
+                </div>
+                @Html.Label("Date To", new { @class = "control-label col-md-1 text-right required" }) 
+                <div class="col-md-2 col-sm-6 col-xs-12">
+                    @Html.Editor("TrxToDate", new { htmlAttributes = new { @class = "form-control  DateInput check-date", @Value = @ViewData["BusinessDate"] } })
+                </div>
+                @Html.Label("Voucher Type", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                <div class="col-md-2 col-sm-6 col-xs-12">
+                    <select class="input-sm form-control bordercss" id="ddlVoucherTypeId">
+                        <option value="0">Select Voucher Type</option>
+                        @foreach (var Voucher in VoucherType)
+                        {
+                            <option value="@Voucher.Id">@Voucher.VoucherType</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 col-sm-6 col-xs-12">
+                    <input type="submit" value="Search" id="btnSearch" class=" btn btn-primary" />
+                </div>
+            </div>
+            @*<div class="item form-group">
+              
+            </div>*@
+        </div>
+        <div class="row">
+            <br />
+            <br />
+            <div id="grid"></div>
+        </div>
+        
+    </div>
+</div>
+
+
+
+
+
+@*@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/jtable")
+}*@
+

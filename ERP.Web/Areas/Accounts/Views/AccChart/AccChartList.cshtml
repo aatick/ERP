@@ -1,0 +1,203 @@
+﻿
+@{
+    ViewBag.Title = "AccChartList";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+<style>
+    .employee-photo {
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-size: 32px 35px;
+        background-position: center center;
+        vertical-align: middle;
+        line-height: 32px;
+        box-shadow: inset 0 0 1px #999, inset 0 0 10px rgba(0,0,0,.2);
+        margin-left: 5px;
+    }
+
+    .employee-name {
+        display: inline-block;
+        vertical-align: middle;
+        line-height: 32px;
+        padding-left: 3px;
+    }
+</style>
+
+@*<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" href="styles/kendo.common.min.css" />
+    <link rel="stylesheet" href="styles/kendo.default.min.css" />
+    <link rel="stylesheet" href="styles/kendo.default.mobile.min.css" />
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/kendo.all.min.js"></script>
+</head>*@
+
+
+<script type="text/javascript">
+
+
+    function GetEditDataById(Id) {
+        //window.location.href = "/Batch/Edit/" + BatchId;
+        var link = '@Url.Action("Edit", "AccChart", new { Id = -1 }, "http")'
+        link = link.replace("-1", Id);
+        window.location.href = link;
+    }
+
+
+$(document).ready(function () {
+    //var service = "https://demos.telerik.com/kendo-ui/service";
+
+    $("#treelist").kendoTreeList({
+        dataSource: {
+            transport: {
+                read: {//
+                    url: '@Url.Action("GetAccChartListForTreeView", "AccChart", "http")',
+                    dataType: "json"
+                }
+            },
+            schema: {
+                model: {
+                    id: "AccID",
+                    parentId: "ParentId",
+                    fields: {
+                        ParentId: { field: "ParentId", nullable: true },
+                        AccID: { field: "AccID", type: "number" },
+                        AccCode: { field: "AccCode", type: "string" }
+                    },
+                    expanded: false
+                }
+            }
+        },
+        height: 800,
+        filterable: true,
+        sortable: true,
+        columns: [
+            {
+                field: "AccCode",
+                title: "Acc Code",
+                width: 100,
+                
+            },
+            {
+                field: "AccName",
+                title: "Acc Name",
+                width: 160
+            },
+            {
+                field: "ParentAccCode",
+                title: "Parent Acc Code",
+                width: 200
+            },
+            {
+                title: "Commands",
+                width: 50,
+                template: function (dataItem) {
+                    return '<a href="#"  onclick="GetEditDataById(' + dataItem.AccID + ')"  title="Edit" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a>'
+                }
+            }
+
+        ]
+    });
+
+    //$("#autoSearch").keyup(function () {
+    //    var selecteditem = $('#autoSearch').val();
+    //    var kgrid = $("#grid").data("kendoGrid");
+    //    selecteditem = selecteditem.toUpperCase();
+    //    var selectedArray = selecteditem.split(" ");
+    //    if (selecteditem) {
+    //        //kgrid.dataSource.filter({ field: "UserName", operator: "eq", value: selecteditem });
+    //        var orfilter = { logic: "or", filters: [] };
+    //        var andfilter = { logic: "and", filters: [] };
+    //        $.each(selectedArray, function (i, v) {
+    //            if (v.trim() == "") {
+    //            }
+    //            else {
+    //                $.each(selectedArray, function (i, v1) {
+    //                    if (v1.trim() == "") {
+    //                    }
+    //                    else {
+    //                        orfilter.filters.push({ field: "AccCode", operator: "contains", value: v1 },//;,
+    //                                              { field: "AccName", operator: "contains", value: v1 }
+    //                                            );
+    //                        andfilter.filters.push(orfilter);
+    //                        orfilter = { logic: "or", filters: [] };
+    //                    }
+
+    //                });
+    //            }
+    //        });
+    //        kgrid.dataSource.filter(andfilter);
+    //    }
+    //    else {
+    //        kgrid.dataSource.filter({});
+    //    }
+
+    //});
+
+
+});
+
+    @*var dataSource = new kendo.data.DataSource({
+
+        transport: {
+            read: {//
+                url: '@Url.Action("GetAccChartListForTreeView", "AccChart", "http")',
+                dataType: "json"
+            }
+        },
+    });*@
+
+</script>
+
+<div class="page-title">
+    <div class="title_left PageHeader" style="width:90%;">
+        <h3 style="color: white;padding:2px"> &nbsp;&nbsp;&nbsp; Account Chart List</h3>
+
+    </div>
+    @Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-primary btn-sm pull-right" })
+</div>
+<br />
+<br />
+@*<div class="row">
+    <div class="form-group">
+        @Html.Label("Auto Search", htmlAttributes: new { @class = "control-label col-md-2"})
+            <div class="col-md-5">
+                <input type="text" id="autoSearch" class="form-control" placeHolder="Search by Account code,name" />
+            </div>
+    </div>
+</div>*@
+<div id="example">
+
+    <div id="treelist"></div>
+
+
+
+</div>
+
+
+@*<div class="x_panel">
+    <div class="x_content">
+        <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left">
+            <div class="row">
+                <div class="form-group">
+                    @Html.Label("First Level", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-5">
+                        <input type="text" id="autoSearch" class="form-control" placeholder="Search by Account code,name,level,category" />
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-sm-12">
+                    <div id="grid"></div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>*@
+
+

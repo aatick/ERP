@@ -1,0 +1,411 @@
+﻿
+@{
+    ViewBag.Title = "Statement of Affairs";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script type="text/javascript">
+    function GetHO(ddlVal) {
+        var ddlHO = $("#ddlHO");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetHOList", "AccLedgerReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlHO.html('');
+                $.each(data, function (id, option) {
+                    ddlHO.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (ddlVal != null) {
+                    $('#ddlHO').val(ddlVal);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function GetZone(HO_val, ddlVal) {
+        var ddlZone = $("#ddlZone");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetZoneList", "AccBalanceSheet", "http")',
+            data: { HO_val: HO_val },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlZone.html('');
+                $.each(data, function (id, option) {
+                    ddlZone.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (ddlVal != null) {
+                    $('#ddlZone').val(ddlVal);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetArea(HO_val, zone_val, ddlVal) {
+        var ddlArea = $("#ddlArea");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetAreaList", "AccBalanceSheet", "http")',
+            data: { HO_val: HO_val, zone_val: zone_val },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlArea.html('');
+                $.each(data, function (id, option) {
+                    ddlArea.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (ddlVal != null) {
+                    $('#ddlArea').val(ddlVal);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetOffice(HO_val, zone_val, area_val, ddlVal) {
+        var ddlOffice = $("#ddlOffice");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetOfficeList", "AccBalanceSheet", "http")',
+            data: { HO_val: HO_val, zone_val: zone_val, area_val: area_val },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlOffice.html('');
+                $.each(data, function (id, option) {
+                    ddlOffice.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+                if (ddlVal != null) {
+                    $('#ddlOffice').val(ddlVal);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function CheckOffcLevel() {
+        var offcLevel = $('#lblOffcLevel').html();
+        var firstLevel = $('#lblFirstLevel').html();
+        var secondLevel = $('#lblSecondLevel').html();
+        var thirdLevel = $('#lblThirdLevel').html();
+        var fourthLevel = $('#lblFourthLevel').html();
+        if (offcLevel != 1) {
+            GetHO(firstLevel);
+            GetZone(firstLevel, secondLevel);
+            GetArea(firstLevel, secondLevel, thirdLevel);
+            GetOffice(firstLevel, secondLevel, thirdLevel, fourthLevel);
+            $("#ddlHO").prop("disabled", true);
+            //$("#ddlZone").prop("disabled", true);
+            //$("#ddlArea").prop("disabled", true);
+            //$("#ddlOffice").prop("disabled", true);
+        }
+    }
+    $(document).ready(function () {
+       // CheckOffcLevel();
+        $("#loading").hide();
+
+
+        
+
+        $("#txtFromDt").on("change", function () {
+            var fromDate = $("#txtFromDt").val();
+            $("#txtToDt").datepicker('option', { minDate: fromDate });
+        });
+        $("#txtToDt").on("change", function () {
+            var toDate = $("#txtToDt").val();
+            $("#txtFromDt").datepicker('option', { maxDate: toDate });
+        });
+
+        $("#ddlHO").change(function () {
+            var HO_val = $("#ddlHO").val();
+            if (HO_val > 0) {
+                var ddlZone = $("#ddlZone");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetZoneList", "AccIncExpReport", "http")',
+                    data: { HO_val: HO_val },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        ddlZone.html('');
+                        $.each(data, function (id, option) {
+                            ddlZone.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlZone").empty();
+                $("#ddlArea").empty();
+                $("#ddlOffice").empty();
+            }
+        });
+        $("#ddlZone").change(function () {
+            var HO_val = $("#ddlHO").val();
+            var zone_val = $("#ddlZone").val();
+            if (HO_val > 0 && zone_val > 0) {
+                var ddlArea = $("#ddlArea");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetAreaList", "AccIncExpReport", "http")',
+                    data: { HO_val: HO_val, zone_val: zone_val },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        ddlArea.html('');
+                        $.each(data, function (id, option) {
+                            ddlArea.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                        $("#ddlOffice").empty();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlArea").empty();
+                $("#ddlOffice").empty();
+            }
+        });
+        $("#ddlArea").change(function () {
+            var HO_val = $("#ddlHO").val();
+            var zone_val = $("#ddlZone").val();
+            var area_val = $("#ddlArea").val();
+            if (HO_val > 0 && zone_val > 0) {
+                var ddlOffice = $("#ddlOffice");
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetOfficeList", "AccIncExpReport", "http")',
+                    data: { HO_val: HO_val, zone_val: zone_val, area_val: area_val },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        ddlOffice.html('');
+                        $.each(data, function (id, option) {
+                            ddlOffice.append($('<option></option>').val(option.Value).html(option.Text));
+                        });
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#ddlOffice").empty();
+            }
+        });
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            //$("#divLoading").show();
+            //if ($("#ddlHO").val() > 0) {
+            var office_id = 1;
+            //    if ($("#ddlZone").val() > 0) {
+            //        if ($("#ddlArea").val() > 0) {
+            //            if ($("#ddlOffice").val() > 0) {
+            //                office_id = $("#ddlOffice").val();
+            //            }
+            //            else {
+            //                office_id = $("#ddlArea").val();
+            //            }
+            //        }
+            //        else {
+            //            office_id = $("#ddlZone").val();
+            //        }
+            //    }
+            //    else {
+            //        office_id = $("#ddlHO").val();
+            //    }
+                var from_date = $("#txtFromDt").val();
+                var to_date = $("#txtToDt").val();
+                var acc_level = $("#ddlAccLevel").val();
+                var report_name = 'Statement of Affairs';
+                var url = '/Accounts/AccStatementOfAffairs/GenerateStatementOfAffairsReport?rptslnx=1&office_id=' + office_id + '&from_date=' + from_date + '&to_date=' + to_date + '&acc_level=' + acc_level + '&report_name=' + report_name + '&reportNo=1';
+
+                //$("#divLoading").hide();
+                window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+           // }
+        });
+    });
+</script>
+
+@using (Html.BeginForm("Index", "AccStatementOfAffairs", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "AccStatementOfAffairsForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">&nbsp;&nbsp;Statement of Affairs Report</h3>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <div class="item form-group">
+                        @Html.Label("Date From", new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("TrxDate", new { htmlAttributes = new { @class = "form-control DateInput check-date", @ID = "txtFromDt" } })
+                            @*@Html.TextBox(" ", ViewData["TrxDate"].ToString(), new { @ID = "txtFromDt", @class = "form-control DateInputRpt" })*@
+                        </div>
+                    </div>
+                    <div class="item form-group">
+                        @Html.Label("Date To", new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("TrxDate", new { htmlAttributes = new { @class = "form-control DateInput check-date", @ID = "txtToDt" } })
+                            @*@Html.TextBox(" ", ViewData["TrxDate"].ToString(), new { @ID = "txtToDt", @class = "form-control DateInputRpt" })*@
+                        </div>
+                    </div>
+                    <div class="item form-group">
+                        @Html.Label("Acc Level", new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.DropDownList("AccLevelList", new[] {
+                           new SelectListItem() {Text="2", Value="2"},
+                           new SelectListItem() {Text="3",Value="3"},
+                           new SelectListItem() {Text="4",Value="4"},
+                           new SelectListItem() {Text="5",Value="5",Selected = true}},
+         new { @ID = "ddlAccLevel", @class = "form-control bordercss" })
+                        </div>
+                    </div>
+                    <div class="ln_solid"></div>
+                    <div class="form-group">
+                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+@*<h2 class="page-title">Statement of Affairs Report</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="">*@
+        @*<div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("Head Office", new { @class = "control-label" })
+                    @Html.DropDownList("HOList", null, new { @ID = "ddlHO", @class = "form-control" })
+                    @Html.Label(ViewData["OfficeLevel"].ToString(), new { @ID = "lblOffcLevel", style = "display:none;" })
+                    @Html.Label(ViewData["FirstLevel"].ToString(), new { @ID = "lblFirstLevel", style = "display:none;" })
+                    @Html.Label(ViewData["SecondLevel"].ToString(), new { @ID = "lblSecondLevel", style = "display:none;" })
+                    @Html.Label(ViewData["ThirdLevel"].ToString(), new { @ID = "lblThirdLevel", style = "display:none;" })
+                    @Html.Label(ViewData["FourthLevel"].ToString(), new { @ID = "lblFourthLevel", style = "display:none;" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("Zone Office", new { @class = "control-label" })
+                    @Html.DropDownList("ZoneList", null, new { @ID = "ddlZone", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("Area Office", new { @class = "control-label" })
+                    @Html.DropDownList("AreaList", null, new { @ID = "ddlArea", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("Office", new { @class = "control-label" })
+                    @Html.DropDownList("OfficeList", null, new { @ID = "ddlOffice", @class = "form-control" })
+                </div>
+            </div>
+        </div>*@
+        @*<div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("Date From", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDate"].ToString(), new { @ID = "txtFromDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("Date To", new { @class = "control-label" })
+                    @Html.TextBox(" ", ViewData["TrxDate"].ToString(), new { @ID = "txtToDt", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.Label("Acc Level", new { @class = "control-label" })
+                    @Html.DropDownList("AccLevelList", new[] {
+                       new SelectListItem() {Text="1", Value="1",Selected = true},
+                       new SelectListItem() {Text="2", Value="2"},
+                       new SelectListItem() {Text="3",Value="3"},
+                       new SelectListItem() {Text="4",Value="4"},
+                       new SelectListItem() {Text="5",Value="5"}},
+            new { @ID = "ddlAccLevel", @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group form-action">
+                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+}*@
+
+@*@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+}*@
+
+
+
+
+

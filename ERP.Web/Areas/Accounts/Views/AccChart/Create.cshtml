@@ -1,0 +1,378 @@
+﻿@model ERP.Web.ViewModels.AccChartViewModel
+@{
+    ViewBag.Title = "Acc Code Create";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var cat = Model == null ? null : Model.CategoryList;
+    var offc = Model == null ? null : Model.OfficeList;
+    var modeList = Model == null ? null : Model.ModuleList;
+   // var noteList = Model == null ? null : Model.AccNoteList;
+}
+
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#txtParentCode").blur(function () {
+            var ParentCode = $("#txtParentCode").val();
+            if (ParentCode != "")
+            {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetParentCodeDetail", "AccChart", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { ParentCode: ParentCode },
+                    success: function (result) {
+
+                        if (result.AccName != "")
+                        {
+                            if (result.AccLevel != 4) {
+                                $("#ParentAccName").val(result.AccName);
+                                $("#AccLevel").val(result.AccLevel + 1);
+                                $("#FirstLevel").val(result.FirstLevel);
+                                $("#SecondLevel").val(result.SecondLevel);
+                                $("#ThirdLevel").val(result.ThirdLevel);
+                                $("#FourthLevel").val(result.FourthLevel);
+                                $("#FifthLevel").val(result.FifthLevel);
+                                $("#CategoryID").val(result.CategoryID);
+                                $("#CategoryID").attr("disabled",true);
+                                //
+                            }
+                            else {
+                                $("#ParentAccName").val("");
+                                $("#txtParentCode").val("");
+                                $("#AccLevel").val("");
+                                $("#FirstLevel").val("");
+                                $("#SecondLevel").val("");
+                                $("#ThirdLevel").val("");
+                                $("#FourthLevel").val("");
+                                $("#FifthLevel").val("");
+                                $("#CategoryID").val("0");
+                                $("#CategoryID").attr("disabled", false);
+                                $.alert.open("error", "Acc level 4 is not allow to be a parent");
+                            }
+                        }
+                        else
+                        {
+                            $("#txtParentCode").val("");
+                            $("#ParentAccName").val("");
+                            $("#AccLevel").val("");
+                            $.alert.open("error", " " + ParentCode + " Account code is not exists .");
+                        }
+
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+           
+        });
+
+
+        $("#AccCode").blur(function () {
+            var AccCode = $("#AccCode").val();
+            if (AccCode != "")
+            {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetCodeDetail", "AccChart", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { AccCode: AccCode },
+                    success: function (result) {
+                        //alert(result.FirstLevel); AccLevel
+                        if (result.AccCode != "") {
+                            $("#AccCode").val("");
+                            $.alert.open("error", " " + AccCode + " Account code already exists . Type new code");
+                        }
+                        else {
+                            if ($("#txtParentCode").val() == "")
+                            {
+
+                                $("#CategoryID").attr("disabled", false);
+                                $("#CategoryID").val("0");
+                                $("#AccLevel").val(1);
+                            }
+                            return true;
+                        }
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+           
+        });
+
+
+
+
+        @*$("#txtParentCode").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetParentList", "AccChart", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { OfficeCode: request.term },
+                    minLength: 1,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                value: item.OfficeID,
+                                label: item.AccFullName
+                            };
+                            //response(data);
+                        }))
+                    }
+                })
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            focus: function (event, ui) {
+                $("#txtParentCode").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                $("#txtParentCode").val(ui.item.label);
+                $("#ParentId").val(ui.item.value);
+                return false;
+            },
+            change: function (event, ui) {
+                $("#txtParentCode").val(ui.item.label);
+                $("#ParentId").val(ui.item.value);
+                return false;
+            }
+        });*@
+
+       
+        $("#AccCode").keyup(function () {
+            $("#AccCode").css('border-color', 'rgb(204,204,204)');
+        });
+        $("#AccName").keyup(function () {
+            $("#AccName").css('border-color', 'rgb(204,204,204)');
+        });
+
+        $("#CategoryID").change(function () {
+            $("#CategoryID").css('border-color', 'rgb(204,204,204)');
+        });
+
+        $("#btnSave").click(function (e) {
+            $("#loading").show();
+            e.preventDefault();
+            var ParentCode = $("#txtParentCode").val();
+            var FirstLevel = $("#FirstLevel").val();
+            var SecondLevel = $("#SecondLevel").val();
+            var ThirdLevel = $("#ThirdLevel").val();
+            var FourthLevel = $("#FourthLevel").val();
+            var AccCode = $("#AccCode").val();
+            var AccName = $("#AccName").val();
+            var AccLevel = $("#AccLevel").val();
+            var Nature = $("#ddlNature").val();
+            var IsTransaction = $("#IsTransaction").is(":checked") ? "true" : "false";
+            var CategoryID = $("#CategoryID").val();
+            var OfficeLevel = $("#OfficeLevel").val();
+            var AccID = 0;
+            var NoteID = 0;//$("#NoteID").val();
+
+            if (AccCode == "")
+            {
+                $("#AccCode").css('border-color', 'red');
+                $("#AccCode").focus();
+            }
+            else if (AccName == "")
+            {
+                $("#AccName").css('border-color', 'red');
+                $("#AccName").focus();
+            }
+            else if (CategoryID == "0")
+            {
+                $("#CategoryID").css('border-color', 'red');
+                $("#CategoryID").focus();
+            }
+            else
+            {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveAccCode", "AccChart", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { AccID:AccID,ParentCode: ParentCode, FirstLevel: FirstLevel, SecondLevel: SecondLevel, ThirdLevel: ThirdLevel, FourthLevel: FourthLevel, AccCode: AccCode, AccName: AccName, AccLevel: AccLevel, Nature: Nature, IsTransaction: IsTransaction, CategoryID: CategoryID, OfficeLevel: OfficeLevel, NoteID: NoteID },//ModuleID: ModuleID,
+                    success: function (result) {
+                        $("#loading").hide();
+                        var msg, css;
+                        if (result == 'S') {
+                           
+                            $("#txtParentCode").val("");
+                            $("#ParentAccName").val("");
+                            $("#FirstLevel").val("");
+                            $("#SecondLevel").val("");
+                            $("#ThirdLevel").val("");
+                            $("#FourthLevel").val("");
+                            $("#AccCode").val("");
+                            $("#AccName").val("");
+                            $("#AccLevel").val("");
+                            $("#ddlNature").val("C");
+                            $("#CategoryID").val("0");
+
+                            $.alert.open("info", "Saved Successfully");
+                            //msg = "Saved Successfully";
+                            //css = "success";
+                        }
+                        else if (result == 'F') {
+                            $.alert.open("error", "Fail to save");
+                        }
+                        else if (result == 'A') {
+                            //  msg = "Account code already exists";
+                            $.alert.open("error", "ccount code already exists");
+                        }
+                        $("#dvMessage").attr('class', css);
+                        $("#dvMessage").html(msg);
+                        $("#dvMessage").show();
+                        if (result == null)
+                            $("#dvMessage").toggle('fade', 1500);
+                    },
+                    error: function (request, status, error) {
+                        $("#loading").hide();
+                        $("#dvMessage").attr('class', 'failed');
+                        $("#dvMessage").html(request.statusText);
+                        $("#dvMessage").show();
+                    }
+                });
+            }
+            
+        });
+    });
+</script>
+
+
+@*<h2 class="page-title">Account Code Create</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="">
+       
+    </div>
+
+}*@
+@*@Html.ActionLink("Back to List", "Index", null, new { @class = "pull-right" })*@
+
+@using (Html.BeginForm("Index", "AccChart", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "LookupDesignationForm" }))
+{
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">&nbsp;&nbsp; Account code entry</h3>
+        </div>
+        @Html.ActionLink("Back to List", "AccChartList", null, new { @class = "btn btn-primary btn-sm pull-right" })
+    </div>
+    <div class="x_panel">
+        <div class="x_title">
+
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <br />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            <div class="item form-group">
+                @Html.LabelFor(model => model.ParentCode, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.TextBox("txtParentCode", "", new { @class = "form-control" })
+                    @Html.HiddenFor(model => model.ParentID)
+                    @Html.HiddenFor(model => model.FirstLevel)
+                    @Html.HiddenFor(model => model.SecondLevel)
+                    @Html.HiddenFor(model => model.ThirdLevel)
+                    @Html.HiddenFor(model => model.FourthLevel)
+                    @Html.HiddenFor(model => model.FifthLevel)
+                    @Html.ValidationMessageFor(model => model.ParentCode, "", new { @class = "text-danger" })
+                </div>
+                @Html.Label("Parent Acc Name", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.Editor("ParentAccName", new { htmlAttributes = new { @class = "form-control", @disabled = "disabled" } })
+                </div>
+            </div>
+            <div class="item form-group">
+                @Html.LabelFor(model => model.AccCode, htmlAttributes: new { @class = "control-label col-md-2 required" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.EditorFor(model => model.AccCode, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.AccCode, "", new { @class = "text-danger" })
+                </div>
+                @Html.LabelFor(model => model.AccName, htmlAttributes: new { @class = "control-label col-md-2 required" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.EditorFor(model => model.AccName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.AccName, "", new { @class = "text-danger" })
+                </div>
+               
+            </div>
+            <div class="item form-group">
+                @Html.LabelFor(model => model.AccLevel, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.EditorFor(model => model.AccLevel, new { htmlAttributes = new { @class = "form-control", @disabled = "disabled" } })
+                    @Html.ValidationMessageFor(model => model.AccLevel, "", new { @class = "text-danger" })
+                </div>
+                @Html.LabelFor(model => model.Nature, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    <select class="form-control bordercss" id="ddlNature">
+                        <option value="Cr">Credit</option>
+                        <option value="Dr">Debit</option>
+                    </select>
+                    @*@Html.EditorFor(model => model.Nature, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Nature, "", new { @class = "text-danger" })*@
+                </div>
+                @*@Html.LabelFor(model => model.ModuleID, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.DropDownListFor(model => model.ModuleID, modeList, new { @class = "form-control bordercss" })
+                </div>*@
+            </div>
+             
+            <div class="item form-group">
+                @Html.LabelFor(model => model.OfficeLevel, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.DropDownListFor(model => model.OfficeLevel, offc, new { @class = "form-control bordercss" })
+                    @Html.ValidationMessageFor(model => model.OfficeLevel, "", new { @class = "text-danger" })
+                </div>
+                @Html.LabelFor(model => model.CategoryID, htmlAttributes: new { @class = "control-label col-md-2 required" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.DropDownListFor(model => model.CategoryID, cat, new { @class = "form-control bordercss" })
+                    @Html.ValidationMessageFor(model => model.CategoryID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="item form-group">
+                @Html.LabelFor(model => model.IsTransaction, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.CheckBoxFor(model => model.IsTransaction, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.IsTransaction, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="item form-group">
+                <div class="col-md-2 col-sm-6 col-xs-12">
+                </div>
+                <div class="col-md-3 col-sm-6 col-xs-12">
+                    <button type="submit" id="btnSave" class="btn btn-success">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}

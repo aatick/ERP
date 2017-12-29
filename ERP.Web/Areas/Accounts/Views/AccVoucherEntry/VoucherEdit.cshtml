@@ -1,0 +1,1009 @@
+﻿@using Accounts.Data.AccountsDataModel
+@{
+    ViewBag.Title = "Voucher Edit";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var VoucherTypeList = (List<AccVoucherType>)ViewBag.VoucherTypeList;
+    var TrasactionFor = (List<AccTransactionFor>)ViewBag.TrasactionFor;
+    var Subledger = (List<AccSubledger>)ViewBag.Subledger;
+}
+
+<style>
+    .ui-autocomplete {
+        cursor: pointer;
+        height: 400px;
+        width: 300px;
+        overflow-y: scroll;
+        background-color: white;
+        color: rgb(0,188,212);
+        /*outline-style:outset;*/
+    }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .required::after {
+        content: " *";
+        color: red;
+    }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+<script type="text/javascript">
+
+    function VoucherSave() {
+
+        if ($("#ddlVoucherTypeId").val() != 0 && $("#ddlTransactionFor").val() != 0 && $("#BrokerBranchList").val() != "" && $("#TransactionDate").val() != "") {
+
+            //Save Details
+
+            var AllTransactionMode = new Array();
+            var AllAccId = new Array();
+            var LedgerRef_Id = new Array();
+            var AllLedgerRef = new Array();
+            var AllChequeNo = new Array();
+            var AllChequeDate = new Array();
+            var AllCreaditAmount = new Array();
+            var AllDebitAmount = new Array();
+            var AllAccCode = new Array();
+
+          
+
+            var DebitAmt = 0;
+            var CreditAmt = 0;
+
+
+            $("#AjaxLoader").show();
+
+            var $clTransactionMode = $(".clTransactionMode");
+            $clTransactionMode.each(function () {
+                var value = $(this).val();
+                AllTransactionMode[AllTransactionMode.length] = value;
+            });
+
+
+            var $clAcc = $(".clAcc");
+            $clAcc.each(function () {
+                var value = $(this).val();
+                AllAccId[AllAccId.length] = value;
+            });
+
+            var $cLedgerRef_Id = $(".clddlLedgerRef_Id");
+            $cLedgerRef_Id.each(function () {
+                var value = $(this).val();
+                LedgerRef_Id[LedgerRef_Id.length] = value;
+            });
+
+
+            var $clddlLedgerRef = $(".clddlLedgerRef");
+            $clddlLedgerRef.each(function () {
+                var value = $(this).val();
+                AllLedgerRef[AllLedgerRef.length] = value;
+            });
+
+
+            var $clChequeNo = $(".clChequeNo");
+            $clChequeNo.each(function () {
+                var value = $(this).val();
+                AllChequeNo[AllChequeNo.length] = value;
+            });
+            var $clChequeDate = $(".clChequeDate");
+            $clChequeDate.each(function () {
+                var value = $(this).val();
+                AllChequeDate[AllChequeDate.length] = value;
+            });
+
+            var $clCreaditAmount = $(".clCreaditAmount");
+            $clCreaditAmount.each(function () {
+                var value = parseFloat($(this).val() == "" ? 0 : $(this).val());
+                AllCreaditAmount[AllCreaditAmount.length] = value;
+            });
+
+            var $clDebitAmount = $(".clDebitAmount");
+            $clDebitAmount.each(function () {
+                var value = parseFloat($(this).val() == "" ? 0 : $(this).val());
+                AllDebitAmount[AllDebitAmount.length] = value;
+            });
+
+            var $clAccCode = $(".clAccCode");
+            $clAccCode.each(function () {
+                var value = parseFloat($(this).val() == "" ? 0 : $(this).val());
+                AllAccCode[AllAccCode.length] = value;
+            });
+
+
+
+            //Edit Detail
+            var AllDetailId = new Array();
+            var AllTransactionMode_Ed = new Array();
+            var AllAccId_Ed = new Array();
+            var LedgerRef_Id_Ed = new Array();
+            var AllLedgerRef_Ed = new Array();
+            var AllChequeNo_Ed = new Array();
+            var AllChequeDate_Ed = new Array();
+            var AllCreaditAmount_Ed = new Array();
+            var AllDebitAmount_Ed = new Array();
+            var AllAccCode_Ed = new Array();
+
+            var $clTransactionModeE = $(".clTransactionMode_Ed");
+            $clTransactionModeE.each(function () {
+                var value = $(this).val();
+                AllTransactionMode_Ed[AllTransactionMode_Ed.length] = value;
+            });
+
+
+            var $clAccE = $(".clAcc_Ed");
+            $clAccE.each(function () {
+                var value = $(this).val();
+                AllAccId_Ed[AllAccId_Ed.length] = value;
+            });
+
+            var $cLedgerRef_Id_Ed = $(".clddlLedgerRef_Id_Ed");
+            $cLedgerRef_Id_Ed.each(function () {
+                var value = $(this).val();
+                LedgerRef_Id_Ed[LedgerRef_Id_Ed.length] = value;
+            });
+
+
+            var $clddlLedgerRefE = $(".clddlLedgerRef_Ed");
+            $clddlLedgerRefE.each(function () {
+                var value = $(this).val();
+                AllLedgerRef_Ed[AllLedgerRef_Ed.length] = value;
+            });
+
+          
+
+            var $clChequeNoE = $(".clChequeNo_Ed");
+            $clChequeNoE.each(function () {
+                var value = $(this).val();
+                AllChequeNo_Ed[AllChequeNo_Ed.length] = value;//
+            });
+
+          
+
+
+
+            var $clChequeDateE = $(".clChequeDate_Ed");
+            $clChequeDateE.each(function () {
+                var value = $(this).val();
+                AllChequeDate_Ed[AllChequeDate_Ed.length] = value;
+            });
+
+            var $clCreaditAmountE = $(".clCreaditAmount_Ed");
+            $clCreaditAmountE.each(function () {
+                var value = parseFloat($(this).val() == "" ? 0 : $(this).val());
+                AllCreaditAmount_Ed[AllCreaditAmount_Ed.length] = value;
+            });
+
+            var $clDebitAmountE = $(".clDebitAmount_Ed");
+            $clDebitAmountE.each(function () {
+                var value = parseFloat($(this).val() == "" ? 0 : $(this).val());
+                AllDebitAmount_Ed[AllDebitAmount_Ed.length] = value;
+            });
+
+            var $clAccCodeE = $(".clAccCode_Ed");
+            $clAccCodeE.each(function () {
+                var value = parseFloat($(this).val() == "" ? 0 : $(this).val());
+                AllAccCode_Ed[AllAccCode_Ed.length] = value;
+            });
+
+
+            var $clAccDetailIdE = $(".clDetailId");
+            $clAccDetailIdE.each(function () {
+                var value = parseFloat($(this).val() == "" ? 0 : $(this).val());
+                AllDetailId[AllDetailId.length] = value;
+            });
+
+            //  
+
+
+            var allTrx = new Object();
+
+            allTrx.trxMasterId = @ViewData["trxMasterId"];
+            allTrx.AllTransactionMode = AllTransactionMode;
+            allTrx.AllAccId = AllAccId;
+            allTrx.LedgerRef_Id = LedgerRef_Id;
+            allTrx.AllLedgerRef = AllLedgerRef;
+            allTrx.AllChequeNo = AllChequeNo;
+            allTrx.AllChequeDate = AllChequeDate;
+            allTrx.AllCreaditAmount = AllCreaditAmount;
+            allTrx.AllDebitAmount = AllDebitAmount;
+            allTrx.AllAccCode = AllAccCode;
+
+            allTrx.AllTransactionMode_Ed = AllTransactionMode_Ed;
+            allTrx.AllAccId_Ed = AllAccId_Ed;
+            allTrx.LedgerRef_Id_Ed = LedgerRef_Id_Ed;
+            allTrx.AllLedgerRef_Ed = AllLedgerRef_Ed;
+            allTrx.AllChequeNo_Ed = AllChequeNo_Ed;
+            allTrx.AllChequeDate_Ed = AllChequeDate_Ed;
+            allTrx.AllCreaditAmount_Ed = AllCreaditAmount_Ed;//
+            allTrx.AllDebitAmount_Ed = AllDebitAmount_Ed;
+            allTrx.AllAccCode_Ed = AllAccCode_Ed;
+            allTrx.AllDetailId = AllDetailId;
+
+            allTrx.TransactionDate = $("#TransactionDate").val();
+            allTrx.VoucherTypeId = $("#ddlVoucherTypeId").val();
+            allTrx.VoucherDescription = $("#VoucherDescription").val().trim();
+            allTrx.TransactionForId = $("#ddlTransactionFor").val();
+            allTrx.BrokerBranchId = $("#BrokerBranchList").val();
+            allTrx.DocumentRef = $("#DocumentRef").val();
+
+            ////lblTotCredit lblTotDebit
+            var json = JSON.stringify(allTrx);
+
+            if (AllAccId.length > 1 || AllAccId_Ed.length >1) {
+                if (parseFloat($("#lblTotCredit").html()) == parseFloat($("#lblTotDebit").html())) {
+                    $.ajax({
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("AccVoucherEdit", "AccVoucherEntry", "http")',
+                        type: "POST",
+                        dataType: 'json',
+                        async: true,
+                        data: json,
+                        success: function (Result) {
+                            $("#AjaxLoader").hide();
+                            $("#TransactionDate").val("");
+                            $("#ddlVoucherTypeId").val(0);
+                            $("#VoucherDescription").val("");
+                            $("#ddlTransactionFor").val(0);
+                            $("#BrokerBranchList").val(0);
+                            $("#DocumentRef").val("");
+                            $('#gridtable tbody').empty();
+                            $("#DebitAmount").attr("disabled", false);
+                            $("#txtCreditAmount").attr("disabled", false);
+
+                            $("#lblTotCredit").html("0")
+
+
+
+                            $("#lblTotDebit").html("0")
+
+                            $.alert.open("info", "Save successfull .....",function(){
+                                window.location = '@Url.Action("Index", "AccVoucherEntry")';
+                            });
+
+                            
+                        },
+                        error: function (Result) {
+                            $("#AjaxLoader").hide();
+                            $.alert.open("error", Result);
+                        }
+                    });
+                }
+            else {
+                $("#AjaxLoader").hide();
+                    $.alert.open("error", "Debit and credit must be equal ");
+                }
+            }
+            else {
+                $("#AjaxLoader").hide();
+                $.alert.open("error", "Create voucher");
+            }
+        }
+        else {
+            $("#AjaxLoader").hide();
+            $.alert.open("Warning!", "Insert required field");
+        }
+    }
+
+    function LoadVoucherMasterDetail()
+    {
+        //var MasterId =  @ViewData["vouchertype"];
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("LoadVoucherMasterDetail", "AccVoucherEntry", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { TrxmasterId:@ViewData["trxMasterId"] }, 
+            success: function (trxDetailList) {
+                var index = 0;
+                var dtTable = $("#gridtable");
+                var tableBody = dtTable.find('tbody');
+                tableBody.empty();
+                if (trxDetailList.length >= 1) {
+                    $.each(trxDetailList, function (id, e) {
+                        index = index+1;
+                        if (index == 1)
+                        {
+                            $("#ddlVoucherTypeId").val(e.VoucherTypeId);
+                            $("#ddlTransactionFor").val(e.AccTransactionForId);
+                            $("#BrokerBranchList").val(e.OfficeID);   
+                            $("#TransactionDate").val(e.TrxDate);
+                            $("#VoucherDescription").val(e.VoucherDesc);
+                            $("#DocumentRef").val(e.Reference);
+                            //index = 0;
+                        }//snSubledg txtddlLedgerRef snChequeNo txtChequeNo snChequeDate  txtChequeDate snDebit txtDebitAmount  txtCreaditAmount snCredit
+
+                        tableBody.append('<tr id="' + e.TrxDetailsID + '">' +
+                            '<td style="width:12px">'+index+'</td>'+
+                           '<td><span id="trnsMode' + e.TrxDetailsID + '">' + e.TransactionModeName + '</span><input type="text" value="' + e.AccTransactionModeId + '" style="display:none;" class="clTransactionMode_Ed" id="txtTransactionModeE' + e.TrxDetailsID + '" /><input type="text" value="' + e.TrxDetailsID + '" style="display:none;" class="clDetailId" " /></td>' +
+                           '<td><span id="snAccCode' + e.TrxDetailsID + '">' + e.AccCode + '</span><input type="text" value="' + e.AccId + '" style="display:none;" class="clAcc_Ed" id="txtAccIdE' + e.TrxDetailsID + '" /><input type="text" value="' + e.AccCode + '" style="display:none;" class="clAccCode_Ed" id="txtAccCodeE' + e.TrxDetailsID + '" /></td>' +
+                           '<td><span id="snSubledg' + e.TrxDetailsID + '">' + e.SubledgerName + '</span><input type="text" value="' + e.SubledgerName + '" style="display:none;" class="clddlLedgerRef_Ed" id="txtddlLedgerRefE' + e.TrxDetailsID + '" /><input type="text" value="' + e.SubLedgerId + '" style="display:none;" id="txtSubLedgerIdE' + e.TrxDetailsID + '" class="clddlLedgerRef_Id_Ed"  /></td>' +
+                           '<td><span id="snChequeNo' + e.TrxDetailsID + '">' + e.ChequeNo + '</span><input type="text" value="' + e.ChequeNo + '" style="display:none;" class="clChequeNo_Ed" id="txtChequeNoE' + e.TrxDetailsID + '" /></td>' +
+                           '<td><span id="snChequeDate' + e.TrxDetailsID + '">' + e.ChequeDate + '</span><input type="text" value="' + e.ChequeDate + '" style="display:none;" class="clChequeDate_Ed" id="txtChequeDateE' + e.TrxDetailsID + '" /></td>' +
+                           '<td><span id="snCredit' + e.TrxDetailsID + '">' + e.Credit + '</span><input type="text" value="' + e.Credit + '" style="display:none;" class="clCreaditAmount_Ed" id="txtCreaditAmountE' + e.TrxDetailsID + '" /></td>' +
+                           '<td><span id="snDebit' + e.TrxDetailsID + '">' + e.Debit + '</span><input type="text" value="' + e.Debit + '" style="display:none;" class="clDebitAmount_Ed" id="txtDebitAmountE' + e.TrxDetailsID + '" /></td>' +
+                           '<td><a href="#" title="Edit" onclick="EditVoucherDetails(' + e.TrxDetailsID + ',' + e.AccId + ',' + e.AccTransactionModeId + ',' + e.SubLedgerId + ',' + e.Debit + ',' + e.Credit + ',' + "'" + e.AccName + "'" + ',' + "'" + e.ChequeNo + "'" + ',' + "'" + e.ChequeDate + "'" + ',' + "'" + e.SubledgerName + "'" + ',' + "'" + e.TransactionModeName + "'" + ')" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a></td>' +
+                           '</tr>');
+
+                    });
+
+                    var totCredit = 0;
+                    var totDebit = 0;
+                    $(".clCreaditAmount_Ed").each(function () {
+
+                        totCredit = totCredit + parseFloat($(this).val() == "" ? 0 : $(this).val());
+                        $("#lblTotCredit").html(totCredit)
+                    });
+
+                    $(".clDebitAmount_Ed").each(function () {
+
+                        totDebit = totDebit + parseFloat($(this).val() == "" ? 0 : $(this).val());
+                        $("#lblTotDebit").html(totCredit)
+                    });
+                }
+               
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+
+    }
+
+
+    function EditVoucherDetails(TrxDetailsID, AccId,AccTransactionModeId, SubLedgerId, Debit, Credit, AccName, ChequeNo, ChequeDate,SubledgerName,TransactionModeName)
+    {
+        $("#hdntrxDetails").val(TrxDetailsID);
+        $("#TransactionMode").val(AccTransactionModeId);
+        $("#txtAccCode").val(AccName);
+        $("#ddlSubledger").val(SubLedgerId);
+        $("#hdnAccID").val(AccId);
+        //$("#ddlLedgerRef").val("");
+       
+        $("#txtCreditAmount").val(Credit);
+        $("#DebitAmount").val(Debit);
+
+        if(TransactionModeName == "Cash")
+        {
+            $("#ChequeNo").attr("disabled",true);
+            $("#txtChequeDate").attr("disabled",true);
+        }
+        else
+        {
+            $("#ChequeNo").val(ChequeNo);
+            $("#txtChequeDate").val(ChequeDate);
+        }
+       
+
+        if (SubLedgerId != 0)
+        {
+            GetLedgerRefListEdit(SubledgerName);
+        }
+       
+    }
+
+
+    var delCount = 0;
+
+    function AddVoucher() {
+
+        if ($("#TransactionMode").val() != "" && $("#txtAccCode").val() != "" && $("#hdnAccID").val() != 0) {
+
+
+            var TransactionMode = $("#TransactionMode option:selected").text();
+            var TransactionModeId = $("#TransactionMode").val();
+            var AccCodetxt = $("#txtAccCode").val();
+            var AccCode = AccCodetxt.split("-")[0];
+            var AccId = $("#hdnAccID").val();
+
+            var ddlLedgerRef = $("#ddlLedgerRef option:selected").text();
+            var SubLedgerId = $("#ddlSubledger").val();
+
+            //if ($("#ddlSubledger").val() == 3) {
+            //     ddlLedgerRef = $("#txtInvestorCode").val();
+            //     SubLedgerId = $("#hdnInvestorId").val();
+            //}
+            //else {
+            //     ddlLedgerRef = $("#ddlLedgerRef option:selected").text();
+            //     SubLedgerId = $("#ddlLedgerRef").val();
+            //}
+
+            var ChequeNo = $("#ChequeNo").val();
+            var ChequeDate = $("#txtChequeDate").val();
+            var CreditAmount = $("#txtCreditAmount").val() == "" ? 0 : $("#txtCreditAmount").val();
+            var DebitAmount = $("#DebitAmount").val() == "" ? 0 : $("#DebitAmount").val();
+
+            var dtTable = $('#gridtable');
+            var NewSl = $('#gridtable tbody tr').length + delCount;
+            var SlNo = $('#gridtable tbody tr').length;
+            var tableBody = dtTable.find('tbody');
+
+            var DetailsId = $("#hdntrxDetails").val();
+            if (DetailsId == "0")  // new add
+            {
+                tableBody.append('<tr id="' + NewSl + '">' +
+                '<td style="width:12px">'+SlNo+'</td>'+
+               '<td>' + TransactionMode + '<input type="text" value="' + TransactionModeId + '" style="display:none;" class="clTransactionMode" id="txtTransactionMode' + NewSl + '" /></td>' +
+               '<td>' + AccCode + '<input type="text" value="' + AccId + '" style="display:none;" class="clAcc" id="txtAccId' + NewSl + '" /><input type="text" value="' + AccCode + '" style="display:none;" class="clAccCode" id="txtAccCode' + NewSl + '" /></td>' +
+               '<td>' + ddlLedgerRef + '<input type="text" value="' + ddlLedgerRef + '" style="display:none;" class="clddlLedgerRef" id="txtddlLedgerRef' + NewSl + '" /><input type="text" value="' + SubLedgerId + '" style="display:none;" class="clddlLedgerRef_Id"  /></td>' +
+               '<td>' + ChequeNo + '<input type="text" value="' + ChequeNo + '" style="display:none;" class="clChequeNo" id="txtChequeNo' + NewSl + '" /></td>' +
+               '<td>' + ChequeDate + '<input type="text" value="' + ChequeDate + '" style="display:none;" class="clChequeDate" id="txtChequeDate' + NewSl + '" /></td>' +
+               '<td>' + CreditAmount + '<input type="text" value="' + CreditAmount + '" style="display:none;" class="clCreaditAmount" id="txtCreaditAmount' + NewSl + '" /></td>' +
+               '<td>' + DebitAmount + '<input type="text" value="' + DebitAmount + '" style="display:none;" class="clDebitAmount" id="txtDebitAmount' + NewSl + '" /></td>' +
+               '<td><a href="#" title="Delete" onclick="Delete(' + NewSl + ',' + CreditAmount + ',' + DebitAmount + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></a></td>' +
+               '</tr>');
+
+                NewSl = NewSl + 1;
+
+                //var Cdtot = parseFloat($("#lblTotCredit").html() == "" ? 0 : $("#lblTotCredit").html());
+
+                //$("#lblTotCredit").html(Cdtot + parseFloat(CreditAmount))
+
+                //var dbtot = parseFloat($("#lblTotDebit").html() == "" ? 0 : $("#lblTotDebit").html());
+
+                //$("#lblTotDebit").html(dbtot + parseFloat(DebitAmount))
+
+
+            }
+            else {//
+                //alert(DetailsId); txtTransactionMode
+                $("#trnsMode" + DetailsId).html(TransactionMode);
+                $("#txtTransactionModeE" + DetailsId).val(TransactionModeId);
+                $("#snAccCode" + DetailsId).html(AccCode);
+                $("#txtAccIdE" + DetailsId).val(AccId);
+                $("#txtAccCodeE" + DetailsId).val(AccCode);
+
+
+                ////           
+
+                $("#snSubledg" + DetailsId).html(ddlLedgerRef);
+                $("#txtSubLedgerIdE" + DetailsId).val(SubLedgerId);
+                $("#txtddlLedgerRefE" + DetailsId).val(ddlLedgerRef);
+
+                $("#snChequeNo" + DetailsId).html(ChequeNo);
+                $("#txtChequeNoE" + DetailsId).val(ChequeNo);
+                $("#snChequeDate" + DetailsId).html(ChequeDate);
+                $("#txtChequeDateE" + DetailsId).val(ChequeDate);
+
+
+                $("#snDebit" + DetailsId).html(DebitAmount);
+                $("#txtDebitAmountE" + DetailsId).val(DebitAmount);
+                $("#txtCreaditAmountE" + DetailsId).val(CreditAmount);
+                $("#snCredit" + DetailsId).html(CreditAmount);
+            }
+           
+            var totCredit = 0;
+            var totDebit = 0;
+
+
+
+            $(".clCreaditAmount").each(function () {
+                totCredit = totCredit + parseFloat($(this).val() == "" ? 0 : $(this).val());
+               // $("#lblTotCredit").html(totCredit)
+            });
+
+            $(".clCreaditAmount_Ed").each(function () {
+                totCredit = totCredit + parseFloat($(this).val() == "" ? 0 : $(this).val());
+               // $("#lblTotCredit").html(totCredit)
+            });
+
+            $(".clDebitAmount").each(function () {
+
+                totDebit = totDebit + parseFloat($(this).val() == "" ? 0 : $(this).val());
+                //$("#lblTotDebit").html(totCredit)
+            });
+
+            $(".clDebitAmount_Ed").each(function () {
+
+                totDebit = totDebit + parseFloat($(this).val() == "" ? 0 : $(this).val());
+                //$("#lblTotDebit").html(totCredit)
+            });
+
+            $("#lblTotCredit").html(totCredit)
+
+            $("#lblTotDebit").html(totDebit)
+           
+
+            $("#hdntrxDetails").val("0");
+            $("#hdnAccID").val(0);
+            //$("#TransactionMode").val("");
+            $("#txtAccCode").val("");
+           // $("#ddlSubledger").val(0);
+            //$("#ddlLedgerRef").empty();
+           // $("#ChequeNo").val("");
+            //$("#txtChequeDate").val("");
+            $("#txtCreditAmount").val(0);
+            $("#txtInvestorCode").val("");
+            $("#hdnInvestorId").val(0);
+            $("#DebitAmount").val(0);
+            $("#DebitAmount").attr("disabled", false);
+            $("#txtCreditAmount").attr("disabled", false);
+        }
+        else {
+            $.alert.open("Warning!", "Insert required field");
+        }
+    }
+
+    function Delete(NewSl, CreditAmount, DebitAmount) {
+        $("#" + NewSl).remove();
+        delCount = delCount + 1;
+        var Cdtot = parseFloat($("#lblTotCredit").html() == "" ? 0 : $("#lblTotCredit").html());
+
+        $("#lblTotCredit").html(Cdtot - parseFloat(CreditAmount))
+
+        var dbtot = parseFloat($("#lblTotDebit").html() == "" ? 0 : $("#lblTotDebit").html());
+
+        $("#lblTotDebit").html(dbtot - parseFloat(DebitAmount))
+
+        return false;
+    }
+
+    function GetLedgerRefListEdit(SubledgerName) {
+        
+        var ddlLedgerRef = $("#ddlLedgerRef");
+        var SubledgerId = $("#ddlSubledger").val();
+       // alert(SubledgerId);
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetLedgerRefList", "AccVoucherEntry", "http")',
+            data: { SubledgerId: SubledgerId },
+            dataType: 'json',
+            async: true,
+            success: function (List_LedgerModel) {
+                ddlLedgerRef.html('');
+                ddlLedgerRef.append($('<option></option>').val("0").html("Please select"));
+                $.each(List_LedgerModel, function (id, option) {
+                    ddlLedgerRef.append($('<option></option>').val(option.Id).html(option.LedgerRef));
+                });
+                $("#ddlLedgerRef option:selected").text(SubledgerName);
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+
+    function GetLedgerRefList() {
+        var ddlLedgerRef = $("#ddlLedgerRef");
+        var SubledgerId = $("#ddlSubledger").val();
+      
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetLedgerRefList", "AccVoucherEntry", "http")',
+            data: { SubledgerId: SubledgerId },
+            dataType: 'json',
+            async: true,
+            success: function (List_LedgerModel) {
+                ddlLedgerRef.html('');
+                ddlLedgerRef.append($('<option></option>').val("0").html("Please select"));
+                $.each(List_LedgerModel, function (id, option) {
+                    ddlLedgerRef.append($('<option></option>').val(option.Id).html(option.LedgerRef));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+    function GetAccChartList() {
+        var AllAccChart = [];
+        $('#txtAccCode').attr("placeholder", "Loading . .. ... ....")
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetAccChartList", "AccVoucherEntry", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: {},
+            success: function (AccChartList) {
+                $.each(AccChartList, function (id, option) {
+                    var objAcc = new Object();
+                    objAcc.key = option.AccID;
+                    objAcc.value = option.AccName;
+
+                    AllAccChart[AllAccChart.length] = objAcc;
+                });
+                $('#txtAccCode').removeAttr("placeholder");
+            },
+            failure: function () {
+                $('#txtAccCode').removeAttr("placeholder");
+                $.alert.open("error", "Failed!");
+            }
+        });
+
+        $('#txtAccCode').autocomplete({
+            source: AllAccChart,
+            select: function (event, ui) {
+                $("#txtAccCode").val(ui.item.value);
+                $("#hdnAccID").val(ui.item.key);
+            }
+        });
+    }
+
+    function GetInvestorByCode() {
+
+        var InvestorCode = $('#txtInvestorCode').val();
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorByCode", "IPOGroup", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { InvestorCode: InvestorCode },
+            success: function (InvInfo) {
+
+                if (InvInfo.length == 1) {
+                    $.each(InvInfo, function (id, option) {
+                        $("#txtInvestorCode").val(option.InvestorCode);
+                        $("#hdnInvestorId").val(option.Id)
+
+                    });
+                }
+                else {
+                    $("#TransferorCode").val("");
+                    $.alert.open("info", "Not found!");
+                }
+
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+
+
+
+
+    $(document).ready(function () {
+        $("#hdnAccID").val(0);
+        $("#divInvestor").hide();
+        $("#hdntrxDetails").val("0");
+       
+
+        LoadVoucherMasterDetail();
+        GetAccChartList();
+
+        $("#txtInvestorCode").blur(function () {
+
+            GetInvestorByCode();
+        });
+
+        $("#btnAdd").click(function (e) {
+            e.preventDefault();
+            AddVoucher();
+        });
+
+        $("#ddlSubledger").change(function () {
+
+            $("#txtInvestorCode").val("");
+            $("#hdnInvestorId").val(0);
+            if ($("#ddlSubledger").val() != 0) {
+                if ($("#ddlSubledger").val() != 4) {
+                    $("#divInvestor").hide()
+                    $("#divLedgerRef").show();
+
+                    GetLedgerRefList();
+                }
+                else {
+                    $("#divLedgerRef").hide();
+                    $("#divInvestor").show();
+                }
+            }
+
+        });
+
+
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+            VoucherSave();
+        });
+
+        $("#TransactionMode").change(function () {
+            if ($("#TransactionMode").val() == 2 || $("#TransactionMode").val() == 6) {
+                $("#ChequeNo").val("");
+                $("#txtChequeDate").val("");
+                $("#ChequeNo").attr("disabled", true);
+                $("#txtChequeDate").attr("disabled", true);
+            }
+            else {
+                $("#ChequeNo").attr("disabled", false);
+                $("#txtChequeDate").attr("disabled", false);
+            }
+        });
+
+        //   DebitAmount
+        $("#DebitAmount").attr("disabled", false);
+        $("#txtCreditAmount").attr("disabled", false);
+
+        $("#txtCreditAmount").keyup(function () {
+            if ($("#txtCreditAmount").val() >= 1) {
+                $("#DebitAmount").attr("disabled", true);
+                $("#DebitAmount").val(0);
+            }
+            else {
+                $("#DebitAmount").attr("disabled", false);
+            }
+
+        });
+        $("#DebitAmount").keyup(function () {
+            if ($("#DebitAmount").val() >= 1) {
+                $("#txtCreditAmount").attr("disabled", true);
+                $("#txtCreditAmount").val(0);
+            }
+            else {
+                $("#txtCreditAmount").attr("disabled", false);
+            }
+
+        });
+
+    });
+
+    // ViewData["BusinessDate"]
+    //ViewData["Description"]
+    //ViewData["VoucherType"]
+    //ViewData["TransType"]
+    //ViewData["BrokerBranch"]
+    //ViewData["DocumentRef"]
+
+
+</script>
+
+@using (Html.BeginForm("Voucher", "AccVoucherEntry", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "AccCollectionForm" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div role="main">
+
+        <div class="">
+            <div class="page-title">
+                <div class="title_left PageHeader" style="width:90%;">
+                    <h3 style="color: white;padding:2px">&nbsp;&nbsp; Voucher</h3>
+                </div>
+                @Html.ActionLink("Back To List", "Index", null, new { @class = "btn btn-primary btn-sm pull-right" })
+                <input type="hidden" id="hdnAccID" />
+                <div id="AjaxLoader" class="ajaxLoader"></div>
+            </div>
+            <div class="col-md-12 col-sm-6 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                        <ul class="list-unstyled timeline">
+                            <li>
+                                <div class="block">
+                                    <div class="tags">
+                                        <a href="" class="tag">
+                                            <span>Basic Info</span>
+                                        </a>
+                                    </div>
+                                    <div class="block_content">
+                                        <div class="row form-group">
+                                            <div>
+                                                @Html.Label("Transaction Date", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("TransactionDate", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                                                </div>
+                                                @Html.Label("Voucher Type", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                                @*<input type="hidden" id="hdnVoucherType" value="@ViewData["vouchertype"]" />*@
+                                                 <div class="col-md-4">
+                                                    <select class="input-sm form-control bordercss" id="ddlVoucherTypeId">
+                                                        <option value="0">Select Voucher Type</option>
+                                                        @foreach (var Voucher in VoucherTypeList)
+                                                        {
+                                                            <option value="@Voucher.Id">@Voucher.VoucherType</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="row form-group"> 
+                                           
+                                            @Html.Label("Transaction Type", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <select class="input-sm form-control bordercss" id="ddlTransactionFor">
+                                                    <option value="0">Select Transaction Type</option>
+                                                    @foreach (var trnFor in TrasactionFor)
+                                                    {
+                                                        <option value="@trnFor.Id">@trnFor.TransactionFor</option>
+                                                    }
+                                                </select>
+
+                                            </div>
+                                            @Html.Label("Document Ref", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("DocumentRef", new { htmlAttributes = new { @class = "form-control" } })
+                                            </div>
+                                        </div>
+                                        <div class="row form-group">
+                                            @Html.Label("Broker Branch", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.DropDownList("BrokerBranchList", new SelectList(ViewBag.BrokerBranchList, "Id", "BrokerBranchName"), "Please select", new { @class = "form-control bordercss" })
+                                            </div>
+                                            @Html.Label("Description", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                               @* @Html.TextArea("VoucherDescription", new { htmlAttributes = new { @class = "form-control", @rows = "6" } })*@
+                                                @Html.TextArea("VoucherDescription", htmlAttributes: new { @class = "form-control", @rows = "4" })
+                                            </div>
+                                           
+                                        </div>
+
+
+
+                                        <br />
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="block">
+                                    <div class="tags">
+                                        <a href="" class="tag">
+                                            <span>Voucher</span>
+                                        </a>
+                                    </div>
+                                    <div class="block_content">
+
+
+                                        <br />
+                                        <input type="hidden" id="hdntrxDetails"/>
+                                        <div class="item form-group"> 
+                                            @Html.Label("Transaction Mode", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.DropDownList("TransactionMode", new SelectList(ViewBag.TransactionModeList, "Id", "TransactionModeName"), "Please select", new { @class = "form-control bordercss" })
+                                            </div>
+                                            @Html.Label("Account", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("txtAccCode", new { htmlAttributes = new { @class = "form-control" } })
+                                            </div>
+
+                                        </div>
+                                        <div class="row form-group">
+                                            @Html.Label("Subledger", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <select class="input-sm form-control bordercss" id="ddlSubledger">
+                                                    <option value="0">Select Subledger Name</option>
+                                                    @foreach (var sub in Subledger)
+                                                    {
+                                                        <option value="@sub.Id">@sub.SubledgerName</option>
+                                                    }
+                                                </select>
+
+                                            </div>
+                                            <div id="divLedgerRef">
+                                                @Html.Label("Ledger Ref", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.DropDownList("LedgerRefList", null, new { @id = "ddlLedgerRef", @class = "form-control bordercss" })
+                                                </div>
+                                            </div>
+                                            <div id="divInvestor">
+                                                @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("txtInvestorCode", new { htmlAttributes = new { @class = "form-control", @placeHolder = "Investor Code" } })
+                                                    <input type="hidden" id="hdnInvestorId" />
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="row form-group">
+
+                                            @Html.Label("Cheque No", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("ChequeNo", new { htmlAttributes = new { @class = "form-control" } })
+                                            </div>
+                                            @Html.Label("Cheque Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <input type="datetime" data-hid="ChequeDate" class="form-control DateInput check-date" id="txtChequeDate" name="txtChequeDate" value="" />
+                                                <input type="hidden" id="ChequeDate" name="ChequeDate" value="" />
+                                                @*@Html.Editor("ChequeDate", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })*@
+                                            </div>
+                                        </div>
+                                        <div class="row form-group">
+
+                                            @Html.Label("Credit Amount", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("txtCreditAmount", new { htmlAttributes = new { @class = "form-control", @type = "number" } })
+                                            </div>
+                                            @Html.Label("Debit Amount", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("DebitAmount", new { htmlAttributes = new { @class = "form-control", @type = "number" } })
+                                            </div>
+                                        </div>
+                                        @*<div class="row form-group">
+                                                @Html.Label("Creadit Amount", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("CreaditAmount", new { htmlAttributes = new { @class = "form-control", @type = "number" } })
+                                                </div>
+                                            </div>*@
+                                        <div class="row">
+                                            <div class="col-sm-3"></div>
+                                            <div class="col-sm-3">
+                                                <button id="btnAdd" type="submit" class="btn btn-primary">Add</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="block">
+                                    <div class="tags">
+                                        <a href="" class="tag">
+                                            <span>List</span>
+                                        </a>
+                                    </div>
+                                    <div class="block_content">
+                                        <div id="example">
+                                            <table id="gridtable">
+                                                @*<colgroup>
+                                                    <col />
+                                                    <col />
+                                                    <col style="width:110px" />
+                                                    <col style="width:120px" />
+                                                    <col style="width:130px" />
+                                                </colgroup>*@
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width:12px">Sl</th>
+                                                        <th>Transaction Mode</th>
+                                                        <th>Account</th>
+                                                        <th>Leadger Ref</th>
+                                                        <th>Cheque No</th>
+                                                        <th>Cheque Date</th>
+                                                        <th>Credit</th>
+                                                        <th>Debit</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                                <tfoot style="background-color:#CCCCCC">
+                                                    <tr>
+                                                        <td colspan="7" style="text-align:right"><label id="lblTotCredit">0</label></td>
+                                                        <td><label id="lblTotDebit">0</label></td>
+                                                        <td></td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+
+                                            <script>
+                                                $(document).ready(function () {
+                                                    $("#gridtable").kendoGrid({
+                                                        height: 500,
+                                                       // sortable: true
+                                                    });
+                                                });
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+
+                        </ul>
+                        <div class="form-group">
+                            <div class="col-md-offset-2 col-md-10">
+                                <button type="submit" class="btn btn-success" id="btnSave">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+

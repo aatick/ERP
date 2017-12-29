@@ -1,0 +1,133 @@
+﻿
+@{
+    ViewBag.Title = "AccTrans";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script type="text/javascript">
+
+    function GetAccChartList() {
+        var AllAccChart = [];
+        $('#txtAccCode').attr("placeholder", "Loading . .. ... ....");
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetAccChartList", "AccVoucherEntry", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: {},
+            success: function (AccChartList) {
+                $.each(AccChartList, function (id, option) {
+                    var objAcc = new Object();
+                    objAcc.key = option.AccID;
+                    objAcc.value = option.AccName;
+
+                    AllAccChart[AllAccChart.length] = objAcc;
+                });
+                $('#txtAccCode').removeAttr("placeholder");
+            },
+            failure: function () {
+                $('#txtAccCode').removeAttr("placeholder");
+                $.alert.open("error", "Failed!");
+            }
+        });
+
+        $('#txtAccCode').autocomplete({
+            source: AllAccChart,
+            select: function (event, ui) {
+                $("#txtAccCode").val(ui.item.value);
+                $("#hdnAccID").val(ui.item.key);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        $("#hdnAccID").val(0);
+        GetAccChartList();
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var FromDate = $("#txtDateFrom").val();
+            var DateTo = $("#txtDateTo").val();
+            var AccID = $("#hdnAccID").val();
+
+
+            if (FromDate != "" && DateTo != "" && $("#txtAccCode").val() != "" && AccID != "0") {
+
+                var url = '/Accounts/AccVoucherReport/Acc_Voucher_AccountWise?rptslnx=1&FromDate=' + FromDate + '&DateTo=' + DateTo + '&AccID=' + AccID;//
+                $("#hdnAccID").val(0);
+                window.open(url);
+                   // window.open(url, 'mywindow', 'fullscreen=yes, scrollbars=auto');
+                   
+                }
+            else {
+
+                $.alert.open("error","Insert required field");
+            }
+        });
+
+
+    });
+</script>
+@using (Html.BeginForm("AccTrans", "AccVoucherReport", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "AccVoucherReportForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="row">
+        <div class="col-sm-12">
+            <div id="AjaxLoader" class="ajaxLoader"></div>
+            <div class="panel panel-success panel-custom">
+                <div class="page-title">
+                    <div class="title_left PageHeader" style="width:90%;">
+                        <h3 style="color: white;padding:2px">&nbsp;&nbsp;&nbsp; Account wise transaction</h3>
+                    </div>
+                </div>
+                    <div class="row">
+                            <div class="col-md-12 col-sm-6 col-xs-12">
+                                    <div class="x_content">
+                                        <br />
+                                            <div class="item form-group">
+                                                @Html.Label("Date From", new { @class = "control-label col-md-2 required" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    <input type="text" class="input-sm form-control  DateInput check-date" id="txtDateFrom" />
+                                                </div>
+                                            </div>
+                                            <div class="item form-group">
+                                                @Html.Label("Date To", new { @class = "control-label col-md-2 required" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    <input type="text" class="input-sm form-control  DateInput check-date" id="txtDateTo" />
+                                                </div>
+                                            </div>
+                                            <div class="item form-group">
+                                                @Html.Label("Account", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("txtAccCode", new { htmlAttributes = new { @class = "form-control" } })
+                                                    <input type="hidden" id="hdnAccID" />
+                                                </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                                    <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                                                </div>
+                                            </div>
+                                </div>
+                           
+                        </div>
+                </div>
+            </div>
+        </div>
+
+}
+
+
