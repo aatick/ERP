@@ -1,0 +1,174 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C0BF4D3A-B5E7-45C3-9882-D061BD12DA78}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Upms.Service</RootNamespace>
+    <AssemblyName>UCAS.Upms.Service</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.EntityFramework, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.Identity.EntityFramework.2.2.1\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AccCollectionService.cs" />
+    <Compile Include="AccountCloseService.cs" />
+    <Compile Include="AccPaymentRequisitionService.cs" />
+    <Compile Include="AccPaymentService.cs" />
+    <Compile Include="AccReceiptPaymentMappingService.cs" />
+    <Compile Include="BrokerDepositoryParticipatoryService.cs" />
+    <Compile Include="BrokerDPBranchService.cs" />
+    <Compile Include="BrokerTraderService.cs" />
+    <Compile Include="CheckDishonourCauseService.cs" />
+    <Compile Include="CompanyDepositoryService.cs" />
+    <Compile Include="CompanyEpsNavChangeHistoryService.cs" />
+    <Compile Include="CompanyGroupChangeHistoryService.cs" />
+    <Compile Include="CompanyInfoService.cs" />
+    <Compile Include="CompanyListedToDepositoryCompanyService.cs" />
+    <Compile Include="CompanyLoanStatusHistoryService.cs" />
+    <Compile Include="CompanySharePriceHistoryService.cs" />
+    <Compile Include="DayEndService.cs" />
+    <Compile Include="DayInitialService.cs" />
+    <Compile Include="EmailSMSDPAccessService.cs" />
+    <Compile Include="EmailSMSInvestorAccessService.cs" />
+    <Compile Include="FundTransferMasterService.cs" />
+    <Compile Include="InvestorAccountService.cs" />
+    <Compile Include="InvestorAccountTypeService.cs" />
+    <Compile Include="InvestorBalanceDailyService.cs" />
+    <Compile Include="InvestorBOCategoryService.cs" />
+    <Compile Include="InvestorBOTypeService.cs" />
+    <Compile Include="InvestorCheckDishonourInfoService.cs" />
+    <Compile Include="InvestorCompanyService.cs" />
+    <Compile Include="InvestorInfoService.cs" />
+    <Compile Include="InvestorIntroducerService.cs" />
+    <Compile Include="InvestorJoinHolderService.cs" />
+    <Compile Include="InvestorManualChargeService.cs" />
+    <Compile Include="InvestorNomineeService.cs" />
+    <Compile Include="InvestorOperationService.cs" />
+    <Compile Include="InvestorPowerOfAttorneyMappingService.cs" />
+    <Compile Include="InvestorPowerOfAttorneyService.cs" />
+    <Compile Include="InvestorStatusService.cs" />
+    <Compile Include="InvestorSubAccountTypeService.cs" />
+    <Compile Include="InvestorTransactionDailyService.cs" />
+    <Compile Include="InvestorTypeService.cs" />
+    <Compile Include="InvestorWiseTransactionChargeHistoryService.cs" />
+    <Compile Include="InvestorWiseTransactionChargeService.cs" />
+    <Compile Include="InvestorWiseTransactionChargeSlabHistoryService.cs" />
+    <Compile Include="InvestorWiseTransactionChargeSlabService.cs" />
+    <Compile Include="IPOApplicationService.cs" />
+    <Compile Include="IPOCurrencyMappingService.cs" />
+    <Compile Include="IPODeclarationService.cs" />
+    <Compile Include="IPODraftService.cs" />
+    <Compile Include="IPOGroupDetailService.cs" />
+    <Compile Include="IPOGroupMasterService.cs" />
+    <Compile Include="IPOIssueMethodService.cs" />
+    <Compile Include="LookupBankBranchService.cs" />
+    <Compile Include="LookupBankService.cs" />
+    <Compile Include="LookupCurrencyService.cs" />
+    <Compile Include="MarketGroupService.cs" />
+    <Compile Include="MarketInfoService.cs" />
+    <Compile Include="MarketInstrumentTypeService.cs" />
+    <Compile Include="MarketSectorService.cs" />
+    <Compile Include="MarketTypeService.cs" />
+    <Compile Include="NomineeGuardianService.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StoredProcedure\AspNetRoleModuleSPService.cs" />
+    <Compile Include="StoredProcedure\MenuSPService.cs" />
+    <Compile Include="StoredProcedure\SPService.cs" />
+    <Compile Include="StoredProcedure\UltimateReportService.cs" />
+    <Compile Include="StoredProcedure\UserInfoSPService.cs" />
+    <Compile Include="TradeTransactionChargeHistoryService.cs" />
+    <Compile Include="TradeTransactionChargeService.cs" />
+    <Compile Include="TradeTransactionChargeSlabHistoryService.cs" />
+    <Compile Include="TradeTransactionChargeSlabService.cs" />
+    <Compile Include="TradeTransactionTypeService.cs" />
+    <Compile Include="TradeUploadFileAccessService.cs" />
+    <Compile Include="TradeUploadFileInformationService.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BasicDataAccess\BasicDataAccess.csproj">
+      <Project>{a4217791-fd4b-437e-b6e4-4970b4261480}</Project>
+      <Name>BasicDataAccess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Common.Data\Common.Data.csproj">
+      <Project>{aa2fef50-98a8-4354-9482-c5b8be7964b4}</Project>
+      <Name>Common.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Common.Service\Common.Service.csproj">
+      <Project>{ed55c5fc-8808-4f6a-9288-8b0deda9999f}</Project>
+      <Name>Common.Service</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Upms.Data\Upms.Data.csproj">
+      <Project>{310b64f8-640a-475e-92e3-15810b4e2eb5}</Project>
+      <Name>Upms.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utility\Utility.csproj">
+      <Project>{797d720f-e1f5-4745-aaf9-e9e03911d450}</Project>
+      <Name>Utility</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
