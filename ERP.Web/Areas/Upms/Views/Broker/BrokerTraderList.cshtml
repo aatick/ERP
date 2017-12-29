@@ -1,0 +1,199 @@
+﻿@{
+    ViewBag.Title = "BrokerTraderList";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+<style>
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+
+<script type="text/javascript">
+
+    function DeactivateById(id) {
+        $.ajax({
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("TraderDeactivate", "Broker")',
+            data: JSON.stringify({ id: id }),
+            dataType: 'json',
+            success: function (result) {
+                $.alert.open("Trader has been deactivated successfully", function () {
+                    $("#grid").data("kendoGrid").dataSource.read();
+                });
+            },
+            error: function (request, status, error) {
+                $.alert.open("Server error!!");
+                //alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetBrokerTraderList() {
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetBrokerTraderList", "Broker", "http")',
+                    dataType: "json",
+                    data: {}
+                }
+            },
+            pageSize: 50
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 550,
+            groupable: true,
+            reorderable: true,
+            resizable: true,
+            // filterable: true,
+            sortable: true,
+            // columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+            {
+                field: "RowSl",
+                title: "SL",
+                width: "10%"
+            },
+            {
+                field: "TraderCode",
+                title: "Trader Code",
+            },
+            {
+                field: "BrokerBranchName",
+                title: "Branch Name",
+            },
+            {
+                field: "ExchangeName",
+                title: "Exchange Name",
+            },
+            {
+                field: "EmployeeName",
+                title: "Employee Name",
+            },
+            {
+                field: "PCNo",
+                title: "PC No",
+                hidden: true,
+            },
+            {
+                field: "ValidFromMsg",
+                title: "Valid Date From",
+                hidden: true,
+            },
+             {
+                 field: "ValidToMsg",
+                 title: "Valid Date To",
+                 hidden: true,
+             },
+            {
+
+                title: "Action",
+                width: "10%",
+                template: function (dataItem) {
+                    return '<a href="#"  onclick="DeactivateById(' + dataItem.Id + ')"  title="Deactive" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></a>';
+                    // '<a href="#" title="Delete" onclick="ThanaDelete(' + dataItem.ID + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></a>'
+                }
+            }
+            ],
+
+        });
+
+
+        //change event
+        $("#autoSearch").keyup(function () {
+            var selecteditem = $('#autoSearch').val();
+            var kgrid = $("#grid").data("kendoGrid");
+            selecteditem = selecteditem.toUpperCase();
+            var selectedArray = selecteditem.split(" ");
+            if (selecteditem) {
+                //kgrid.dataSource.filter({ field: "UserName", operator: "eq", value: selecteditem });
+                var orfilter = { logic: "or", filters: [] };
+                var andfilter = { logic: "and", filters: [] };
+                $.each(selectedArray, function (i, v) {
+                    if (v.trim() == "") {
+                    }
+                    else {
+                        $.each(selectedArray, function (i, v1) {
+                            if (v1.trim() == "") {
+                            }
+                            else {
+                                orfilter.filters.push({ field: "TraderCode", operator: "contains", value: v1 },
+                                                      { field: "BrokerBranchName", operator: "contains", value: v1 },
+                                                      { field: "EmployeeName", operator: "contains", value: v1 },
+                                                      { field: "ExchangeName", operator: "contains", value: v1 });
+                                andfilter.filters.push(orfilter);
+                                orfilter = { logic: "or", filters: [] };
+                            }
+
+                        });
+                    }
+                });
+                kgrid.dataSource.filter(andfilter);
+            }
+            else {
+                kgrid.dataSource.filter({});
+            }
+
+        });
+    }
+
+
+
+    $(document).ready(function () {
+
+        GetBrokerTraderList();
+
+    });
+
+</script>
+
+
+
+@*<a href="#" class="btn btn-primary btn-xs"><i class="fa fa-folder"></i> View </a><a href="#" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i> Edit </a><a href="#" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i> Delete </a>*@
+
+<div class="page-title">
+    <div class="title_left">
+        <h4 style="color:rgb(26,187,156)">Broker Trader Information</h4>
+    </div>
+    @Html.ActionLink("Add New", "BrokerTrader", null, new { @class = "btn btn-primary btn-sm pull-right" })
+</div>
+<div class="x_panel">
+    <div class="x_title">
+
+        <ul class="nav navbar-right panel_toolbox">
+            <li style="float:right;">
+                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+            </li>
+        </ul>
+        <div class="clearfix"></div>
+    </div>
+    <div class="x_content">
+        <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left">
+            <div class="block_content">
+                <div class="row">
+                    <div class="form-group">
+                        @Html.Label("Search", htmlAttributes: new { @class = "control-label col-md-1" })
+                        <div class="col-md-8">
+                            <input type="text" id="autoSearch" class="form-control" placeholder="Search by trader code,branch name,employee code/name or exchange name" />
+                        </div>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div id="grid"> </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+

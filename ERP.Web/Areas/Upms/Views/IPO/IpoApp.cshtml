@@ -1,0 +1,738 @@
+﻿@using Common.Data.CommonDataModel
+@using Upms.Data.UPMSDataModel
+@{
+    ViewBag.Title = "IpoApp";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var companies = (List<IPODeclaration>)ViewBag.Companies;
+    var branches = (List<BrokerBranch>)ViewBag.Branches;
+    var investorTypes = (List<InvestorType>)ViewBag.InvestorTypes;
+    var GroupList = (List<IPOGroupMaster>)ViewBag.IPOGroupList;
+}
+
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+
+    .loader {
+        border: 16px solid #1ABB9C;
+        border-radius: 50%;
+        border-top: 16px solid #3498db;
+        width: 120px;
+        height: 120px;
+        -webkit-animation: spin 2s linear infinite;
+        animation: spin 2s linear infinite;
+        position: absolute;
+        top: 65%;
+        left: 40%;
+    }
+
+    @@-webkit-keyframes spin {
+        0% {
+            -webkit-transform: rotate(0deg);
+        }
+
+        100% {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+<link href="~/Content/css/bpopupStyle.css" rel="stylesheet" />
+
+
+
+
+<script type="text/javascript">
+
+
+    function EditIPOOrderShareQty(e, IpoApplicationId, ShareQuantity, AppliedAmount, Balance, CurrencyId, InvestorCode, InvestorName, InvestorType) {
+        e.preventDefault();
+        $("#hdnIpoApplicationId").val(IpoApplicationId);
+
+        $("#lblAppAmount").html(AppliedAmount);
+        $("#lblBalance").html(Balance);
+        $("#lblInvCode").html(InvestorCode);
+        $("#lblInvName").html(InvestorName);
+        if (CurrencyId == 2) {
+            $("#lblCurrency").html("USD");
+        }
+        else if (CurrencyId == 3) {
+            $("#lblCurrency").html("GBP");
+        }
+        else if (CurrencyId == 4) {
+            $("#lblCurrency").html("EUR");
+        }
+        else {
+            $("#lblCurrency").html("BDT");
+        }
+
+        $("#hdnInvestorType").val(InvestorType);
+        if (InvestorType == "NRB") {
+            $("#ShareQtyNRB").show();
+            $("#ShareQtyNonNRB").hide();
+            $("#txtShareQtyNRB").val(ShareQuantity);
+
+        }
+        else {
+            $("#ShareQtyNRB").hide();
+            $("#ShareQtyNonNRB").show();
+            $("#txtShareQty").val(ShareQuantity);
+        }
+
+
+        $('#element_to_pop_up').bPopup({
+            speed: 450,
+            transition: 'slideDown'
+        });
+    }
+
+
+
+
+    function CancelIPOOrder(IpoApplicationId) {
+
+
+        $.alert.open('confirm', 'Are you sure you want CANCEL this IPO Order?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("CancelIPOOrder", "IPO", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { IpoApplicationId: IpoApplicationId },
+                    success: function (Result) {
+                        GETIPOOrderInvestorWithCurrentBalance();
+                    },
+                    error: function (Result) {
+                        $.alert.open("error", Result)
+
+                    }
+                });
+
+                return true;
+            }
+            else {
+                alert("Insert Cause");
+                return false;
+            }
+        });
+    }
+
+
+    function IPOApplicationSave() {
+        $.alert.open('confirm', 'Are you sure you want to Submit selected records?', function (button) {
+            if (button == 'yes') {
+
+                var rowCount = $("#grid").data("kendoGrid").dataSource.data().length;
+                var idList = [];
+                for (var i = 0; i < rowCount; i++) {
+                    if ($("#grid").data().kendoGrid._data[i] != null && $("#grid").data().kendoGrid._data[i] != undefined && $("#grid").data().kendoGrid._data[i] != "null" && $("#grid").data().kendoGrid._data[i] != "undefined") {
+                        var colId = $("#grid").data().kendoGrid._data[i].IpoApplicationId;
+                        var checkResult = $('#txtCheckId' + colId).is(":checked");
+                        if (checkResult == true) {
+                            idList.push(colId);
+                        }
+                    }
+                }
+                var strList = idList.join(",");
+                if (strList.length > 0) {
+                    $("#divLoader").show();
+                    $("body").css("pointer-events", "none");
+
+                    var json = JSON.stringify({ idList: strList, companyId: $("#cmbCompany option:selected").attr("data-companyId"), marketId: $("#cmbCompany option:selected").attr("data-marketId") });
+
+                    $.ajax({
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("IPOApplicationSave", "IPO", "http")',
+                        type: "POST",
+                        dataType: 'json',
+                        async: true,
+                        data: json,
+
+                        success: function (data) {
+                            $("body").css("pointer-events", "");
+                            $("#divLoader").hide();
+                            if (data == "1") {
+                                $.alert.open("info", "Save successfull");
+                                $('#checkAll').prop("checked", false);
+                                GETIPOOrderInvestorWithCurrentBalance();
+                            }
+                            else {
+                                $.alert.open("info", "Fail to save");
+                            }
+
+                        },
+                        error: function (error) {
+                            $.alert.open("error", "An error occurred. Please contact to the vendor.");
+
+                        }
+                    });
+                }
+                else {
+                    $.alert.open("error", "Select at least 1 row from list");
+                }
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+
+    function GETIPOOrderInvestorWithCurrentBalance() {
+
+        var BranchId = $("#cmbBranch").val().trim() == "" ? 0 : parseInt($("#cmbBranch").val().trim());
+        var InvestorTypeId = $("#cmbType").val().trim() == "" ? 0 : parseInt($("#cmbType").val().trim());;
+        var Investor_CODE = $("#txtCode").val();
+        var IpoDeclarationId = $("#cmbCompany").val();
+        var GroupId = $("#ddlGroupId").val();
+
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GETIPOOrderInvestorWithCurrentBalance", "IPO", "http")',
+                    dataType: "json",
+                    data: { BranchId: BranchId, InvestorTypeId: InvestorTypeId, Investor_CODE: Investor_CODE, IpoDeclarationId: IpoDeclarationId, GroupId: GroupId }
+                }
+            },
+            pageSize: 50000,
+        });
+
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 400,
+            groupable: true,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            noRecords: {
+                template: "No data available."
+            },
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 100
+            },
+            columns: [{
+                field: "IpoApplicationId",
+                hidden: true,
+                filterable: false
+            },
+              {
+                  title: "<input id='checkAll' type='checkbox' style='width:20px;height:20px;' class='check-box' />",
+                  template: function (dataItem) {
+                      if (dataItem.Balance >= dataItem.AppliedAmount || dataItem.InvestorType == "NRB") {
+                          return "<input type='checkbox' style='width:20px;height:20px;' class='check-boxAll' id='txtCheckId" + dataItem.IpoApplicationId + "' />"
+                      }
+                      else {
+                          return "<input type='checkbox' style='width:20px;height:20px;' disabled='true'  class='check-boxAlla' id='txtCheckId" + dataItem.IpoApplicationId + "' />"
+                      }
+
+                  },
+                  width: "5%",
+              },
+            {
+                field: "RowSl",
+                title: "SL",
+                width: "5%"
+            },
+
+            {
+                field: "InvestorCode",
+                title: "Investor Code",
+            },
+            {
+                field: "InvestorName",
+                title: "Investor Name",
+                width: "22%"
+
+            },
+             {
+                 field: "InvestorType",
+                 title: "InvestorType",
+             },
+            {
+                field: "AccountType",
+                title: "Account Type",
+                hidden: true
+            },
+            {
+                field: "ShareQuantity",
+                title: "Share Quantity",
+            },
+            {
+                field: "AppliedAmount",
+                title: "Applied Amount",
+                template: function (dataItem) {
+                    if (dataItem.InvestorType != "NRB") {
+                        return "<label>BDT " + dataItem.AppliedAmount + "</label>"
+                    }
+                    else {
+                        if (dataItem.CurrencyId == 2) {
+                            return "<label>USD " + dataItem.AppliedAmount + "</label>";
+                        }
+                        else if (dataItem.CurrencyId == 3) {
+                            return "<label>GBP " + dataItem.AppliedAmount + "</label>";
+                        }
+                        else if (dataItem.CurrencyId == 4) {
+                            return "<label>EUR " + dataItem.AppliedAmount + "</label>";
+                        }
+                        else {
+                            return "<label>" + dataItem.AppliedAmount + "</label>";
+                        }
+
+
+                    }
+                },
+            },
+             {
+                 field: "Balance",
+                 title: "Balance",
+                 template: function (dataItem) {
+                     if (dataItem.InvestorType != "NRB") {
+                         if (dataItem.Balance >= dataItem.AppliedAmount) {
+                             return "<label>" + dataItem.Balance + "</label>";
+                         }
+                         else {
+                             return "<label style='color:red'>" + dataItem.Balance + "</label>";
+                         }
+                     }
+                     else {
+                         return "<label>0</label>";
+                     }
+                 },
+             },
+             {
+                 field: "UserCode",
+                 title: "User Code",
+                 hidden: true,
+             },
+              {
+                  field: "UserName",
+                  title: "User Name",
+                  hidden: true,
+              },
+             {
+                 title: "Action",
+                 width: "10%",
+                 template: function (dataItem) {
+                     return '<a href="#" title="Edit" onclick="EditIPOOrderShareQty(event,' + dataItem.IpoApplicationId + ',' + dataItem.ShareQuantity + ',' + dataItem.AppliedAmount + ',' + dataItem.Balance + ',' + dataItem.CurrencyId + ',' + "'" + dataItem.InvestorCode + "'" + ',' + "'" + dataItem.InvestorName + "'" + ',' + "'" + dataItem.InvestorType + "'" + ')"  class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a><a href="#" title="Order cancel" onclick="CancelIPOOrder(' + dataItem.IpoApplicationId + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i>'
+                 }
+             },
+            ],
+        });
+    }
+
+    $(document).ready(function () {
+        GETIPOOrderInvestorWithCurrentBalance();
+
+        $('#checkAll').click(function () {
+            if ($('#checkAll').is(':checked') == true) {
+                $('.check-boxAll').prop('checked', true);
+
+            } else {
+                $('.check-boxAll').prop('checked', false);
+            }
+        });
+
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+            IPOApplicationSave();
+        });
+
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+            if ($("#cmbCompany").val() != "0") {
+                if ($("#txtCode").val().indexOf('-') > -1 && $("#txtCode").val().indexOf(',') > -1) {
+
+                    $.alert.open("error", "At a time ',' and '-' are not allow to use");
+                }
+                else {
+                    GETIPOOrderInvestorWithCurrentBalance();
+                }
+            }
+            else {
+                $.alert.open("error", "Select IPO Company");
+            }
+        });
+
+        $("#cmbCompany").on("change", function () {
+            var DeclarationId = $(this).val();
+            if (DeclarationId == "0") {
+                $("#lblFaceValue,#lblRequiredAmount,#lblLot,#lblDiscount,#lblPremium,#lblNRBAppEndDate,#lblAppEndDate").html("");
+                return false;
+            }
+            var jsonData = { DeclarationId: DeclarationId };
+            $.ajax({
+                type: "Post",
+                url: '@Url.Action("GetDeclarationByCompany", "IPO")',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(jsonData),
+                dataType: "json",
+                success: function (data) {
+                    var appEndDate = "";
+                    var nrbAppEnddate = "";
+                    if (data.ApplicationEndDate != null)
+                        appEndDate = $.datepicker.formatDate("mm/dd/yy", new Date(parseInt(data.ApplicationEndDate.toString().substr(6))));
+                    if (data.NRBApplicationLastDate != null)
+                        nrbAppEnddate = $.datepicker.formatDate("mm/dd/yy", new Date(parseInt(data.NRBApplicationLastDate.toString().substr(6))));
+
+                    $("#lblAppEndDate").html(appEndDate);
+                    $("#lblNRBAppEndDate").html(nrbAppEnddate);
+                    $("#lblPremium").html(data.Premium);
+                    $("#lblDiscount").html(data.Discount);
+                    $("#lblLot").html(data.Lot);
+                    $("#txtQuantity").val(data.Lot);
+                    $("#hdnIssueMethodId").val(data.IssueMethodId);
+                    if (data.IssueMethodId == 1) { $("#lblIssueMethodId").html("Fixed Price"); } else { $("#lblIssueMethodId").html("Book building"); }
+                    //
+                    $("#lblFaceValue").html(data.FaceValue);
+                    var RequiredAmt = ((parseFloat(data.Premium) + parseFloat(data.FaceValue)) - parseFloat(data.Discount)) * parseFloat(data.Lot);
+                    $("#lblRequiredAmt").html(RequiredAmt);
+                    $("#lblRequiredAmount").html(RequiredAmt);
+
+                },
+            });
+            return true;
+        });
+
+
+
+        $("#txtShareQty").focusout(function () {
+
+            if ($("#txtShareQty").val() < parseFloat($("#lblLot").html())) {
+                $("#txtShareQty").val(parseFloat($("#lblLot").html()));
+                $("#lblAppAmount").html($("#lblRequiredAmount").html());
+            };
+        });
+
+
+        $("#txtShareQty").keyup(function () {
+
+
+            var Balance = parseFloat($("#lblBalance").html());
+            var Qty = $("#txtShareQty").val();
+            var FaceValue = parseFloat($("#lblFaceValue").html());
+            var Premium = parseFloat($("#lblPremium").html());
+            var Discount = parseFloat($("#lblDiscount").html());
+            var UnitPrice = (FaceValue + Premium) - Discount;
+
+            var TotquantityAmt = parseFloat(UnitPrice) * parseFloat(Qty);
+
+            if (TotquantityAmt <= Balance) {
+                $("#lblMessage").html("");
+                $("#lblAppAmount").html(TotquantityAmt);
+                $("#btnShareQuantityEdit").show();
+                $("#lblBalance").attr("style", "color:black");
+            }
+            else {
+                $("#lblMessage").html("Not enough balance");
+                $("#lblBalance").attr("style", "color:red")
+                $("#btnShareQuantityEdit").hide();
+                ;
+            }
+        });
+
+        $("#element_to_pop_up").hide();
+
+
+        $("#btnShareQuantityEdit").click(function (e) {
+            e.preventDefault();
+
+            var ShareQty = "0";
+            var InvestorType = $("#hdnInvestorType").val();
+            if (InvestorType != "NRB") {
+                ShareQty = $("#txtShareQty").val();
+            }
+            else {
+                ShareQty = $("#txtShareQtyNRB").val();
+            }
+            var IpoApplicationId = $("#hdnIpoApplicationId").val();
+
+            var AppAmount = $("#lblAppAmount").html();
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("EditShareQuantity", "IPO", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { IpoApplicationId: IpoApplicationId, ShareQty: ShareQty, AppAmount: AppAmount, InvestorType: InvestorType },
+                success: function (Result) {
+                    GETIPOOrderInvestorWithCurrentBalance();
+                },
+                error: function (Result) {
+                    $.alert.open("error", Result);
+
+                }
+            });
+
+        });
+    });
+
+</script>
+
+@using (Html.BeginForm("IpoApp", "IPO", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "ApoForm" }))
+{
+    @Html.AntiForgeryToken()
+
+
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px"> IPO Application</h3>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div id="AjaxLoader" class="ajaxLoader"></div>
+                <div class="x_title">
+
+                </div>
+                <div class="x_content">
+                    <br />
+
+                    <div class="row form-group">
+                        @Html.Label("IPO Company", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <select class="input-sm form-control bordercss" id="cmbCompany">
+                                <option value="0">Select Company</option>
+                                @foreach (var company in companies)
+                                {
+                                    <option data-companyid="@company.CompanyId" data-marketid="@company.MarketId" value="@company.Id">@(company.CompanyName + " (" + company.TradingCode + ")")</option>
+                                }
+                            </select>
+                        </div>
+                        @Html.Label("Branch", htmlAttributes: new { @class = "control-label col-md-1" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <select class="input-sm form-control bordercss" id="cmbBranch">
+                                <option value="0">Select Branch</option>
+                                @foreach (var br in branches)
+                                {
+                                    <option value="@br.Id">@br.BrokerBranchName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Investor Type", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <select class="input-sm form-control bordercss" id="cmbType">
+                                <option value="0">Select Type</option>
+                                @foreach (var type in investorTypes)
+                                {
+                                    <option value="@type.Id">@type.InvestorTypeShortName</option>
+                                }
+                            </select>
+                        </div>
+                        @Html.Label("IPO Group", htmlAttributes: new { @class = "control-label col-md-1 text-right" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <select class="input-sm form-control bordercss" id="ddlGroupId">
+                                <option value="0">Select Group</option>
+                                @foreach (var group in GroupList)
+                                {
+                                    <option value="@group.Id">@group.GroupName</option>
+                                }
+                            </select>
+                        </div>
+
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <input type="text" class="input-sm form-control" id="txtCode" />
+                        </div>
+                        <div class="col-md-1">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" id="btnSearch" class="btn btn-primary">Search</button>
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-sm-12 info-container">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">Company IPO Info</div>
+                                <div class="panel-body">
+                                    <div class="row">
+
+                                        <div class="col-sm-2 label-container text-right">
+                                            @Html.Label("Application End Date :", new { @class = "control-label" })
+                                        </div>
+                                        <div class="col-sm-1">
+                                            <label class="control-label" id="lblAppEndDate"></label>
+                                        </div>
+                                        <div class="col-sm-2 label-container">
+                                            @Html.Label("Issue Method :", new { @class = "control-label" })
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <label class="control-label" id="lblIssueMethodId"></label>
+                                        </div>
+                                        <div class="col-sm-1 label-container text-right">
+                                            @Html.Label("Lot :", new { @class = "control-label" })
+                                        </div>
+                                        <div class="col-sm-1">
+                                            <label class="control-label" id="lblLot"></label>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="row">
+
+                                        <div class="col-sm-2 label-container">
+                                            @Html.Label("Face Value :", new { @class = "control-label" })
+                                        </div>
+                                        <div class="col-sm-1">
+                                            <label class="control-label" id="lblFaceValue"></label>
+                                        </div>
+                                        <div class="col-sm-1 label-container text-right">
+                                            @Html.Label("Premium:", new { @class = "control-label" })
+                                        </div>
+                                        <div class="col-sm-1">
+                                            <label class="control-label" id="lblPremium"></label>
+                                        </div>
+                                        <div class="col-sm-1 label-container text-right">
+                                            @Html.Label("Discount :", new { @class = "control-label" })
+                                        </div>
+                                        <div class="col-sm-1">
+                                            <label class="control-label" id="lblDiscount"></label>
+                                        </div>
+                                        <div class="col-sm-2 label-container text-right">
+                                            @Html.Label("Required Amount :", new { @class = "control-label" })
+                                        </div>
+                                        <div class="col-sm-1">
+                                            <label class="control-label" id="lblRequiredAmount"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @*<div class="ln_solid"></div>*@
+
+
+                    @*<div class="row form-group">
+
+                        </div>*@
+                    @*<div class="item form-group">
+                            <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                <div class="success" role="alert" style="display:none">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <p class="message-content">Saved Sucessfully</p>
+                                </div>
+                                <div class="failed" role="alert" style="display:none">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <p class="message-content">Fail to save</p>
+                                </div>
+                                <br />
+                            </div>
+                        </div>*@
+                    @*</form>*@
+                </div>
+                <div class="x_content">
+                    <div class="row">
+                        <div id="grid"> </div>
+                    </div>
+                    <div class="ln_solid"></div>
+                    <div class="row form-group">
+                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            <button type="submit" id="btnSave" class="btn btn-success">Apply</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    //
+
+    <div id="element_to_pop_up" style="height:40%;width:20%; background: #FFFFFF;">
+        <a id="pop_close" class="b-close">x</a>
+        <asp:Label ID="Label17" runat="server" Text="Result Details" CssClass="lblStyle"></asp:Label>
+        <br />
+        <input type="hidden" id="hdnIpoApplicationId" />
+        <input type="hidden" id="hdnInvestorType" />
+        <div class="row">
+            <div class="col-md-11 col-sm-6 col-xs-12">
+                <table>
+                    <tr>
+                        <td>Investor Code</td>
+                        <td>&nbsp;&nbsp;&nbsp;</td>
+                        <td><label id="lblInvCode"></label></td>
+                    </tr>
+                    <tr>
+                        <td>Investor Name</td>
+                        <td>&nbsp;&nbsp;&nbsp;</td>
+                        <td><label id="lblInvName"></label></td>
+                    </tr>
+                    <tr>
+                        <td>Current Balance</td>
+                        <td>&nbsp;&nbsp;&nbsp;</td>
+                        <td><label></label><label id="lblBalance"></label></td>
+                    </tr>
+                    <tr>
+                        <td>Currency</td>
+                        <td>&nbsp;&nbsp;&nbsp;</td>
+                        <td><label id="lblCurrency"></label></td>
+                    </tr>
+                    <tr>
+                        <td>Applied Amount</td>
+                        <td>&nbsp;&nbsp;&nbsp;</td>
+                        <td><label id="lblAppAmount"></label></td>
+                    </tr>
+                    <tr id="ShareQtyNonNRB">
+                        <td>Share Quantity</td>
+                        <td>&nbsp;&nbsp;&nbsp;</td>
+                        <td><input id="txtShareQty" /></td>
+                    </tr>
+                    <tr id="ShareQtyNRB">
+                        <td>Share Quantity</td>
+                        <td>&nbsp;&nbsp;&nbsp;</td>
+                        <td><input id="txtShareQtyNRB" /></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>&nbsp;&nbsp;&nbsp;</td>
+                        <td><label style="color:red" id="lblMessage"></label></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-md-7 col-sm-6 col-xs-12">
+
+            </div>
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                <button type="submit" id="btnShareQuantityEdit" class="btn btn-primary b-close">Save</button>
+            </div>
+        </div>
+    </div>
+    <div class="loader" id="divLoader" style="display: none;"></div>
+}
+

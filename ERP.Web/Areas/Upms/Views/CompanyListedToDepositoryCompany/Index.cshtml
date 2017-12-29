@@ -1,0 +1,525 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<style>
+    .required::after {
+        content: " *";
+        color: red;
+    }
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+
+<script type="text/javascript">
+
+
+    function GetCompanyList()
+    {
+        var CompanyList = $("#CompanyList");
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCompanyName", "CompanyListedToDepositoryCompany", "http")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: { },
+            success: function (Company_Name) {//
+                CompanyList.html('');
+                CompanyList.append($('<option></option>').val("").html("Please select"));
+                $.each(Company_Name, function (id, option) {
+                    CompanyList.append($('<option></option>').val(option.Id).html(option.CompanyName));
+                });
+
+            },
+            error: function () {
+                alert("Fail to load");
+            }
+        });
+    }
+
+    function GetCompanyDepositoryList() {
+        var CompanyDepositoryList = $("#CompanyDepositoryList");
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCompanyDepository", "CompanyListedToDepositoryCompany", "http")',
+            type: "GET",
+            dataType: 'json',
+            async: true,
+            data: {},
+            success: function (Company_DepositoryName) {//
+                CompanyDepositoryList.html('');
+                CompanyDepositoryList.append($('<option></option>').val("").html("Please select"));
+                $.each(Company_DepositoryName, function (id, option) {
+                    CompanyDepositoryList.append($('<option></option>').val(option.Id).html(option.DepositoryCompanyName));
+                });
+
+            },
+            error: function () {
+                alert("Fail to load");
+            }
+        });
+    }
+
+    function GetCompanyEnrollment() {
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetCompanyEnrollment", "CompanyListedToDepositoryCompany", "http")',
+                    dataType: "json",
+                    data: {}
+                }
+            },
+            pageSize: 15,
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 400,
+            groupable: true,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+           {
+               field: "rowNumber",
+               title: "SL",
+               template: "<span class='row-number'></span>",
+               width: "15%"
+           },
+
+            {
+                field: "CompanyName",
+                title: "Securities Name ",
+                width: "20%"
+            },
+            {
+                field: "CompanyDepositoryName",
+                title: "Depository"
+
+            },
+             {
+                 field: "SpotStartDate",
+                 title: "Spot Start Date ",
+             },
+              {
+                  field: "SpotEndDate",
+                  title: "Spot End Date ",
+              },
+               {
+                   field: "SuspendStartDate",
+                   title: "Suspend Start Date ",
+                   hidden:true,
+               },
+                {
+                    field: "SuspendEndDate",
+                    title: "Suspend End Date ",
+                    hidden: true,
+                },
+                 {
+                     field: "DematStartDate",
+                     title: "Demat Start Date ",
+                     hidden: true,
+                 },
+                 {
+                     field: "TradingStartDate",
+                     title: "Trading Start Date ",
+                     hidden: true,
+                 },
+
+             {
+                 title: "Action",
+                 width: "10%",//<a href="#" title="Edit" onclick="LoadEditData(' + e.Id + ',' + e.CompanyId + ',' + e.CompanyDepositoryId + ',' + "'" + e.SpotStartDate + "'" + ',' + "'" + e.SpotEndDate + "'" + ',' + "'" + e.SuspendStartDate + "'" + ',' + "'" + e.SuspendEndDate + "'" + ',' + "'" + e.DematStartDate + "'" + ',' + "'" + e.TradingStartDate + "'" + ')" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i>
+                 template: function (dataItem) {
+                     return '<a href="#" title="Edit" onclick="LoadEditData(' + dataItem.Id + ',' + dataItem.CompanyId + ',' + dataItem.CompanyDepositoryId + ',' + "'" + dataItem.SpotStartDate + "'" + ',' + "'" + dataItem.SpotEndDate + "'" + ',' + "'" + dataItem.SuspendStartDate + "'" + ',' + "'" + dataItem.SuspendEndDate + "'" + ',' + "'" + dataItem.DematStartDate + "'" + ',' + "'" + dataItem.TradingStartDate + "'" + ')" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a>';
+                 }
+             },
+            ],
+            dataBound: function () {
+                var rows = this.items();
+                $(rows).each(function () {
+                    var index = $(this).index() + 1;
+                    var rowLabel = $(this).find(".row-number");
+                    $(rowLabel).html(index);
+                });
+            }
+        });
+    }
+
+
+
+    @*function GetCompanyEnrollment() {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCompanyEnrollment", "CompanyListedToDepositoryCompany", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { },
+            success: function (CompanyEnroll) {
+                var dtTable = $('#tblCompanyEnroll');
+                var tableBody = dtTable.find('tbody');
+                tableBody.empty();
+                var Index = 1; 
+                $.each(CompanyEnroll, function (id, e) {
+                    tableBody.append('<tr id="' + e.Id + '">' +
+                                    '<td>' + Index + '</td>' +
+                                    '<td>' + e.CompanyName + '</td>' +
+                                     '<td>' + e.CompanyDepositoryName + '</td>' +
+                                     '<td>' + e.SpotStartDate + '</td>' +
+                                    '<td>' + e.SpotEndDate + '</td>' +
+                                    '<td>' + e.SuspendStartDate + '</td>' +
+                                    '<td>' + e.SuspendEndDate + '</td>' +
+                                    '<td>' + e.DematStartDate + '</td>' +
+                                    '<td>' + e.TradingStartDate + '</td>' +
+                                    '<td> <a href="#" title="Edit" onclick=" LoadEditData(' + e.Id + ',' + e.CompanyId + ',' + e.CompanyDepositoryId + ',' + "'" + e.SpotStartDate + "'" + ',' + "'" + e.SpotEndDate + "'" + ',' + "'" + e.SuspendStartDate + "'" + ',' + "'" + e.SuspendEndDate + "'" + ',' + "'" + e.DematStartDate + "'" + ',' + "'" + e.TradingStartDate + "'" + ')" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i><a href="#" title="Delete" onclick="CompanyEnrollDelete(' + e.Id + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></a></td>' +
+                                    '</tr>')
+                    Index = Index + 1;
+                });
+            },
+            failure: function () {
+
+            }
+        });
+    }*@
+
+    function LoadEditData(Id, CompanyId, CompanyDepositoryId, SpotStartDate, SpotEndDate, SuspendStartDate, SuspendEndDate, DematStartDate, TradingStartDate)
+    {
+
+        $("#hdnCompanyEnrollmentId").val(Id);
+        $("#SpotStartDate").val(SpotStartDate)
+        $("#SpotEndDate").val(SpotEndDate)
+        $("#CompanyList").val(CompanyId)
+        $("#CompanyDepositoryList").val(CompanyDepositoryId)
+        $("#SuspendStartDate").val(SuspendStartDate)
+        $("#SuspendEndDate").val(SuspendEndDate)
+
+        $("#DematStartDate").val(DematStartDate)
+        $("#TradingStartDate").val(TradingStartDate)
+    }
+
+    function CompanyEnrollDelete(Id) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("CompanyEnrollDelete", "CompanyEnrollment", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (result) {
+                        $.alert.open("info","Delete successfull");
+                        GetCompanyEnrollment();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+
+
+
+    $(document).ready(function () {
+        GetCompanyEnrollment();
+        GetCompanyList();
+        GetCompanyDepositoryList();
+        $("#hdnCompanyEnrollmentId").val("0");
+
+        $("#btnSave").click(function (e) {
+
+            e.preventDefault();
+            var TradingStartDate =$("#TradingStartDate").val();
+            var DematStartDate =$("#DematStartDate").val();
+            var SuspendEndDate =$("#SuspendEndDate").val();
+            var  SuspendStartDate = $("#SuspendStartDate").val();
+            var SpotStartDate = $("#SpotStartDate").val();
+            var SpotEndDate = $("#SpotEndDate").val();
+            var CompanyId = $("#CompanyList").val();
+            var CompanyDepositoryId = $("#CompanyDepositoryList").val();
+            var hdnCompanyEnrollmentId = $("#hdnCompanyEnrollmentId").val();
+
+
+            if (TradingStartDate != "" && DematStartDate != "" && SuspendEndDate != "" && SuspendStartDate != "" && SpotStartDate != "" && SpotEndDate != "" && CompanyId != "" && CompanyDepositoryId != " ") {
+                    $.ajax({
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("SaveCompanyEnrollment", "CompanyListedToDepositoryCompany", "http")',
+                        type: "GET",
+                        dataType: 'json',
+                        async: true,
+                        data: { hdnCompanyEnrollmentId: hdnCompanyEnrollmentId, TradingStartDate: TradingStartDate, DematStartDate: DematStartDate, SuspendEndDate: SuspendEndDate, SuspendStartDate: SuspendStartDate, SpotStartDate: SpotStartDate, SpotEndDate: SpotEndDate, CompanyId: CompanyId, CompanyDepositoryId: CompanyDepositoryId },
+                        success: function (result) {
+                            if (result == 1) {
+                               $("#TradingStartDate").val("");
+                                $("#DematStartDate").val("");
+                               $("#SuspendEndDate").val("");
+                               $("#SuspendStartDate").val("");
+                                $("#SpotStartDate").val("");
+                                $("#SpotEndDate").val("");
+                                $("#hdnCompanyEnrollmentId").val("0");
+                                $(".success").show(800).fadeToggle(3000);
+                                GetCompanyEnrollment();
+                            }
+                            else {
+                                $(".failed").show(800).fadeToggle(3000);
+                            }
+                        },
+                        error: function () {
+                            // alert("Fail to save");
+                            $(".failed").show(800).fadeToggle(3000);
+                        }
+                    });
+
+
+                }
+                else {
+                    $.alert.open("error", "Insert required field");
+                }
+
+
+        });
+
+    });
+
+</script>
+
+
+
+@using (Html.BeginForm("Index", "CompanyListedToDepositoryCompany", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "CompanyListedToDepositoryCompanyInfo" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:100%;">
+            <h3 style="color: white;padding:2px">Securities Listed To Depository Company</h3>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <br />
+                    <input type="hidden" id="hdnCompanyEnrollmentId" />
+                    <div class="row form-group">
+                        @Html.Label("Securities", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.DropDownList("CompanyList", null, new { @class = "form-control bordercss" })
+                      </div>
+                        @Html.Label("Depository", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.DropDownList("CompanyDepositoryList", null, new { @class = "form-control bordercss" })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Spot Start Date", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("SpotStartDate", new { htmlAttributes = new { @class = "form-control DateInput", @required = "required" } })
+                        </div>
+                        @Html.Label("Spot End Date", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("SpotEndDate", new { htmlAttributes = new { @class = "form-control DateInput", @required = "required" } })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+
+                        @Html.Label("Suspend Start Date", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("SuspendStartDate", new { htmlAttributes = new { @class = "form-control DateInput", @required = "required" } })
+                        </div>
+                        @Html.Label("Suspend End Date", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("SuspendEndDate", new { htmlAttributes = new { @class = "form-control DateInput", @required = "required" } })
+                        </div>
+                    </div> 
+                    <div class="row form-group">
+
+                        @Html.Label("Demat Start Date", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("DematStartDate", new { htmlAttributes = new { @class = "form-control DateInput", @required = "required" } })
+                        </div>
+                        @Html.Label("Trading Start Date", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("TradingStartDate", new { htmlAttributes = new { @class = "form-control DateInput", @required = "required" } })
+                        </div>
+                    </div>
+
+                    <div class="ln_solid"></div>
+
+                    <div class="form-group">
+                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            <button type="submit" id="btnSave" class="btn btn-success">Save</button>
+                        </div>
+                    </div>
+                    <div class="item form-group">
+                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            <div class="success" role="alert" style="display:none">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <p class="message-content">Saved Sucessfully</p>
+                            </div>
+                            <div class="failed" role="alert" style="display:none">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <p class="message-content">Fail to save</p>
+                            </div>
+                            <br />
+
+                        </div>
+                    </div>
+                    <br />
+                    <div class="block_content">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div id="grid"></div>
+                            </div>
+                        </div>
+                        @*<table id="tblCompanyEnroll" class="table table-striped jambo_table bulk_action">
+                            <thead>
+                                <tr>
+                                    <th>SL</th>
+                                    <th>Company Name</th>
+                                    <th>Company Depository Name</th>
+                                    <th>Spot Start Date</th>
+                                    <th>Spot End Date</th>
+                                    <th>Suspend Start Date</th>
+                                    <th>Suspend End Date</th>
+                                    <th>Demat Start Date</th>
+                                    <th>Trading Start Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>*@
+                    </div>
+                    @*</form>*@
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+@*@using (Html.BeginForm("Index", "CompanyEnrollment", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "CompanyEnrollmentForm" }))
+{
+
+    <div class="page-title">
+        <div class="title_left">
+            <h3>Designation Info</h3>
+        </div>
+    </div>
+    <div class="x_panel">
+        <div class="x_title">
+
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <br />
+
+            <div class="row form-group">
+                @Html.Label("Depository Name", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.EditorFor(model => model.DepositoryCompanyName, new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                </div>
+                @Html.Label("Short Name", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.EditorFor(model => model.ShortName, new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                </div>
+            </div>
+            <div class="row form-group">
+
+                @Html.Label("Address", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control" } })
+                </div>
+                @Html.Label("Email", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                </div>
+            </div>
+            <div class="row form-group">
+
+                @Html.LabelFor(model => model.Fax, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.EditorFor(model => model.Fax, new { htmlAttributes = new { @class = "form-control" } })
+                </div>
+                @Html.Label("Contact Person", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.EditorFor(model => model.ContactPerson, new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                </div>
+            </div>
+
+            <div class="row form-group">
+
+                @Html.Label("Contact Phone", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.EditorFor(model => model.ContactPhone, new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                </div>
+                @Html.Label("Contact Email", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.EditorFor(model => model.ContactEmail, new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                </div>
+            </div>
+            <div class="ln_solid"></div>
+
+                <div class="ln_solid"></div>
+                <div class="item form-group">
+                    <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                        <div class="success" role="alert" style="display:none">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <p class="message-content">Saved Sucessfully</p>
+                        </div>
+                        <div class="failed" role="alert" style="display:none">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <p class="message-content">Fail to save</p>
+                        </div>
+                        <br />
+
+                    </div>
+                </div>
+               
+            </form>
+        </div>
+    </div>
+
+}*@
+
+
+
+

@@ -1,0 +1,332 @@
+﻿@using Common.Data.CommonDataModel
+@{
+    ViewBag.Title = "Indexsgh";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var reports = (List<ReportInformation>)ViewBag.Reports;
+}
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+
+
+<script type="text/javascript">
+
+    function GetCompanyInfo() {
+        var MarginStatus = 0;
+        var ddlCompanyList = $("#ddlCompanyList");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCompanyInfo", "CompanyInfo", "http")',
+            data: { MarginStatus: MarginStatus },
+            dataType: 'json',
+            async: true,
+            success: function (Companyinfo) {
+                ddlCompanyList.html('');
+                ddlCompanyList.append($('<option></option>').val("0").html("All"));
+                $.each(Companyinfo, function (id, option) {
+                    ddlCompanyList.append($('<option></option>').val(option.Id).html(option.CompanyName));
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+
+    function GetBrokerList() {
+
+        var ddlBrokerList = $("#ddlBrokerList");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBrokerInfo", "Broker", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (BrokerList) {
+                ddlBrokerList.html('');
+                ddlBrokerList.append($('<option></option>').val("0").html("Please select"));
+                $.each(BrokerList, function (id, option) {
+                    ddlBrokerList.append($('<option></option>').val(option.Id).html(option.BrokerName));
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+    function GetBankList() {
+
+        var ddlBankList = $("#ddlBankList");
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetBankInfo", "LookupBank", "http")',
+                data: {},
+                dataType: 'json',
+                async: true,
+                success: function (BankList) {
+                    ddlBankList.html('');
+                    ddlBankList.append($('<option></option>').val("0").html("Please select"));
+                    $.each(BankList, function (id, option) {
+                        ddlBankList.append($('<option></option>').val(option.Id).html(option.BankName));
+                    });
+
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+    }
+
+
+    $(document).ready(function () {
+
+        $("#divBank").hide();
+        $("#divBroker").hide();
+        $("#divCompany").hide();
+        $("#divDate").hide();
+
+        $("#ddlReportName").change(function () {
+            if ($("#ddlReportName").val() != "0")
+            {
+               if ($("#ddlReportName").val() == "3") {
+
+                   $("#divBank").hide();
+                   $("#divBroker").hide();
+                   $("#divDate").hide();
+                   $("#divCompany").show();
+                   GetCompanyInfo();
+               }
+               else if ($("#ddlReportName").val() == "4") {
+                   $("#divBank").hide();
+                   $("#divBroker").hide();
+                   $("#divDate").show();
+                   $("#divCompany").show();
+                   GetCompanyInfo();
+               }
+                else
+                {
+                   $("#divBank").hide();
+                   $("#divBroker").hide();
+                   $("#divCompany").hide();
+                   $("#divDate").hide();
+                }
+            }
+            else
+            {
+                $("#divBank").hide();
+                $("#divBroker").hide();
+                $("#divCompany").hide();
+                $("#divDate").hide();
+            }
+
+        });
+
+
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            if ($("#ddlReportName").val() != "0") {
+
+                 if ($("#ddlReportName").val() == "3") {
+                    if ($("#ddlCompanyList").val() != " ") {
+                        var url = '/GeneralReport/CompanyGroupChangingHistory?reportNo=3&CompanyId=' + $("#ddlCompanyList").val() + '&exportType=' + $("#cmbReportType").val();
+                        window.open(url);
+                    }
+                    else {
+                        $.alert.open("error", "Select company name");
+                    }
+                }
+                else if ($("#ddlReportName").val() == "4") {
+
+                    if ($("#DateFrom").val() != "" && $("#DateTo").val() != "")
+                    {
+                        var url = '/GeneralReport/CompanySharePriceHistory?reportNo=4&CompanyId=' + $("#ddlCompanyList").val() + '&DateFrom=' + $("#DateFrom").val() + '&DateTo= ' + $("#DateTo").val() + '&exportType=' + $("#cmbReportType").val();
+                        window.open(url);
+                    }
+                    else
+                    {
+                        $.alert.open("error", "Select date");
+                    }
+                }
+                else if ($("#ddlReportName").val() == "5") {
+                    var url = '/GeneralReport/AccChequeCollectionReport?reportNo=5&exportType=' + $("#cmbReportType").val();
+                        window.open(url);
+                }
+            }
+            else
+            {//
+                $.alert.open("error","Select report");
+            }
+            //var BrokerId = $("#BrokerId").val();
+            //if (BrokerId != "") {
+            //    var url = '/GeneralReport/GenerateTraderInfoReport?BrokerId=' + BrokerId + '&exportType=' + $("#cmbReportType").val();
+            //    window.open(url);
+            //}
+            //else {
+            //    $.alert.open("error", "Select broker")
+            //}
+
+
+           
+
+
+        });
+
+        
+            $("#DateFrom").on("change", function () {
+                var fromDate = $("#DateFrom").val();
+                $("#DateTo").datepicker('option', { minDate: fromDate });
+            });
+            $("#DateTo").on("change", function () {
+                var toDate = $("#DateTo").val();
+                $("#DateFrom").datepicker('option', { maxDate: toDate });
+            });
+
+
+    });
+</script>
+
+
+
+@using (Html.BeginForm("Index", "GeneralReport", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "GeneralForm" }))
+{
+
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:100%;">
+            <h3 style="color: white;padding:2px">General Report</h3>
+        </div>
+    </div>
+    <div class="x_panel">
+        <div class="x_title">
+            <input type="hidden" id="hdnOccupationId" />
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <br />
+            <div class="row">
+                <div class="col-md-7">
+                    <div class="item form-group">
+                        @Html.Label("Report", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                        <div class="col-sm-8">
+                            <select class="input-sm form-control bordercss" id="ddlReportName">
+                                <option value="0">Select Report</option>
+                                @foreach (var Rpt in reports)
+                                {
+                                    <option value="@Rpt.SerialNo">@(Rpt.ReportName)</option>
+                                }
+                            </select>
+                            @*<select class="input-sm form-control bordercss" id="ddlReportName">
+                                <option value="0" selected="selected">Plese Select</option>
+                                <option value="CompanyGroupChange">Securities Group Change History</option>
+                                <option value="SharePriceHistory">Securities Share Price History</option>
+                                <option value="accChequeCollection">Collection Or Deposit Report</option>
+                            </select>*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" id="divBank">
+                <div class="col-md-7">
+                    <div class="item form-group">
+                        @Html.Label("Bank", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                        <div class="col-md-8 col-sm-6 col-xs-12">
+                            @Html.DropDownList("BankList", null, new { @id = "ddlBankList", @class = "form-control bordercss" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" id="divBroker">
+                <div class="col-md-7">
+                    <div class="item form-group">
+                        @Html.Label("Broker", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                        <div class="col-md-8 col-sm-6 col-xs-12">
+                            @Html.DropDownList("BrokerList", null, new { @id = "ddlBrokerList", @class = "form-control bordercss" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" id="divCompany">
+                <div class="col-md-7">
+                    <div class="item form-group">
+                        @Html.Label("Company", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                        <div class="col-md-8 col-sm-6 col-xs-12">
+                            @Html.DropDownList("CompanyList", null, new { @id = "ddlCompanyList", @class = "form-control bordercss" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" id="divDate">
+                <div class="col-md-7">
+                    <div class="item form-group">
+                        @Html.Label("Date From", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                        <div class="col-md-8 col-sm-6 col-xs-12">
+                            @Html.Editor("DateFrom", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                        </div>
+                    </div>
+                    <div class="item form-group">
+                        @Html.Label("Date To", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                        <div class="col-md-8 col-sm-6 col-xs-12">
+                            @Html.Editor("DateTo", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-7">
+                    <div class="item form-group">
+                        @Html.Label("Report Type", new { @class = "control-label col-sm-3" })
+                        <div class="col-sm-8">
+                            <select class="input-sm form-control bordercss" id="cmbReportType">
+                                <option value="Pdf" selected="selected">Pdf</option>
+                                <option value="ExcelBook">Microsoft Excel</option>
+                                <option value="Excel">Microsoft Excel (97-2003)</option>
+                                <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                                <option value="Word">Microsoft Word (97-2003)</option>
+                                <option value="XML">XML</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="ln_solid"></div>
+            <div class="row">
+                <div class="col-md-2"></div>
+                <div class="col-md-4">
+                    <div class="form-group from-action">
+                        <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+

@@ -1,0 +1,196 @@
+﻿
+@using Common.Data.CommonDataModel
+@using Upms.Data.UPMSDataModel
+@{
+    ViewBag.Title = "RcvPymtReport";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var branches = (List<BrokerBranch>)ViewBag.Branches;
+    var TransactionMode = (List<AccTransactionMode>)ViewBag.TransactionModeList;
+}
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+
+
+<script type="text/javascript">
+
+   
+    $(document).ready(function () {
+
+
+        $("#ddlReportName").focus();
+
+     
+
+
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+
+            var Qtype = $("#ddlReportName").val(); //Qtype FromDate ToDate  BrokerBranch  TransMode
+            var FromDate = $("#txtFromDate").val();
+            var ToDate = $("#txtToDate").val();
+            var BrokerBranchId = $("#cmbBranch").val();
+            var TransMode = $("#ddlTransMode").val();
+            var Status = $("#ddlStatus").val();
+	    var InvBranch=$("#cmbInvestorBranch").val();
+            if (FromDate == "" || ToDate == "")
+            {
+                FromDate = "";
+                ToDate = "";
+            }
+
+
+            if ($("#ddlReportName").val() != "0") {
+                var url = '/AccCollection/GetReceivePaymentReport?Qtype=' + Qtype + '&FromDate=' + FromDate + '&ToDate=' + ToDate + '&BrokerBranchId=' + BrokerBranchId + '&investorBranch='+InvBranch+'&TransMode=' + TransMode + '&Status=' + Status + '&exportType=' + $("#cmbReportType").val();
+                window.open(url);
+            }
+            else {
+                $.alert.open("error", "Select report name");
+            }
+        });
+
+        $("#txtFromDate").on("change", function () {
+            var fromDate = $("#txtFromDate").val();
+            $("#txtToDate").datepicker('option', { minDate: fromDate });
+        });
+        $("#txtToDate").on("change", function () {
+            var toDate = $("#txtToDate").val();
+            $("#txtFromDate").datepicker('option', { maxDate: toDate });
+        });
+
+    });
+
+</script>
+@using (Html.BeginForm("IpoRpt", "IPO", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "ApoForm" }))
+{
+    @Html.AntiForgeryToken()
+
+
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">&nbsp;&nbsp; Receive/Payment Report</h3>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div id="AjaxLoader" class="ajaxLoader"></div>
+                <div class="x_title">
+                </div>
+                <div class="x_content">
+                    <br />
+                    <div class="row form-group IpoApplication">
+                        @Html.Label("Report Name", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12 ">
+                            <select class="form-control bordercss" id="ddlReportName">
+                                <option value="0">Please Select</option>
+                                <option value="1">Receive</option>
+                                <option value="3">Payment</option>
+                            </select>
+                        </div>
+                        @Html.Label("Transaction Mode", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <select class="input-sm form-control bordercss" id="ddlTransMode">
+                                <option value="0">All Transaction Mode</option>
+                                @foreach (var TranMode in TransactionMode)
+                                {
+                                    <option value="@TranMode.Id">@(TranMode.TransactionModeName)</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row form-group IpoApplication">
+                        @Html.Label("From Date", htmlAttributes: new { @class = "control-label col-md-2" }) @*DateInput*@
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <input type="text" class="input-sm form-control  DateInput check-date" id="txtFromDate" />
+                        </div>
+                        @Html.Label("To Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <input type="text" class="input-sm form-control  DateInput check-date" id="txtToDate" />
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Entry Branch", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <select class="input-sm form-control bordercss" id="cmbBranch">
+                                <option value="0">Select Entry Branch</option>
+                                @foreach (var br in branches)
+                                {
+                                    <option value="@br.Id">@br.BrokerBranchName</option>
+                                }
+                            </select>
+                        </div>
+                        @Html.Label("Status", new { @class = "control-label col-sm-2" })
+                        <div class="col-sm-4">
+                            <select class="input-sm form-control bordercss" id="ddlStatus">
+                                <option value="0" selected="selected">All</option>
+                                <option value="1">Approve</option>
+                                <option value="2">Non Approve</option>
+                                <option value="3">Clearance</option>
+                                <option value="4">Dishonour</option>
+                                <option value="5">Deposit to bank</option>
+                                <option value="5">No deposit to bank</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Report Type", new { @class = "control-label col-sm-2" })
+                        <div class="col-sm-4">
+                            <select class="input-sm form-control bordercss" id="cmbReportType">
+                                <option value="Pdf" selected="selected">Pdf</option>
+                                <option value="ExcelBook">Microsoft Excel</option>
+                                <option value="Excel">Microsoft Excel (97-2003)</option>
+                                <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                                <option value="Word">Microsoft Word (97-2003)</option>
+                                <option value="XML">XML</option>
+                            </select>
+                        </div>
+			@Html.Label("Investor Branch", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <select class="input-sm form-control bordercss" id="cmbInvestorBranch">
+                                <option value="0">Select Investor Branch</option>
+                                @foreach (var br in branches)
+                                {
+                                    <option value="@br.Id">@br.BrokerBranchName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="ln_solid"></div>
+                    <div class="row form-group">
+                        <div class="col-md-3"></div>
+                        <div class="col-md-3">
+                            <button type="submit" id="btnSearch" class="btn btn-primary">View</button>
+                        </div>
+                    </div>
+
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    //
+
+
+}
+
+
+
+
+

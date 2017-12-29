@@ -1,0 +1,200 @@
+﻿
+@{
+    ViewBag.Title = "ChargesRpt";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+<style>
+    .ui-autocomplete {
+        cursor: pointer;
+        height: 400px;
+        width: 300px;
+        overflow-y: scroll;
+        background-color: white;
+        color: rgb(0,188,212);
+        /*outline-style:outset;*/
+    }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .required::after {
+        content: " *";
+        color: red;
+    }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        $('#btnSearch').click(function (e) {
+            e.preventDefault();
+            var TransDateFrom = $("#TransDateFrom").val();
+            var TransDateTo = $("#TransDateTo").val();
+            var TransactionTypeId = $("#ddlTransactionList").val() == "" ? 0 : $("#ddlTransactionList").val();
+            var TransMode = $("#ddlTransMode").val();
+            var InvestorCode = $("#txtCode").val().trim();
+            var ApproveStatus = $("#ddlApproveSattus").val();
+            var RptViewType = $("#ddlReportview").val();
+            if (TransDateFrom == "" || TransDateTo == "") {
+                TransDateFrom = "";
+                TransDateTo = "";
+            }
+            if ($("#ddlReportName").val() == 1)
+            {
+                window.open('/IPOGroup/PrintManualChargeInfo?TransDateFrom=' + TransDateFrom + '&TransDateTo=' + TransDateTo + '&TransactionTypeId=' + TransactionTypeId + '&TransMode=' + TransMode + '&InvestorCode=' + InvestorCode + '&ApproveStatus=' + ApproveStatus + '&RptViewType=' + RptViewType);
+            }
+            else
+            {
+                window.open('/IPOGroup/InvestorWiseTransactionOfCharges?TransDateFrom=' + TransDateFrom + '&TransDateTo=' + TransDateTo + '&TransactionTypeId=' + TransactionTypeId + '&TransMode=' + TransMode + '&InvestorCode=' + InvestorCode );
+            }
+           
+        });
+          
+
+        $("#ddlReportName").change(function(){
+            if($("#ddlReportName").val() == 1)
+            {
+                $("#divAppStatus").show();
+                $("#divRptView").show();
+            }
+            else
+            {
+                $("#divAppStatus").hide();
+                $("#divRptView").hide();
+            }
+        
+        });
+
+        
+        $("#TransDateFrom").on("change", function () {
+            var fromDate = $("#TransDateFrom").val();
+            $("#TransDateTo").datepicker('option', { minDate: fromDate });
+        });
+        $("#TransDateTo").on("change", function () {
+            var toDate = $("#TransDateTo").val();
+            $("#TransDateFrom").datepicker('option', { maxDate: toDate });
+        });
+
+
+
+    });
+</script>
+@using (Html.BeginForm("ChargesRpt", "IPOGroup", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "IPOGroupForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">&nbsp;&nbsp;Investor wise  charges Information</h3>
+        </div>
+    </div>
+    @*<div class="clearfix"></div>*@
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <br />
+
+                    <div id="AjaxLoader" class="ajaxLoader"></div>
+                    <div class="row">
+                        <div class="col-sm-12 info-container">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">Search Option</div>  
+                                <div class="panel-body">
+                                    <div class="row form-group">
+                                        @Html.Label("Report Name", htmlAttributes: new { @class = "control-label col-md-2" })
+                                        <div class="col-md-4">
+                                          <select class="form-control bordercss" id="ddlReportName">
+                                              <option value="1">Manual Charges</option>
+                                              <option value="2">Investor Wise Transaction Of Charges</option>
+                                          </select>
+                                        </div>
+                                      
+                                    </div>
+                                    <div class="row form-group">
+                                        @Html.Label("Transaction Date From", htmlAttributes: new { @class = "control-label col-md-2" })
+                                        <div class="col-md-4">
+                                            @Html.Editor("TransDateFrom", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                                        </div>
+                                        @Html.Label("Transaction Date To", htmlAttributes: new { @class = "control-label col-md-2" })
+                                        <div class="col-md-4">
+                                            @Html.Editor("TransDateTo", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                                        </div>
+                                    </div>
+                                    <div class="row form-group">
+                                        @Html.Label("Transaction Type", htmlAttributes: new { @class = "control-label col-md-2" })
+                                        <div class="col-md-4">
+                                            @Html.DropDownList("TransactionList", new SelectList(ViewBag.TransactionList, "Id", "TransactionTypeName"), "Please select", new { @id = "ddlTransactionList", @class = "form-control bordercss" })
+                                        </div>
+                                        @Html.Label("Transaction Mode", htmlAttributes: new { @class = "control-label col-md-2" })
+                                        <div class="col-md-4">
+                                            <select class="form-control bordercss" id="ddlTransMode">
+                                                <option value="" selected>Please Select</option>
+                                                <option value="Deduction">Deduction</option>
+                                                <option value="Addition">Addition</option>
+                                            </select>
+                                        </div>
+
+                                    </div>
+                                    <div class="row form-group">
+                                       
+                                        @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                            @Html.Editor("txtCode", new { htmlAttributes = new { @class = "form-control" } })
+                                        </div>
+                                      <div id="divAppStatus">
+                                          @Html.Label("Approve Status", htmlAttributes: new { @class = "control-label col-md-2" })
+                                          <div class="col-md-4">
+                                              <select class="form-control bordercss" id="ddlApproveSattus">
+                                                  <option value="2" selected>Please Select</option>
+                                                  <option value="1">Approved</option>
+                                                  <option value="0">Non-Approved</option>
+                                              </select>
+                                          </div>
+                                      </div>
+                                    </div>
+                                    <div class="row form-group" id="divRptView">
+                                        @Html.Label("Report view", htmlAttributes: new { @class = "control-label col-md-2" })
+                                        <div class="col-md-4">
+                                            <select class="form-control bordercss" id="ddlReportview">
+                                                <option value="0" selected>General</option>
+                                                <option value="1">Investor wise</option>
+                                                <option value="2">Charge wise</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <div>
+                                        <div class="col-sm-5"></div>
+                                        <div class="col-sm-2">
+                                            <input type="button" class="btn btn-sm btn-info" style="width:60%" id="btnSearch" value="View" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+

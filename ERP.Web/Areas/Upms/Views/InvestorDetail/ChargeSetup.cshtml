@@ -1,0 +1,519 @@
+﻿@using ERP.Web.ViewModels
+@using Upms.Data.UPMSDataModel
+@{
+    ViewBag.Title = "Charge Setup";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var charges = (List<TradeTransactionType>)ViewBag.Charges;
+    var allCharges = (List<TradeTransactionCharge>)ViewBag.AllCharges;
+    var accountTypes = (List<InvestorAccountType>)ViewBag.AccountTypes;
+    var oSerializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+    var types = oSerializer.Serialize(accountTypes.Select(x => new { Id = x.Id, Name = x.AccountTypeName }));
+    var markets = (List<MarketInformation>)ViewBag.Markets;
+    var market = oSerializer.Serialize(markets.Select(x => new { Id = x.Id, Name = x.MarketShortName }));
+}
+<style type="text/css">
+    .panel-custom > .panel-heading {
+        color: #FFFFFF !important;
+    }
+    /**/
+    .panel-custom .panel-body .row:not(:last-child) {
+        margin-bottom: 10px;
+    }
+
+    .panel-custom .panel-body .radio {
+        margin-top: 0px;
+    }
+
+    .panel-custom .panel-body .radio-text, .panel-custom .panel-body input[type=text] {
+        color: #73879C;
+    }
+
+    .panel-custom .label-container {
+        text-align: right;
+    }
+
+    input[type=text]:read-only {
+        background: #FFFFFF;
+        cursor: default;
+    }
+
+    #error > .panel {
+        margin-bottom: 20px;
+    }
+
+        #error > .panel > .panel-heading {
+            padding: 0px 5px 0px 15px;
+        }
+
+    .radio-container label {
+        cursor: pointer;
+        padding: 5px;
+    }
+
+        .radio-container label.active {
+            background: #0e73a9;
+            border-radius: 4px;
+            /*margin-left: 10px;*/
+        }
+
+            .radio-container label.active span.radio-text {
+                color: #FFFFFF;
+            }
+
+    #divSlabContainer #tblSlab td {
+        padding: 5px;
+    }
+
+    #lblInvestorName .well-sm {
+        padding: 5px;
+        display: inline-block;
+        margin-bottom: 0px;
+    }
+
+    .market {
+        width: 70px;
+    }
+
+    .account-type {
+        width: 170px;
+    }
+</style>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="panel panel-success panel-custom">
+            <div class="panel-heading PageHeader">
+                <h3 class="panel-title">Charge Setup</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Charge Name :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <select class="input-sm form-control" id="cmbCharge">
+                            <option value="0">Select Charge</option>
+                            @foreach (var charge in charges)
+                            {
+                                <option value="@charge.Id">@charge.TransactionTypeName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("DSE Charge :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="number" class="input-sm form-control" id="txtDSECharge" value="" />
+                    </div>
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Is DSE Slab :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="checkbox" class="checkbox checkbox-inline" id="chkIsDSESlab" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("CSE Charge :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="number" class="input-sm form-control" id="txtCSECharge" value="" />
+                    </div>
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Is CSE Slab :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="checkbox" class="checkbox checkbox-inline" id="chkIsCSESlab" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Minimum Charge", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="number" class="input-sm form-control" id="txtMinimumCharge" value="" />
+                    </div>
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Is Percentage :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="checkbox" class="checkbox checkbox-inline" id="chkIsPercentage" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Charge Type :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <select class="input-sm form-control" id="cmbChargeType">
+                            <option value="BROKER">Broker</option>
+                            <option value="CDBL">CDBL</option>
+                            <option value="EXCHANGE">Exchange</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Calculation Basis :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <select class="input-sm form-control" id="cmbCalcBasis">
+                            <option value="Current Balance">Portfolio Value</option>
+                            <option value="Current Balance">Current Balance</option>
+                            <option value="Fixed Amount">Fixed Amount</option>
+                            <option value="Transaction Volume">Transaction Volume</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Calculation Mode :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <select class="input-sm form-control" id="cmbCalcMode">
+                            <option value="Daily">Daily</option>
+                            <option value="Monthly">Monthly</option>
+                            <option value="Quarterly">Quarterly</option>
+                            <option value="Half Yearly">Half Yearly</option>
+                            <option value="Yearly">Yearly</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Effect Mode :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <select class="input-sm form-control" id="cmbEffectMode">
+                            <option value="Daily">Daily</option>
+                            <option value="Monthly">Monthly</option>
+                            <option value="Quarterly">Quarterly</option>
+                            <option value="Half Yearly">Half Yearly</option>
+                            <option value="Yearly">Yearly</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row" id="divSlabContainer" style="display: none;">
+                    <div class="col-sm-12">
+                        <table class="table table-bordered table-responsive" id="tblSlab">
+                            <thead>
+                                <tr>
+                                    <th colspan="7" class="text-center">
+                                        <input type="button" class="btn btn-sm btn-success" id="btnNewSlab" value="Add New Slab" />
+                                    </th>
+                                </tr>
+                                <tr id="trSlabHeader" style="display: none;">
+                                    <th class="text-center">Market</th>
+                                    <th class="text-center">Account Type</th>
+                                    <th>Amount From</th>
+                                    <th>Amount To</th>
+                                    <th>Charge Amount</th>
+                                    <th class="text-center">Is Percentage</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+            <div class="panel-footer">
+                <div class="row">
+                    <div class="col-sm-12 text-center">
+                        <input type="button" name="btnSubmit" id="btnSubmit" class="btn btn-sm btn-success" value="Submit" />
+                        <input type="button" name="btnReset" id="btnReset" class="btn btn-sm btn-success" value="Reset" />
+                    </div>
+                </div>
+                <table class="table table-bordered table-responsive" id="tblCharges" style="background: #FFF;">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Sl.</th>
+                            <th>Charge Name</th>
+                            <th>Charge Type</th>
+                            <th class="text-right">DSE Charge</th>
+                            <th class="text-center">Is DSE Slab</th>
+                            <th class="text-right">CSE Charge</th>
+                            <th class="text-center">Is CSE Slab</th>
+                            <th class="text-right">Minimum Charge</th>
+                            <th class="text-center">Is Percentage</th>
+                            <th>Calculation Basis</th>
+                            <th>Calculation Mode</th>
+                            <th>Effect Mode</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < allCharges.Count; i++)
+                        {
+                            <tr>
+                                <td class="text-center">@(i + 1)</td>
+                                <td>@allCharges[i].TransactionTypeName</td>
+                                <td>@allCharges[i].ChargeType</td>
+                                <td class="text-right">@allCharges[i].DSECharge</td>
+                                <td class="text-center">@(allCharges[i].IsDSESlab ? "Yes" : "No")</td>
+                                <td class="text-right">@allCharges[i].CSECharge</td>
+                                <td class="text-center">@(allCharges[i].IsCSESlab ? "Yes" : "No")</td>
+                                <td class="text-right">@allCharges[i].MinimumCharge</td>
+                                <td class="text-center">@(allCharges[i].IsPercentage ? "Yes" : "No")</td>
+                                <td>@allCharges[i].CalculationBasis</td>
+                                <td>@allCharges[i].CalculationMode</td>
+                                <td>@allCharges[i].EffectMode</td>
+                                <td class="text-center"><input data-cid="@allCharges[i].TransactionTypeId" type='button' class='btn btn-sm btn-success btn-edit' value='Edit' /></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="~/Scripts/jquery.maskedinput-1.3.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var accountTypes =@Html.Raw(types);
+        var markets = @Html.Raw(market);
+        var dseId = @(markets.FirstOrDefault(x=> x.MarketShortName=="DSE")==null?0:markets.FirstOrDefault(x=> x.MarketShortName=="DSE").Id);
+        var cseId = @(markets.FirstOrDefault(x=> x.MarketShortName=="CSE") == null ? 0 : markets.FirstOrDefault(x=> x.MarketShortName=="CSE").Id);
+        $("#chkIsDSESlab,#chkIsCSESlab").on("change", function () {
+            showHideSlabList();
+            showHideMarket();
+        });
+        $(document).on("click", ".delete-slab", function () {
+            $(this).parents("tr").remove();
+            if ($("#divSlabContainer #tblSlab tbody tr").length == 0) {
+                $("#trSlabHeader").hide();
+            }
+        });
+        function showHideMarket() {
+            $(".market option").show();
+            if (!$("#chkIsDSESlab").is(":checked")) {
+                $(".market option[value=" + dseId + "]").hide();
+                $(".market").val(cseId);
+            }
+            if (!$("#chkIsCSESlab").is(":checked")) {
+                $(".market option[value=" + cseId + "]").hide();
+                $(".market").val(dseId);
+            }
+        }
+        $("#btnNewSlab").on("click", function () {
+            var tr = '<tr data-slab-id="0">';
+            tr += ' <td class="center">';
+            tr += ' <select class="input-sm form-control market">';
+            $.each(markets, function(i, d) {
+                tr += ' <option value="' + d.Id + '">' + d.Name + '</option>';
+            });
+            tr += ' </select>';
+            tr += ' </td>';
+            tr += ' <td class="center">';
+            tr += ' <select class="input-sm form-control account-type">';
+            tr += ' <option value="0">Select Account Type</option>';
+            $.each(accountTypes, function(i, d) {
+                tr += ' <option value="' + d.Id + '">' + d.Name + '</option>';
+            });
+            tr += ' </select>';
+            tr += ' </td>';
+            tr += ' <td>';
+            tr += ' <input type="number" class="input-sm form-control amount-from" />';
+            tr += ' </td>';
+            tr += ' <td>';
+            tr += ' <input type="number" class="input-sm form-control amount-to" />';
+            tr += ' </td>';
+            tr += ' <td>';
+            tr += ' <input type="number" class="input-sm form-control charge-amount" />';
+            tr += ' </td>';
+            tr += ' <td class="text-center">';
+            tr += ' <input type="checkbox" class="checkbox checkbox-inline is-percentage" />';
+            tr += ' </td>';
+            tr += ' <td class="text-center">';
+            tr += ' <input type="button" class="btn btn-sm btn-success delete-slab" value="Delete"/>';
+            tr += ' </td>';
+            tr += ' </tr>';
+            $("#divSlabContainer #tblSlab tbody").append(tr);
+            $("#trSlabHeader").show();
+            showHideMarket();
+        });
+        function clearAll() {
+            $("input[type=text],input[type=number]").val("");
+            $("#cmbCharge").val("0");
+            $("#cmbCharge").prop("disabled", false);
+            $("input[type=checkbox]").prop("checked", false);
+            $("#divSlabContainer").slideUp();
+            $("#trSlabHeader").hide();
+            $("#divSlabContainer #tblSlab tbody tr").remove();
+        }
+
+        $("#btnSubmit").on("click", function () {
+            var charge = $("#cmbCharge").val();
+            var dseCharge = $("#txtDSECharge").val();
+            var cseCharge = $("#txtCSECharge").val();
+            var per = $("#chkIsPercentage").is(":checked");
+            var dseSlab = $("#chkIsDSESlab").is(":checked");
+            var cseSlab = $("#chkIsCSESlab").is(":checked");
+            var minCharge = $("#txtMinimumCharge").val();
+            var chargeType = $("#cmbChargeType").val();
+            var calcBasis = $("#cmbCalcBasis").val();
+            var calcMode = $("#cmbCalcMode").val();
+            var effectMode = $("#cmbEffectMode").val();
+            if (charge == "0") {
+                $.alert.open("Warning!", "Please select a charge.");
+                return false;
+            }
+            if (dseCharge == "") {
+                $.alert.open("Warning!", "Please enter DSE charge amount.");
+                return false;
+            }
+            if (cseCharge == "") {
+                $.alert.open("Warning!", "Please enter CSE charge amount.");
+                return false;
+            }
+            if (minCharge == "") {
+                $.alert.open("Warning!", "Please enter minimum charge amount.");
+                return false;
+            }
+            if (chargeType == "") {
+                $.alert.open("Warning!", "Please select charge type.");
+                return false;
+            }
+            if (calcBasis == "") {
+                $.alert.open("Warning!", "Please select calculation basis.");
+                return false;
+            }
+            if (calcMode == "") {
+                $.alert.open("Warning!", "Please select calculation mode.");
+                return false;
+            }
+            if (effectMode == "") {
+                $.alert.open("Warning!", "Please select effect mode.");
+                return false;
+            }
+            var transactionCharge = { TransactionTypeId: charge, DSECharge: dseCharge, CSECharge: cseCharge, IsDSESlab: dseSlab, IsCSESlab: cseSlab, IsPercentage: per, MinimumCharge: minCharge,ChargeType: chargeType,CalculationBasis: calcBasis,CalculationMode: calcMode,EffectMode: effectMode };
+            var slabList = [];
+            var dseSlabCount = 0;
+            var cseSlabCount = 0;
+
+            $("#divSlabContainer #tblSlab tbody tr").each(function (i, d) {
+                var amntFrom = $(d).find(".amount-from").eq(0).val();
+                var amntTo = $(d).find(".amount-to").eq(0).val();
+                var chargeAmnt = $(d).find(".charge-amount").eq(0).val();
+                var isPercent = $(d).find(".is-percentage").eq(0).is(":checked");
+                var accId = $(d).find(".account-type").eq(0).val();
+                var mId=$(d).find(".market").eq(0).val();
+                var id = $(d).attr("data-slab-id");
+                if (amntFrom != "" && amntTo != "" && chargeAmnt != "" && ((dseSlab && parseInt(mId) == dseId) || (cseSlab && parseInt(mId) == cseId))) {
+                    if (parseInt(mId) == dseId){
+                        dseSlabCount++;
+                        slabList.push({Id:id,MarketId: mId, TransactionTypeId: charge,AccountTypeId: accId, AmountFrom: amntFrom, AmountTo: amntTo, Charge: chargeAmnt, IsPercentage: isPercent });
+                    }
+                    else if (parseInt(mId) == cseId){
+                        cseSlabCount++;
+                        slabList.push({Id:id,MarketId: mId, TransactionTypeId: charge,AccountTypeId: accId, AmountFrom: amntFrom, AmountTo: amntTo, Charge: chargeAmnt, IsPercentage: isPercent });
+                    }
+                }
+            });
+            if (dseSlab && dseSlabCount == 0) {
+                $.alert.open("Warning!", "Please add at least one DSE slab.");
+                return false;
+            }
+            if (cseSlab && cseSlabCount == 0) {
+                $.alert.open("Warning!", "Please add at least one CSE slab.");
+                return false;
+            }
+            var jsonData = { charge: transactionCharge, slabList: slabList };
+            $.ajax({
+                type: "Post",
+                url: '@Url.Action("SetGeneralCharge", "InvestorDetail")',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(jsonData),
+                dataType: "json",
+                success: function (data) {
+                    if (data == true) {
+                        $.alert.open("Success!", "Charge successfully set up.", function () {
+                            location.reload();
+                        });
+                    }
+                },
+            });
+            return true;
+        });
+        $(document).on("click", ".btn-edit", function () {
+            var cid = $(this).attr("data-cid");
+            var jsonData = { chargeId: cid };
+            $.ajax({
+                type: "Post",
+                url: '@Url.Action("GetGeneralCharge", "InvestorDetail")',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(jsonData),
+                dataType: "json",
+                success: function (data) {
+                    $("#cmbCharge").val(cid);
+                    $("#cmbCharge").prop("disabled", true);
+                    $("#txtCSECharge").val(data.Charge.CSECharge);
+                    $("#txtDSECharge").val(data.Charge.DSECharge);
+                    $("#txtMinimumCharge").val(data.Charge.MinimumCharge);
+                    $("#chkIsPercentage").prop("checked", data.Charge.IsPercentage);
+                    $("#chkIsDSESlab").prop("checked", data.Charge.IsDSESlab);
+                    $("#chkIsCSESlab").prop("checked", data.Charge.IsCSESlab);
+                    $("#cmbChargeType").val(data.Charge.ChargeType);
+                    $("#cmbCalcBasis").val(data.Charge.CalculationBasis);
+                    $("#cmbCalcMode").val(data.Charge.CalculationMode);
+                    $("#cmbEffectMode").val(data.Charge.EffectMode);
+                    fillSlab(data.SlabList);
+                    $("body").scrollTop(0);
+                },
+            });
+        });
+        function fillSlab(data) {
+            var html = "";
+            $.each(data, function (i, d) {
+                var tr = '<tr data-slab-id="' + d.Id + '">';
+                tr += ' <td class="center">';
+                tr += ' <select class="input-sm form-control market">';
+                $.each(markets, function(j, dt) {
+                    tr += ' <option value="' + dt.Id + '" '+(d.MarketId==dt.Id?'selected="selected"':'')+'>' + dt.Name + '</option>';
+                });
+                tr += ' </select>';
+                tr += ' </td>';
+                tr += ' <td class="center">';
+                tr += ' <select class="input-sm form-control account-type">';
+                tr += ' <option value="0">Select Account Type</option>';
+                $.each(accountTypes, function(j, dt) {
+                    tr += ' <option value="' + dt.Id + '" '+(d.AccountTypeId==dt.Id?'selected="selected"':'')+' >' + dt.Name + '</option>';
+                });
+                tr += ' </select>';
+                tr += ' <td>';
+                tr += ' <input type="number" class="input-sm form-control amount-from" value="' + d.AmountFrom + '"/>';
+                tr += ' </td>';
+                tr += ' <td>';
+                tr += ' <input type="number" class="input-sm form-control amount-to" value="' + d.AmountTo + '" />';
+                tr += ' </td>';
+                tr += ' <td>';
+                tr += ' <input type="number" class="input-sm form-control charge-amount" value="' + d.Charge + '" />';
+                tr += ' </td>';
+                tr += ' <td class="text-center">';
+                tr += ' <input type="checkbox" class="checkbox checkbox-inline is-percentage" ' + (d.IsPercentage ? 'checked="checked"' : "") + '/>';
+                tr += ' </td>';
+                tr += ' <td class="text-center">';
+                tr += ' <input type="button" class="btn btn-sm btn-success delete-slab" value="Delete"/>';
+                tr += ' </td>';
+                tr += ' </tr>';
+                html += tr;
+            });
+            $("#divSlabContainer #tblSlab tbody").html(html);
+            showHideSlabList();
+            showHideMarket();
+            $("#trSlabHeader").show();
+        }
+
+        $("#btnReset").on("click", function () {
+            clearAll();
+        });
+
+        function showHideSlabList() {
+            if ($("#chkIsDSESlab").is(":checked") || $("#chkIsCSESlab").is(":checked")) {
+                $("#divSlabContainer").slideDown();
+            } else {
+                $("#divSlabContainer").slideUp();
+                $("#divSlabContainer #tblSlab tbody tr").remove();
+                $("#trSlabHeader").hide();
+            }
+        }
+    });
+</script>

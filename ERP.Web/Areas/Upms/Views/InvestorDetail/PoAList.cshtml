@@ -1,0 +1,291 @@
+﻿
+@{
+    ViewBag.Title = "PoAList";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+
+    .k-grid tbody .k-button, .k-ie8 .k-grid tbody button.k-button {
+        min-width: 0;
+    }
+
+    a.k-button.k-button-icontext.k-grid-Edit {
+        min-width: 0;
+    }
+
+    #grid a.k-button.k-button-icontext.k-grid-Edit {
+        min-width: 0;
+    }
+
+
+    /*.k-grid tbody .k-button, .k-ie8 .k-grid tbody button.k-button {
+        min-width: 0;
+    }*/
+    a.k-button.k-button-icontext.k-i-close {
+        min-width: 0;
+    }
+
+    #grid a.k-button.k-button-icontext.k-i-close {
+        min-width: 0;
+    }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+
+<script type="text/javascript">
+
+function GetEditDataById(Id) {
+
+    var link = '@Url.Action("PowerOfAttorneyEdit", "InvestorDetail", new { Id = -1 }, "http")'
+    link = link.replace("-1", Id);
+    window.location.href = link;
+}
+
+
+    function GetPowerOfAttorneyList()
+    {
+     
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetPowerOfAttorneyList", "InvestorDetail", "http")',
+                    dataType: "json",
+                    data: { }
+                }
+            },
+            pageSize: 15,
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 600,
+            groupable: true,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+            {
+                field: "RowSl",
+                title: "SL",
+                width: "10%"
+            },//
+             {
+                 field: "PowerOfAttorneyCode",
+                 title: " Code",
+                 width: "10%",
+             },
+            {
+                template: "<div class='customer-photo' >" +
+                                    "<img src='/InvestorDetail/RetrieveImageOfAttorney/" + "#:Id#" + "' alt='No Image' height=50 width=50 class='img-circle' /> </div>",
+                //field: "StaffImage",
+                title: "Image",
+                filterable: false,
+                width: "8%",
+            },
+             {
+                 field: "PowerOfAttorneyName",
+                 title: "Power Of Attorney Name",
+                 width: "30%",
+                 groupable: false
+             },
+            {
+                field: "PresentThanaName",
+                title: "Present Thana",
+                width: "15%",
+                hidden:true
+            },
+            {
+                field: "BirthCertificateNo",
+                title: "Birth Certificate No",
+                width: "15%",
+                hidden: true
+            },
+            {
+                field: "DrivingLicenseNo",
+                title: "Driving License No",
+                width: "15%",
+                hidden: true
+            },
+             {
+                 field: "NationalId",
+                 title: "NationalId",
+                 width: "15%",
+                 hidden: true
+             },
+            {
+                field: "Email",
+                title: "Email",
+                width: "15%",
+                hidden: true
+            },
+             {
+                 field: "Mobile",
+                 title: "Mobile",
+                 width: "15%",
+             },
+            {
+                field: "Phone",
+                title: "Phone",
+                width: "15%",
+                hidden: true
+            },
+            {
+                field: "PermanentAddress",
+                title: "Permanent Address",
+                width: "15%",
+                hidden: true
+            },
+            {
+                field: "PresentAddress",
+                title: "Present Address",
+                width: "15%",
+            },
+             {
+                 field: "Gender",
+                 title: "Gender",
+                 width: "15%",
+                 hidden: true
+             },
+            {
+                field: "DateOfBirthMsg",
+                title: "Date Of Birth",
+                width: "15%",
+                hidden: true
+            },
+             {
+                 field: "MotherName",
+                 title: "Mother Name",
+                 width: "15%",
+                 hidden: true
+             },
+             {
+                 field: "FatherName",
+                 title: "Father Name",
+                 width: "15%",
+                 hidden: true
+             },
+            {
+                field: "CountryName",
+                title: "Country",
+                width: "15%",
+                hidden: true
+            },
+             {
+                 field: "Occupation",
+                 title: "Occupation",
+                 width: "15%",
+             },
+            {
+                field: "PermanentDistrictName",
+                title: "Permanent District",
+                width: "15%",
+                hidden: true
+
+            },
+            {
+                field: "PermanentThanaName",
+                title: "Permanent Thana ",
+                width: "15%",
+                hidden: true
+
+            },
+            {
+                field: "PresentDistrictName",
+                title: "District",
+                width: "15%",
+                hidden: true
+
+            },
+            
+            {
+                title: "Action",
+                width:"10%",
+                template: function (dataItem) {
+                    return '<a href="#"  onclick="GetEditDataById(' + dataItem.Id + ')"  title="Edit" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a>'
+                    //<a href='#' data-toggle='tooltip' class='k-button k-button-icontext k-grid-Edit' title='Delete' onclick='DeleteEmployeeInfoById(" + dataItem.Id + ")'><i class='fa fa-trash-o fa'></i></a>  <a href='#' data-toggle='tooltip'class='k-button k-button-icontext k-grid-Edit' title='Print' onclick='GetPrintDataById(" + dataItem.Id + ")'><i class='fa fa-print'></i></a>"
+                }
+            }
+            ]
+        });
+    }
+
+
+
+    $(document).ready(function () {
+
+        GetPowerOfAttorneyList()
+
+
+        //$("#btnSearch").click(function (e) {
+
+        //    e.preventDefault();
+
+        //        GetBrokerEmployeeList()
+        //});
+
+});
+</script>
+
+<div class="page-title">
+    <div class="title_left PageHeader" style="width:90%;">
+        <h3 style="color: white;padding:2px">&nbsp;&nbsp; Power of attorney information</h3>
+    </div>
+    @Html.ActionLink("Add New", "PowerOfAttorney", "InvestorDetail", null, new { @class = "btn btn-primary btn-sm pull-right" })
+</div>
+<div class="x_panel">
+    <div class="x_title">
+
+        <div class="clearfix"></div>
+    </div>
+    <div class="x_content">
+        <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left">
+            @*<div class="row">
+                <div class="col-md-1"></div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" id="txtEmpCode" placeholder="Employee Code" />
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" id="txtEmpName" placeholder="Employee Name" />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" id="btnSearch" class="btn btn-success">Search</button>
+                </div>
+            </div>*@
+            <br />
+            <div class="row">
+                <div class="col-sm-12">
+                    <div id="grid"></div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+
+

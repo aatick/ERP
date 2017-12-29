@@ -1,0 +1,215 @@
+﻿@{
+    ViewBag.Title = "Department";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+<style>
+    .required {
+        color: red;
+    }
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+<script type="text/javascript">
+
+    function GetBrokerDepartment() {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBrokerDepartment", "Broker", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { },
+            success: function (DeptInfo) {
+                var dtTable = $('#tbltbrokerDept');
+                var tableBody = dtTable.find('tbody');
+                tableBody.empty();
+                var Index = 1;
+                $.each(DeptInfo, function (id, e) {
+
+
+                    tableBody.append('<tr id="' + e.Id + '">' +
+                                    '<td>' + Index + '</td>' +
+                                    '<td>' + e.DepartmentName + '</td>' +
+                                    '<td>' + e.DepartmentShortName + '</td>' +
+                                    '<td> <a href="#" title="Edit" onclick=" LoadEditData(' + e.Id + ',' + "'" + e.DepartmentShortName + "'" + ',' + "'" + e.DepartmentName + "'" + ')" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></td>' +
+                                    //'<a href="#" title="Delete" onclick="DepartmentNameDelete(' + e.Id + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></a>' +
+                                    '</tr>')
+                    Index = Index + 1;
+                });
+            },
+            failure: function () {
+
+            }
+        });
+    }
+
+    function LoadEditData(Id, DepartmentShortName, DepartmentName)
+    {
+        $("#hdnBrokerDeptId").val(Id);
+        $("#txtDepartmentName").val(DepartmentName)
+        $("#txtShortName").val(DepartmentShortName)
+    }
+
+    function DepartmentNameDelete(Id) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("DepartmentNameDelete", "Broker", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (result) {
+                        $.alert.open("info","Delete successfull");
+                        GetBrokerDepartment();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+
+
+
+    $(document).ready(function () {
+        GetBrokerDepartment();
+
+        $("#hdnBrokerDeptId").val("0");
+
+        $("#btnSave").click(function (e) {
+
+            e.preventDefault();
+
+            if ($("#txtDepartmentName").val() != "") {
+                    $.ajax({
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("SaveBrokerDepartment", "Broker", "http")',
+                        type: "GET",
+                        dataType: 'json',
+                        data: { DepartmentName: $("#txtDepartmentName").val(), ShortName: $("#txtShortName").val(), hdnBrokerDeptId: $("#hdnBrokerDeptId").val() },
+                        success: function (result) {
+                            if (result == 1) {
+                                $("#txtDepartmentName").val("");
+                                $('#txtShortName').val("");
+                                $("#hdnBrokerDeptId").val("0");
+                                $(".success").show(800).fadeToggle(3000);
+                                GetBrokerDepartment();
+                            }
+                            else {
+                                $(".failed").show(800).fadeToggle(3000);
+                            }
+                        },
+                        error: function () {
+                            // alert("Fail to save");
+                            $(".failed").show(800).fadeToggle(3000);
+                        }
+                    });
+
+
+                }
+                else {
+                    $.alert.open("error", "Insert required field");
+                }
+
+
+        });
+
+    });
+
+</script>
+
+
+@using (Html.BeginForm("Department", "Broker", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "BrokerDepartmentForm" }))
+{
+
+      <div class="page-title">
+        <div class="title_left PageHeader" style="width:100%;">
+            <h3 style="color: white;padding:2px">Broker department information</h3>
+        </div>
+    </div>
+    <div class="x_panel">
+        <div class="x_title">
+
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <br />
+            <form id="demo-form2" data-parsley-validate>
+                <div id="AjaxLoader" class="ajaxLoader"></div>
+                <div class="item form-group">
+                    <input type="hidden" id="hdnBrokerDeptId" />
+
+                    @Html.Label("Department", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                    <span class="required"></span>
+                    <div class="col-md-5 col-sm-6 col-xs-12">
+                        @Html.Editor("DepartmentName", new { htmlAttributes = new { @class = "form-control", @id = "txtDepartmentName" } })
+                    </div>
+
+                </div>
+                <div class="item form-group">
+                    @Html.Label("Short Name", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                    <div class="col-md-5 col-sm-6 col-xs-12">
+                        @Html.Editor("ShortName", new { htmlAttributes = new { @class = "form-control", @id = "txtShortName" } })
+                    </div>
+                </div>
+                <div class="item form-group">
+                    <div class="col-md-3 col-sm-6 col-xs-12">
+                    </div>
+                    <div class="col-md-3 col-sm-6 col-xs-12">
+                        <button type="submit" id="btnSave" class="btn btn-success">Save</button>
+                    </div>
+
+                </div>
+
+                <div class="ln_solid"></div>
+                <div class="item form-group">
+                    <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                        <div class="success" role="alert" style="display:none">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <p class="message-content">Saved Sucessfully</p>
+                        </div>
+                        <div class="failed" role="alert" style="display:none">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <p class="message-content">Fail to save</p>
+                        </div>
+                        <br />
+
+                    </div>
+                </div>
+                <br />
+                <div class="block_content">
+                    <table id="tbltbrokerDept" class="table table-striped jambo_table bulk_action">
+                        <thead style="background-color: rgb(26,187,156)">
+                            <tr>
+                                <th>SL</th>
+                                <th>Department Name</th>
+                                <th>Short Name</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+    </div>
+
+}
+
+

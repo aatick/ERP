@@ -1,0 +1,241 @@
+﻿@{
+    ViewBag.Title = "FundTransferRpt";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script type="text/javascript">
+
+
+
+    function GetAllGroupLeader() {
+
+        var ddlIpoGroupLeader = $('#ddlIpoGroupLeader');
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetAllGroupLeader", "IPOGroup", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { },
+            success: function (InvInfo) {
+                ddlIpoGroupLeader.html('');
+                ddlIpoGroupLeader.append($('<option></option>').val("0").html("Please select"));
+                $.each(InvInfo, function (id, option) {
+                    if (option.Id != 0) {
+                        ddlIpoGroupLeader.append($('<option></option>').val(option.Id).html(option.GroupLeader));
+                    }
+
+                });
+
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+
+
+    var AllEmployeeList = [];
+    function GetBrokerEmployeeList() {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBrokerEmployeeList", "IPOGroup", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: {},
+            success: function (Result) {
+                $.each(Result, function (id, option) {
+                    var obj = new Object();
+                    obj.key = option.UserId;
+                    obj.value = option.EmployeeName;
+
+                    AllEmployeeList[AllEmployeeList.length] = obj;
+                });
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+
+        $('#TransferBy').autocomplete({
+            source: AllEmployeeList,
+            select: function (event, ui) {
+                $("#TransferBy").val(ui.item.value);
+                $("#hdnUserId").val(ui.item.key);
+            }
+        });
+
+    }
+
+
+
+
+    $(document).ready(function () {
+        GetAllGroupLeader();
+        GetBrokerEmployeeList();
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+
+            var FromDate = $("#FromDate").val();
+            var ToDate = $("#ToDate").val();
+            var TransferType = $("#ddlTransferType").val();
+
+            if (FromDate == "" || ToDate == "") {
+                FromDate = "";
+                ToDate = "";
+            }
+            var UserId = $("#hdnUserId").val() == null ? 0 : $("#hdnUserId").val();
+
+            var url = '/IPOGroup/GetInvestorFundTransfer?rptslnx=1&IsGroupwise=' + $("#ddGroupwise").val() + '&TransferType=' + $("#ddlTransferType").val() + '&GroupId=' + $("#ddlIpoGroupLeader").val() + '&FirstDate=' + FromDate + '&EndDate=' + ToDate + '&Status=' + $("#trxStatus").val() + '&UserId=' + UserId + '&exportType=' + $("#cmbReportType").val();
+           /// $("#ddlIpoGroupLeader").val("0");
+            //$("#hdnUserId").val("0");
+                window.open(url);
+
+        });
+
+        //divLMML
+        $("#ddlTransferType").change(function () {
+            if ($("#ddlTransferType").val() == "InvestorToInvestor")
+            {
+                $("#ddlIpoGroupLeader").val("0");
+                $("#ddGroupwise").val("No");
+                $("#ddlIpoGroupLeader").attr("disabled", true);
+                $("#ddGroupwise").attr("disabled", true);
+            }
+            else
+            {
+                $("#ddlIpoGroupLeader").attr("disabled", false);
+                $("#ddGroupwise").attr("disabled", false);
+            }
+
+        });
+
+        $("#FromDate").on("change", function () {
+            var fromDate = $("#FromDate").val();
+            $("#ToDate").datepicker('option', { minDate: fromDate });
+        });
+        $("#ToDate").on("change", function () {
+            var toDate = $("#ToDate").val();
+            $("#FromDate").datepicker('option', { maxDate: toDate });
+        });
+
+    });
+</script>
+
+@using (Html.BeginForm("FundTransferRpt", "IPOGroup", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "IPOGroupForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="row">
+        <div class="col-sm-12">
+            <div id="AjaxLoader" class="ajaxLoader"></div>
+            <div class="panel panel-success panel-custom">
+                <div class="page-title">
+                    <div class="title_left PageHeader" style="width:90%;">
+                        <h3 style="color: white;padding:2px">&nbsp;&nbsp;Investor Fund Transfer Information</h3>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-sm-12 info-container">
+                            <br />
+
+                            <div class="row">
+                                <div class="row form-group">
+                                    @Html.Label("Transfer Type", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4">
+                                        <select class="form-control bordercss" id="ddlTransferType">
+                                            <option value="LeaderToMember">Group leader to member fund transfer</option>
+                                            <option value="MemberToLeader">Group member to leader fund transfer</option>
+                                            <option value="InvestorToInvestor">Investor To Investor fund transfer</option>
+                                        </select>
+                                    </div>
+                                    @Html.Label("Group", htmlAttributes: new { @class = "control-label col-md-1" })
+                                    <div class="col-md-4">
+                                        @Html.DropDownList("IpoGroupLeaderList", null, new { @id = "ddlIpoGroupLeader", @class = "form-control bordercss" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="row form-group">
+                                    @Html.Label("From Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4">
+                                        @Html.Editor("FromDate", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                                    </div>
+
+                                    @Html.Label("To Date", htmlAttributes: new { @class = "control-label col-md-1" })
+                                    <div class="col-md-4">
+                                        @Html.Editor("ToDate", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="row form-group">
+                                    @Html.Label("Status", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4">
+                                        <select class="form-control bordercss" id="trxStatus">
+                                            <option value="-1" selected>All</option>
+                                            <option value="1">Approve</option>
+                                            <option value="0">Non Approve</option>
+                                        </select>
+                                    </div>
+                                    <div class="row form-group">
+                                        @Html.Label("User", htmlAttributes: new { @class = "control-label col-md-1" })
+                                        <div class="col-md-4">
+                                            @Html.Editor("TransferBy", new { htmlAttributes = new { @class = "form-control" } })
+                                            <input type="hidden" id="hdnUserId" value="0" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="row form-group">
+                                    @Html.Label("Report view Type", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4">
+                                        <select class="form-control bordercss" id="ddGroupwise">
+                                            <option value="No">General</option>
+                                            <option value="Yes">Group wise</option>
+                                        </select>
+                                    </div>
+                                    @Html.Label("File Type", htmlAttributes: new { @class = "control-label col-md-1" })
+                                    <div class="col-md-4">
+                                        <select class="input-sm form-control bordercss" id="cmbReportType">
+                                            <option value="Pdf" selected="selected">Pdf</option>
+                                            <option value="ExcelBook">Microsoft Excel</option>
+                                            <option value="Excel">Microsoft Excel (97-2003)</option>
+                                            <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                                            <option value="Word">Microsoft Word (97-2003)</option>
+                                            <option value="XML">XML</option>
+                                        </select>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <br />
+                            <div class="row">
+                                <div class="col-sm-11 text-center">
+                                    <input type="button" name="btnSubmit" id="btnView" class="btn btn-sm btn-success" value="View" />
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+

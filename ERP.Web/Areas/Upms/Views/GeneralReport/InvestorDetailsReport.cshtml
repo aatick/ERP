@@ -1,0 +1,160 @@
+﻿@{
+    ViewBag.Title = "Investor Details Report";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+<style type="text/css">
+    .panel-custom > .panel-heading {
+        /*background: #26B99A !important;*/
+        color: #FFFFFF !important;
+    }
+
+    .panel-custom .panel-body .row:not(:last-child) {
+        margin-bottom: 10px;
+    }
+
+    .panel-custom .panel-body .radio {
+        margin-top: 0px;
+    }
+
+    .panel-custom .panel-body .radio-text, .panel-custom .panel-body input[type=text] {
+        color: #73879C;
+    }
+
+    .panel-custom .label-container {
+        text-align: right;
+    }
+
+    input[type=text]:read-only {
+        background: #FFFFFF;
+        cursor: default;
+    }
+
+    #error > .panel {
+        margin-bottom: 20px;
+    }
+
+        #error > .panel > .panel-heading {
+            padding: 0px 5px 0px 15px;
+        }
+
+    .radio-container label {
+        cursor: pointer;
+        padding: 5px;
+    }
+
+        .radio-container label.active {
+            background: #0e73a9;
+            border-radius: 4px;
+            /*margin-left: 10px;*/
+        }
+
+            .radio-container label.active span.radio-text {
+                color: #FFFFFF;
+            }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .loader {
+        border: 16px solid #1ABB9C;
+        border-radius: 50%;
+        border-top: 16px solid #3498db;
+        width: 120px;
+        height: 120px;
+        -webkit-animation: spin 2s linear infinite;
+        animation: spin 2s linear infinite;
+        position: absolute;
+        top: 40%;
+        left: 40%;
+    }
+
+    @@-webkit-keyframes spin {
+        0% {
+            -webkit-transform: rotate(0deg);
+        }
+
+        100% {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+<div class="row">
+    <div class="col-sm-offset-1 col-sm-10">
+        <div class="panel panel-success panel-custom">
+            <div class="panel-heading PageHeader">
+                <h3 class="panel-title">Investor Report</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("BO :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control input-sm" id="txtBOID" />
+                    </div>
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Code :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control input-sm" id="txtCode" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Report Type :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-8">
+                        <select class="input-sm form-control bordercss" id="cmbReportType">
+                            <option value="Pdf" selected="selected">Pdf</option>
+                            <option value="ExcelBook">Microsoft Excel</option>
+                            <option value="Excel">Microsoft Excel (97-2003)</option>
+                            <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                            <option value="Word">Microsoft Word (97-2003)</option>
+                            <option value="XML">XML</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <div class="row">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <input type="submit" name="btnShow" id="btnShow" class="btn btn-sm btn-success" value="Show" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="loader" id="divLoader" style="display: none;"></div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(document).on("click", "#btnShow", function () {
+            var bo = $("#txtBOID").val().trim();
+            var code = $("#txtCode").val().trim();
+            if (bo == "" && code == "") {
+                $.alert.open("error", "Please enter investor code or bo.");
+                return false;
+            }
+            var reportType = $("#cmbReportType").val();
+            window.open('/GeneralReport/Get_InvestorInformation?InvestorCode=' + code + "&bo=" + bo + "&exportType=" + reportType);
+            return true;
+        });
+    });
+</script>

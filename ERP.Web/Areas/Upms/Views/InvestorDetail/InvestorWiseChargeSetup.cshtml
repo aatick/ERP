@@ -1,0 +1,406 @@
+﻿@using ERP.Web.ViewModels
+@using Upms.Data.UPMSDataModel
+@{
+    ViewBag.Title = "Investor wise charge setup";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var charges = (List<TradeTransactionType>)ViewBag.Charges;
+    var code = "";
+    var chargeId = 0;
+    var amnt = "";
+    var minCharge = "";
+    var percent = false;
+    var slab = false;
+    var name = "";
+    var id = "";
+    var allCharge = new List<InvestorCharge>();
+    if (ViewBag.InvestorCharge != null)
+    {
+        var investorCharge = (InvestorCharge)ViewBag.InvestorCharge;
+        id = investorCharge.InvestorId.ToString();
+        code = investorCharge.InvestorCode;
+        chargeId = investorCharge.ChargeId;
+        amnt = investorCharge.ChargeAmount.ToString("F");
+        minCharge = investorCharge.MinimumCharge.ToString("F");
+        percent = investorCharge.IsPercentage;
+        slab = investorCharge.IsSlab;
+        name = investorCharge.InvestorName;
+    }
+    if (ViewBag.AllCharges != null)
+    {
+        allCharge = (List<InvestorCharge>)ViewBag.AllCharges;
+    }
+    var chargeSlab = new List<InvestorWiseTransactionChargeSlab>();
+    if (ViewBag.ChargeSlab != null)
+    {
+        chargeSlab = (List<InvestorWiseTransactionChargeSlab>)ViewBag.ChargeSlab;
+    }
+}
+<style type="text/css">
+    .panel-custom > .panel-heading {
+        color: #FFFFFF !important;
+    }
+    /**/
+    .panel-custom .panel-body .row:not(:last-child) {
+        margin-bottom: 10px;
+    }
+
+    .panel-custom .panel-body .radio {
+        margin-top: 0px;
+    }
+
+    .panel-custom .panel-body .radio-text, .panel-custom .panel-body input[type=text] {
+        color: #73879C;
+    }
+
+    .panel-custom .label-container {
+        text-align: right;
+    }
+
+    input[type=text]:read-only {
+        background: #FFFFFF;
+        cursor: default;
+    }
+
+    #error > .panel {
+        margin-bottom: 20px;
+    }
+
+        #error > .panel > .panel-heading {
+            padding: 0px 5px 0px 15px;
+        }
+
+    .radio-container label {
+        cursor: pointer;
+        padding: 5px;
+    }
+
+        .radio-container label.active {
+            background: #0e73a9;
+            border-radius: 4px;
+            /*margin-left: 10px;*/
+        }
+
+            .radio-container label.active span.radio-text {
+                color: #FFFFFF;
+            }
+
+    #divSlabContainer #tblSlab td {
+        padding: 5px;
+    }
+
+    #lblInvestorName .well-sm {
+        padding: 5px;
+        display: inline-block;
+        margin-bottom: 0px;
+    }
+</style>
+<div class="row">
+    <div class="col-sm-offset-1 col-sm-10">
+        <div class="panel panel-success panel-custom">
+            <div class="panel-heading PageHeader">
+                <h3 class="panel-title">Investor wise charge setup</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Investor Code :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="text" id="txtInvestorCode" data-id="@id" class="input-sm form-control" value="@code" @(string.IsNullOrEmpty(code) ? "" : "readonly='readonly' disabled='disabled'") />
+                    </div>
+                    <div class="col-sm-6" id="lblInvestorName" @(!string.IsNullOrEmpty(name) ? Html.Raw("") : Html.Raw("style='display: none;'"))>
+                        <span class="well well-sm">@name</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Charge Name :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-10">
+                        <select class="input-sm form-control" id="cmbCharge" @(chargeId > 0 ? "disabled='disabled'" : "")>
+                            <option value="0">Select Charge</option>
+                            @foreach (var charge in charges)
+                            {
+                                <option @(chargeId == charge.Id ? "selected='selected'" : "") value="@charge.Id">@charge.TransactionTypeName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Charge Amount :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="number" class="input-sm form-control" id="txtChargeAmount" value="@amnt" />
+                    </div>
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Minimum Charge", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="number" class="input-sm form-control" id="txtMinimumCharge" value="@minCharge" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Is Percentage :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="checkbox" class="checkbox checkbox-inline" id="chkIsPercentage" @(percent ? "checked='checked'" : "") />
+                    </div>
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Is Slab :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="checkbox" class="checkbox checkbox-inline" id="chkIsSlab" @(slab ? "checked='checked'" : "") />
+                    </div>
+                </div>
+                <div class="row" id="divSlabContainer" @(slab ? Html.Raw("") : Html.Raw("style='display: none;'"))>
+                    <div class="col-sm-12">
+                        <table class="table table-bordered table-responsive" id="tblSlab">
+                            <thead>
+                                <tr>
+                                    <th colspan="5" class="text-center">
+                                        <input type="button" class="btn btn-sm btn-success" id="btnNewSlab" value="Add New Slab" />
+                                    </th>
+                                </tr>
+                                <tr id="trSlabHeader" @(slab ? Html.Raw("") : Html.Raw("style='display: none;'"))>
+                                    <th>Amount From</th>
+                                    <th>Amount To</th>
+                                    <th>Charge Amount</th>
+                                    <th class="text-center">Is Percentage</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (slab)
+                                {
+                                    foreach (var aSlab in chargeSlab)
+                                    {
+                                        <tr data-slab-id="@aSlab.Id">
+                                            <td>
+                                                <input type="number" class="input-sm form-control amount-from" value="@aSlab.AmountFrom.ToString("F")" />
+                                            </td>
+                                            <td>
+                                                <input type="number" class="input-sm form-control amount-to" value="@aSlab.AmountTo.ToString("F")" />
+                                            </td>
+                                            <td>
+                                                <input type="number" class="input-sm form-control charge-amount" value="@aSlab.Charge.ToString("F")" />
+                                            </td>
+                                            <td class="text-center">
+                                                <input type="checkbox" class="checkbox checkbox-inline is-percentage" @(aSlab.IsPercentage ? "checked='checked'" : "") />
+                                            </td>
+                                            <td class="text-center">
+                                                <input type="button" class="btn btn-sm btn-success delete-slab" value="Delete" />
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+            <div class="panel-footer">
+                <div class="row">
+                    <div class="col-sm-12 text-center">
+                        <input type="button" name="btnSubmit" id="btnSubmit" class="btn btn-sm btn-success" value="Submit" />
+                        <input type="button" name="btnReset" id="btnReset" class="btn btn-sm btn-success" value="Reset" />
+                    </div>
+                </div>
+                <table class="table table-bordered table-responsive" id="tblCharges" style="background: #FFF;">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Sl.</th>
+                            <th>Charge Name</th>
+                            <th class="text-right">Charge Amount</th>
+                            <th class="text-right">Minimum Charge</th>
+                            <th class="text-center">Is Percentage</th>
+                            <th class="text-center">Is Slab</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < allCharge.Count; i++)
+                        {
+                            <tr>
+                                <td class="text-center">@(i + 1)</td>
+                                <td>@allCharge[i].ChargeName</td>
+                                <td class="text-right">@allCharge[i].ChargeAmount.ToString("F")</td>
+                                <td class="text-right">@allCharge[i].MinimumCharge.ToString("F")</td>
+                                <td class="text-center">@(allCharge[i].IsPercentage ? "Yes" : "No")</td>
+                                <td class="text-center">@(allCharge[i].IsSlab ? "Yes" : "No")</td>
+                                <td class="text-center"><input data-cid="@allCharge[i].ChargeId" data-code='@allCharge[i].InvestorCode' type='button' class='btn btn-sm btn-success btn-edit' value='Edit' /></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="~/Scripts/jquery.maskedinput-1.3.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var editId = "@code";
+        $("#chkIsSlab").on("change", function () {
+            if ($(this).is(":checked")) {
+                $("#divSlabContainer").slideDown();
+            } else {
+                $("#divSlabContainer").slideUp();
+                $("#divSlabContainer #tblSlab tbody tr").remove();
+            }
+        });
+        $(document).on("click", ".delete-slab", function () {
+            $(this).parents("tr").remove();
+            if ($("#divSlabContainer #tblSlab tbody tr").length == 0) {
+                $("#trSlabHeader").hide();
+            }
+        });
+        $("#btnNewSlab").on("click", function () {
+            var tr = '<tr data-slab-id="0">';
+            tr += ' <td>';
+            tr += ' <input type="number" class="input-sm form-control amount-from" />';
+            tr += ' </td>';
+            tr += ' <td>';
+            tr += ' <input type="number" class="input-sm form-control amount-to" />';
+            tr += ' </td>';
+            tr += ' <td>';
+            tr += ' <input type="number" class="input-sm form-control charge-amount" />';
+            tr += ' </td>';
+            tr += ' <td class="text-center">';
+            tr += ' <input type="checkbox" class="checkbox checkbox-inline is-percentage" />';
+            tr += ' </td>';
+            tr += ' <td class="text-center">';
+            tr += ' <input type="button" class="btn btn-sm btn-success delete-slab" value="Delete"/>';
+            tr += ' </td>';
+            tr += ' </tr>';
+            $("#divSlabContainer #tblSlab tbody").append(tr);
+            $("#trSlabHeader").show();
+        });
+
+        $("#txtInvestorCode").on("change", function () {
+            var code = $(this).val().trim();
+            if (code != "") {
+                var jsonData = { investorCode: code };
+                $.ajax({
+                    type: "Post",
+                    url: '@Url.Action("GetInvestorNameByCode", "InvestorDetail")',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(jsonData),
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.Status == false) {
+                            $("#txtInvestorCode").val("");
+                            $("#txtInvestorCode").attr("data-id", "");
+                            $("#lblInvestorName span").html("");
+                            $("#lblInvestorName").hide();
+                        } else {
+                            $("#txtInvestorCode").val(data.Data.Code);
+                            $("#txtInvestorCode").attr("data-id", data.Data.Id);
+                            $("#lblInvestorName span").html(data.Data.Name);
+                            $("#lblInvestorName").show();
+
+                            var html = "";
+                            $.each(data.Charges, function (i, d) {
+                                html += "<tr>";
+                                html += "<td class='text-center'>" + (i + 1) + "</td>";
+                                html += "<td>" + d.ChargeName + "</td>";
+                                html += "<td class='text-right'>" + d.ChargeAmount + "</td>";
+                                html += "<td class='text-right'>" + d.MinimumCharge + "</td>";
+                                html += "<td class='text-center'>" + (d.IsPercentage ? "Yes" : "No") + "</td>";
+                                html += "<td class='text-center'>" + (d.IsSlab ? "Yes" : "No") + "</td>";
+                                html += "<td class='text-center'><input data-cid='" + d.ChargeId + "'  data-code='" + d.InvestorCode + "' type='button' class='btn btn-sm btn-success btn-edit' value='Edit' /></td>";
+                                html += "</tr>";
+                            });
+                            $("#tblCharges tbody").html(html);
+                        }
+                    },
+                });
+            }
+        });
+
+
+        function clearAll() {
+            $("input[type=text],input[type=number]").val("");
+            $("#txtInvestorCode").attr("data-id", "");
+            $("#lblInvestorName span").html("");
+            $("#lblInvestorName").hide();
+            $("#cmbCharge").val("0");
+            $("#cmbCharge").prop("disabled", false);
+            $("input[type=checkbox]").prop("checked", false);
+            $("#divSlabContainer").slideUp();
+            $("#trSlabHeader").hide();
+            $("#divSlabContainer #tblSlab tbody tr").remove();
+            $("#tblCharges tbody tr").remove();
+        }
+
+        $("#btnSubmit").on("click", function () {
+            var id = $("#txtInvestorCode").attr("data-id").trim();
+            var charge = $("#cmbCharge").val();
+            var amount = $("#txtChargeAmount").val();
+            var per = $("#chkIsPercentage").is(":checked");
+            var slab = $("#chkIsSlab").is(":checked");
+            var minCharge = $("#txtMinimumCharge").val();
+
+            if ($("#txtInvestorCode").val().trim() == "" || id == "") {
+                $.alert.open("Warning!", "Please enter valid investor code.");
+                return false;
+            }
+            if (charge == "0") {
+                $.alert.open("Warning!", "Please select a charge.");
+                return false;
+            }
+            if (amount == "") {
+                $.alert.open("Warning!", "Please enter charge amount");
+                return false;
+            }
+            if (minCharge == "") {
+                $.alert.open("Warning!", "Please enter minimum charge amount");
+                return false;
+            }
+            var investorCharge = { InvestorId: id, TransactionTypeId: charge, ChargeAmount: amount, IsSlab: slab, IsPercentage: per, MinimumCharge: minCharge };
+            var slabList = [];
+            $("#divSlabContainer #tblSlab tbody tr").each(function (i, d) {
+                var amntFrom = $(d).find(".amount-from").eq(0).val();
+                var amntTo = $(d).find(".amount-to").eq(0).val();
+                var chargeAmnt = $(d).find(".charge-amount").eq(0).val();
+                var isPercent = $(d).find(".is-percentage").eq(0).is(":checked");
+                if (amntFrom != "" && amntTo != "" && chargeAmnt != "") {
+                    slabList.push({ InvestorId: id, TransactionTypeId: charge, AmountFrom: amntFrom, AmountTo: amntTo, Charge: chargeAmnt, IsPercentage: isPercent });
+                }
+            });
+            if (slab && slabList.length == 0) {
+                $.alert.open("Warning!", "Please add at least one slab.");
+                return false;
+            }
+            if (!slab) {
+                slabList = [];
+            }
+            var jsonData = { charge: investorCharge, slabList: slabList };
+            $.ajax({
+                type: "Post",
+                url: '@Url.Action("SetInvestorWiseCharge", "InvestorDetail")',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(jsonData),
+                dataType: "json",
+                success: function (data) {
+                    if (data == true) {
+                        $.alert.open("Success!", "Investor charge successfully set up.",function() {
+                            location.reload();
+                        });
+                    }
+                },
+            });
+            return true;
+        });
+        $(document).on("click", ".btn-edit", function () {
+            var code = $(this).attr("data-code");
+            var cid = $(this).attr("data-cid");
+            window.location = "/InvestorDetail/InvestorWiseChargeSetup?code=" + code + "&cid=" + cid;
+        });
+        $("#btnReset").on("click", function () {
+            window.location = "/InvestorDetail/InvestorWiseChargeSetup";
+        });
+    });
+</script>

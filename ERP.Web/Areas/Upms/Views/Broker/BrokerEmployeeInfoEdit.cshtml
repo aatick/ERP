@@ -1,0 +1,548 @@
+﻿@model ERP.Web.ViewModels.BrokerEmployeeViewModel
+
+@{
+    ViewBag.Title = "BrokerEmployeeInfoEdit";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var DesignatioList = Model == null ? null : Model.DesignatioList;
+    var DepartmentList = Model == null ? null : Model.DepartmentList;
+    var BrokerBranchList = Model == null ? null : Model.BrokerBranchList;
+    var GenderList = Model == null ? null : Model.GenderList;
+    var MaritalStatusList = Model == null ? null : Model.MaritalStatusList;
+
+}
+
+
+<style>
+    .required::after {
+        content: " *";
+        color: red;
+    }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+
+<script type="text/javascript">
+    var Mode = "Edit";
+    function showMyImageSign(fileInput) {
+        var files = fileInput.files;
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var imageType = /image.*/;
+
+            if (file.type.match(imageType)) {
+                //continue;
+                var size = Math.round(file.size / 1024);
+                if (size <= 100) {
+                    var img = document.getElementById("thumbnil2");
+                    img.file = file;
+                    var reader = new FileReader();
+                    reader.onload = (function (aImg) {
+                        return function (e) {
+                            aImg.src = e.target.result;
+                        };
+                    })(img);
+                    reader.readAsDataURL(file);
+                }
+                else
+                    alert('Image file cannot be greater than 100 KB.');
+            }
+            else {
+                $("#SignatureMsg").replaceWith($("#SignatureMsg").clone(true));
+                alert('Please select a valid image file');
+            }
+
+        }
+    }
+
+    function showMyImage(fileInput) {
+        var files = fileInput.files;
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var imageType = /image.*/;
+
+            if (file.type.match(imageType)) {
+                //continue;
+                var size = Math.round(file.size / 1024);
+                if (size <= 100) {
+                    var img = document.getElementById("thumbnil");
+                    img.file = file;
+                    var reader = new FileReader();
+                    reader.onload = (function (aImg) {
+                        return function (e) {
+                            aImg.src = e.target.result;
+                        };
+                    })(img);
+                    reader.readAsDataURL(file);
+                }
+                else
+                    alert('Image file cannot be greater than 100 KB.');
+            }
+            else {
+                $("#PhotographMsg").replaceWith($("#PhotographMsg").clone(true));
+                alert('Please select a valid image file');
+            }
+
+        }
+    }
+
+
+
+    function GetDistrictList() {
+
+        var DivisionId = $("#DivitionId").val();
+        var ddlDistrictlist = $("#ddlDistrictlist");
+
+        if (DivisionId != "" && DivisionId != null) {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetDistrictList", "LookupThana", "http")',
+                data: { DivisionId: DivisionId },
+                dataType: 'json',
+                async: true,
+                success: function (DistrictList) {
+                    // $('#AjaxLoader').hide();
+                    ddlDistrictlist.html('');
+                    ddlDistrictlist.append($('<option></option>').val("0").html("Please select"));
+                    $.each(DistrictList, function (id, option) {
+                        ddlDistrictlist.append($('<option></option>').val(option.Id).html(option.DistrictName));
+                    });
+                    if (Mode == "Edit") {
+                        $("#ddlDistrictlist").val($("#PreDistrictId").val());
+                        GetThanaList()
+                    }
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+    }
+
+    function GetThanaList() {
+
+        var DistrictId = $("#ddlDistrictlist").val();
+        var ddlThanalist = $("#ddlThanalist");
+
+        if (DistrictId != "0") {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetddlThanaList", "LookupThana", "http")',
+                data: { DistrictId: DistrictId },
+                dataType: 'json',
+                async: true,
+                success: function (ThanaList) {
+                    ddlThanalist.html('');
+                    ddlThanalist.append($('<option></option>').val("0").html("Please select"));
+                    $.each(ThanaList, function (id, option) {
+                        ddlThanalist.append($('<option></option>').val(option.Id).html(option.ThanaName));
+                    });
+                    if (Mode == "Edit") {
+                        $("#ddlThanalist").val($("#PresentThanaId").val());
+                    }
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+    }
+
+    function GetPer_DistrictList() {
+
+        var DivisionId = $("#PerDivitionId").val();
+        var ddlDistrictlist = $("#ddlPerDistrictlist");
+
+        if (DivisionId != "" && DivisionId != null) {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetDistrictList", "LookupThana", "http")',
+                data: { DivisionId: DivisionId },
+                dataType: 'json',
+                async: true,
+                success: function (DistrictList) {
+                    // $('#AjaxLoader').hide();
+                    ddlDistrictlist.html('');
+                    ddlDistrictlist.append($('<option></option>').val("0").html("Please select"));
+                    $.each(DistrictList, function (id, option) {
+                        ddlDistrictlist.append($('<option></option>').val(option.Id).html(option.DistrictName));
+                    });
+                    if (Mode == "Edit") {
+                        $("#ddlPerDistrictlist").val($("#PerDistrictId").val());
+                        GetPer_ThanaList()
+                    }
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+    }
+
+    function GetPer_ThanaList() {
+
+        var DistrictId = $("#ddlPerDistrictlist").val();
+        var ddlThanalist = $("#ddlPerThanalist");
+
+        if (DistrictId != "0") {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetddlThanaList", "LookupThana", "http")',
+                data: { DistrictId: DistrictId },
+                dataType: 'json',
+                async: true,
+                success: function (ThanaList) {
+                    ddlThanalist.html('');
+                    ddlThanalist.append($('<option></option>').val("0").html("Please select"));
+                    $.each(ThanaList, function (id, option) {
+                        ddlThanalist.append($('<option></option>').val(option.Id).html(option.ThanaName));
+                    });
+                    if (Mode == "Edit") {
+                        $("#ddlPerThanalist").val($("#PermanentThanaId").val());
+                    }
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+    }
+
+    function checkEmpCode() {
+        if ($("#EmployeeCode").val().length <= 4) {
+            return true
+        }
+        else {
+            $.alert.open("error", "Employee Code must be less than 4 character");
+            $("#EmployeeCode").val("");
+        }
+    }
+
+
+    $(document).ready(function () {
+
+
+
+
+        if ($("#PresentThanaId").val() == 0 || $("#PresentThanaId").val() == null) {
+            $("#PresentThanaId").val("0");
+        }
+        else {
+            $("#DivitionId").val($("#PreDivisionId").val())
+            GetDistrictList();
+        }
+
+        if ($("#PermanentThanaId").val() == 0 || $("#PermanentThanaId").val() == null) {
+            $("#PermanentThanaId").val("0");
+        }
+        else {
+            $("#PerDivitionId").val($("#PerDivisionId").val());
+            GetPer_DistrictList();
+        }
+
+
+
+
+        $("#ddlThanalist").change(function () {
+            Mode = "Save";
+            $("#PresentThanaId").val($("#ddlThanalist").val());
+
+        });
+
+        $("#ddlPerThanalist").change(function () {
+            Mode = "Save";
+            $("#PermanentThanaId").val($("#ddlPerThanalist").val())
+
+        });
+
+        $("#DivitionId").change(function () {
+            Mode = "Save";
+            GetDistrictList();
+
+        });
+
+        $("#PerDivitionId").change(function () {
+            Mode = "Save";
+            GetPer_DistrictList();
+
+        });
+
+        $("#ddlDistrictlist").change(function () {
+            Mode = "Save";
+            GetThanaList()
+        });
+
+        $("#ddlPerDistrictlist").change(function () {
+            Mode = "Save";
+            GetPer_ThanaList()
+        });
+
+        $("#Email").blur(function () {
+            if ($("#Email").val() != "") {
+                var filter = /^[\w\-\.\+]+\@@[a-zA-Z0-9\.\-]+\.[a-zA-z0-9]{2,4}$/;
+                if (filter.test($("#Email").val())) {
+                    return true;
+                }
+                else {
+                    $("#Email").val("");
+                    $.alert.open("error", "Insert right email formate");
+                    return false;
+                }
+            }
+        });
+
+
+
+        $('#btnSave').click(function (e) {
+
+            e.preventDefault();
+            if (!validator.checkAll($('form'))) {
+                $.alert.open("error", "Insert required field");
+                return false;
+            }
+            else {
+
+                $('#EmployeeInfoForm').ajaxSubmit({
+                    type: "POST",
+                    target: '#thumbnil',
+                    data: {},
+                    dataType: 'json',
+                    resetForm: true,
+                    success: function (data) {
+                        if (data.data.Id > 0) {
+                            $.alert.open('info', 'Save successfull', function (button) {
+                                window.location.href = '/Broker/BrokerEmployeeList';
+                            });
+                        }
+                        else {
+                            $(".failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function () {
+                        $("#dialog-message").html('<p>Error, Fail to Save.</p>');
+                        $("#dialog-message").dialog({
+                            modal: true,
+                            buttons: {
+                                Ok: function () {
+                                    $(this).dialog("close");
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+</script>
+
+
+@Html.ActionLink("Back To List", "BrokerEmployeeList", null, new { @class = "btn btn-primary btn-sm pull-right" })
+
+@using (Html.BeginForm("BrokerEmployeeInfoEdit", "Broker", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "EmployeeInfoForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">Employee info edit</h3>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <br />
+                    <div class="row form-group">
+                        @Html.Label("Employee Code", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.EmployeeCode, new { htmlAttributes = new { @class = "form-control", @disabled = "disabled" } })
+                            @Html.HiddenFor(model => model.Id)
+                            @Html.HiddenFor(model => model.PreDistrictId)
+                            @Html.HiddenFor(model => model.PerDistrictId)
+                            @Html.HiddenFor(model => model.PreDivisionId)
+                            @Html.HiddenFor(model => model.PerDivisionId)
+                        </div>
+                        @Html.Label("Name", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.EmployeeName, new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Designation", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.DropDownListFor(model => model.DesignationId, DesignatioList, new { @ID = "ddlDesignationId", @class = "form-control bordercss", @required = "required" })
+                        </div>
+                        @Html.Label("Title", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.Title, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Department", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.DropDownListFor(model => model.DepartmentId, DepartmentList, new { @ID = "ddlDepartmentId", @class = "form-control bordercss", @required = "required" })
+                        </div>
+                        @Html.Label("Branch", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.DropDownListFor(model => model.BrokerBranchId, BrokerBranchList, new { @ID = "ddlBranchId", @class = "form-control bordercss", @required = "required" })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Joining Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @*@Html.EditorFor(model => model.JoiningDate, new { htmlAttributes = new { @class = "form-control DateInput" } })*@
+                            <input type="text" data-hid="hidJoiningDate" class="form-control DateInput check-date" id="JoiningDate" value="@(Model.JoiningDate.HasValue ? Model.JoiningDate.Value.ToString("dd/MM/yyyy") : "") " />
+                            <input type="hidden" name="JoiningDate" id="hidJoiningDate" value="@(Model.JoiningDate.HasValue ? Model.JoiningDate.Value.ToString("dd-MMM-yyyy") : "")" />
+                        </div>
+                        @Html.Label("Gender", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.DropDownListFor(model => model.Gender, GenderList, new { @class = "form-control bordercss" })
+
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Date Of Birth", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @*@Html.EditorFor(model => model.DateOfBirth, new { htmlAttributes = new { @class = "form-control DateInput" } })*@
+                            <input type="text" data-hid="hidDateOfBirth" class="form-control DateInput check-date" id="DateOfBirth" value="@(Model.DateOfBirth.HasValue ? Model.DateOfBirth.Value.ToString("dd/MM/yyyy") : "")" />
+                            <input type="hidden" name="DateOfBirth" id="hidDateOfBirth" value="@(Model.DateOfBirth.HasValue ? Model.DateOfBirth.Value.ToString("dd-MMM-yyyy") : "")" />
+                        </div>
+                        @Html.Label("Maritial Status", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.DropDownListFor(model => model.MaritialStatus, MaritalStatusList, new { @class = "form-control bordercss", @required = "required" })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Phone No", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.PhoneNo, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                        @Html.Label("Email", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("EmergencyContact", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.EmergencyContact, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                        @Html.Label("Auth Representative", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.AuthRepresentative, new { htmlAttributes = new { @class = "form-control bordercss" } })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Father Name", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.FatherName, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                        @Html.Label("Mother Name", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.MotherName, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                    </div>
+                    <fieldset>
+                        <legend>Present Address</legend>
+                        <div class="row form-group">
+                            @Html.Label("Present Address", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @Html.EditorFor(model => model.PresentAddress, new { htmlAttributes = new { @class = "form-control" } })
+                            </div>
+                            @Html.Label("Division", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @Html.DropDownList("DivisionList", new SelectList(ViewBag.DivisionList, "Id", "DivisionName"), "Please select", new { @id = "DivitionId", @class = "form-control bordercss" })
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            @Html.Label("District", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @Html.DropDownList("Districtlist", null, new { @id = "ddlDistrictlist", @class = "form-control bordercss" })
+                            </div>
+                            @Html.Label("Thana", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @Html.DropDownList("Thanalist", null, new { @id = "ddlThanalist", @class = "form-control bordercss" })
+                                @Html.HiddenFor(model => model.PresentThanaId)
+                            </div>
+                        </div>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Permanent Address</legend>
+                        <div class="row form-group">
+                            @Html.Label("Permanent Address", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @Html.EditorFor(model => model.PermanentAddress, new { htmlAttributes = new { @class = "form-control" } })
+                            </div>
+                            @Html.Label("Division", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @Html.DropDownList("PerDivisionList", new SelectList(ViewBag.PerDivisionList, "Id", "DivisionName"), "Please select", new { @id = "PerDivitionId", @class = "form-control bordercss" })
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            @Html.Label("District", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @Html.DropDownList("PerDistrictlist", null, new { @id = "ddlPerDistrictlist", @class = "form-control" })
+                            </div>
+
+                            @Html.Label("Thana", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @Html.DropDownList("PerThanalist", null, new { @id = "ddlPerThanalist", @class = "form-control bordercss" })
+                                @Html.HiddenFor(model => model.PermanentThanaId)
+                            </div>
+                        </div>
+                    </fieldset>
+                    <div class="row form-group">
+                        @Html.Label("Photograph", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <img id="thumbnil" style="width:100px; height:100px;" src="/Broker/RetrieveImage/@Model.Id" alt="Staff Image" class="img-responsive" />
+                            @Html.TextBoxFor(model => model.PhotographMsg, new { type = "file", @onchange = "showMyImage(this);", @class = "form-control" })
+
+                        </div>
+                        @Html.Label("Signature", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <img id="thumbnil2" style="width:100px; height:100px;" src="/Broker/RetrieveSign/@Model.Id" alt="Staff Image" class="img-responsive" />
+                            @Html.TextBoxFor(model => model.SignatureMsg, new { type = "file", @onchange = "showMyImageSign(this);", @class = "form-control" })
+
+                        </div>
+                    </div>
+                    <div class="ln_solid"></div>
+                    <div class="form-group">
+                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            <button type="submit" id="btnSave" class="btn btn-success">Save</button>
+                        </div>
+                    </div>
+                    <div class="item form-group">
+                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            <div class="success" role="alert" style="display:none">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <p class="message-content">Saved Sucessfully</p>
+                            </div>
+                            <div class="failed" role="alert" style="display:none">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <p class="message-content">Fail to save</p>
+                            </div>
+                            <br />
+                        </div>
+                    </div>
+                    @*</form>*@
+                </div>
+            </div>
+        </div>
+    </div>
+}
+

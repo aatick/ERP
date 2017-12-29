@@ -1,0 +1,322 @@
+﻿
+@{
+    ViewBag.Title = "ReqApprove";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+<style>
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script type="text/javascript">
+
+
+    function LoadEditData(Id, ShortName, GroupName, Description) {
+        $("#marketGroupId").val(Id);
+        $("#ShortName").val(ShortName);
+        $("#GroupName").val(GroupName);
+        $("#Description").val(Description);
+
+    }
+
+    function CheckShortNameUnique() {
+        var marketGroupId = $("#marketGroupId").val();
+        var GroupName = $('#GroupName').val();
+        var ShortName = $("#ShortName").val();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("CheckShortNameUnique", "MarketGroup", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { marketGroupId: marketGroupId, GroupName: GroupName, ShortName: ShortName },
+            success: function (result) {
+                if (result == "1") {
+                    SaveMarketGroup()
+                }
+                else {
+                    $.alert.open("error", "Short Name must be unique");
+                }
+            },
+            failure: function () {
+                $(".failed").show(800).fadeToggle(3000);
+            }
+        });
+    }
+    function renderNumber(data) {
+        return ++rowNumber;
+    }
+    var record = 0;
+
+    function RequisitionInfo() {
+
+        //       ddlApprStatus  
+        //IsApprove,  = IsPayment,  = DateFrom,  = DateTo, InvestorCode
+
+        //IsApprove = ($("#ddlApprStatus").val());
+
+        //var AllParam =  {
+        //    IsApprove: $("#ddlApprStatus").val(),
+        //    IsPayment: $("#ddlPayStatus").val(),
+        //    DateFrom: $("#DateFrom").val(),
+        //    DateTo: $("#DateTo").val(),
+        //    InvestorCode: $("#InvestorCode").val(),
+        //};
+        //var json = AllParam.s
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    type: "GET",
+                    url: '@Url.Action("RequisitionInfoApprove", "AccPayment", "http")',
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    data: {
+                        IsApprove: $("#ddlApprStatus").val(),
+                        IsPayment: $("#ddlPayStatus").val(),
+                        DateFrom: $("#DateFrom").val(),
+                        DateTo: $("#DateTo").val(),
+                        InvestorCode: $("#InvestorCode").val(),
+                    },
+                }
+            },
+            pageSize: 500,
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 600,
+            groupable: true,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+            {
+                template: "#= ++record #",
+                title: "SL",
+                width: "10%"
+            },
+
+            //{
+            //    field: "RequisitionNo",
+            //    title: "Requisition No",//
+            //    groupable: false
+            //},
+            {
+                field: "InvestorName",
+                title: "Investor Name"
+
+            },
+             {
+                 field: "Amount",
+                 title: "Amount",
+                 width: "15%"
+             },
+              {
+                  field: "RequisitionDate",
+                  title: "Requisition Date",//
+                  width: "15%"
+              },
+              {
+                  field: "PaymentMsg",
+                  title: "Payment Status",
+                  width: "15%"
+              },
+              {
+                  field: "ApprovedMsg",
+                  title: "Approve Status",
+                  width: "15%"
+              },
+             {
+                 title: "Action",
+                 width: "10%",
+                 template: function (dataItem) {
+                     if (dataItem.PaymentMsg == "Paid" && dataItem.ApprovedMsg == "Not Approved")
+                     {
+                         return '<a href="#" title="Approve" onclick="ApproveRequisition(' + dataItem.Id + ')" class="btn btn-info btn-xs"><i class="fa fa-caret-square-o-up"></i></a>' 
+                     }
+                     else if (dataItem.ApprovedMsg == "Not Approved" && dataItem.PaymentMsg == "Not Paid")
+                     {
+                         return '<a href="#" title="Approve" onclick="ApproveRequisition(' + dataItem.Id + ')" class="btn btn-info btn-xs"><i class="fa fa-caret-square-o-up"></i></a>' +
+                           '<a href="#" title="Reject" onclick="RejectRequisition(' + dataItem.Id + ')" class="btn btn-danger btn-xs"><i class="fa fa-times"></i></a>'
+                     }
+                     else
+                     {
+                         return '';
+                     }
+                            
+                 }
+             },
+            ],
+            dataBinding: function () {
+                record = (this.dataSource.page() - 1) * this.dataSource.pageSize();
+            }
+        });
+    }
+
+    function RejectRequisition(Id) {
+        $.alert.open('confirm', 'Are you sure you want to REJECT this requisition?', function (button) {
+            if (button == 'yes') {
+                $("#AjaxLoader").show();
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("RejectRequisition", "AccPayment", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        $("#AjaxLoader").hide();
+                        $("#grid").data("kendoGrid").dataSource.read();
+                    },
+                    error: function (request, status, error) {
+                        $("#AjaxLoader").hide();
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+    function ApproveRequisition(Id) {
+        $.alert.open('confirm', 'Are you sure you want to Approve this requisition?', function (button) {
+            if (button == 'yes') {
+		$("#AjaxLoader").show();
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("ApproveRequisition", "AccPayment", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+			        $("#AjaxLoader").hide();
+                        $("#grid").data("kendoGrid").dataSource.read();
+                    },
+                    error: function (request, status, error) {
+			        $("#AjaxLoader").hide();
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+
+    $(document).ready(function () {
+
+        RequisitionInfo();
+
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+            RequisitionInfo();
+
+        });
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+
+            var url = '/AccPayment/GetRequisitionInfoApprove_Rpt?IsApprove=' + $("#ddlApprStatus").val() + '&IsPayment=' + $("#ddlPayStatus").val() + '&DateFrom=' + $("#DateFrom").val() + '&DateTo=' + $("#DateTo").val() + '&InvestorCode=' + $("#InvestorCode").val();
+
+            window.open(url);
+
+        });
+    });
+
+</script>
+
+@using (Html.BeginForm("Requisition", "AccPayment", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "frmRequisition" }))
+{
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:100%;">
+            <h3 style="color: white;padding:2px">&nbsp;&nbsp;Requisition Approve</h3>
+        </div>
+    </div>
+    <div id="AjaxLoader" class="ajaxLoader"></div>
+    <div class="x_panel">
+        <div class="x_content">
+            <div class="block_content">
+                <div class="row form-group">
+                    @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        @Html.Editor("InvestorCode", new { htmlAttributes = new { @class = "form-control",  @autofocus = "autofocus" } })
+                    </div>
+                    @Html.Label("Approve Status", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        <select class="form-control bordercss" id="ddlApprStatus">
+                            <option value="-1">Please Select</option>
+                            <option value="1" >Approved</option>
+                            <option value="0" selected>Not Approved</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row form-group">
+                   
+                    @Html.Label("Payment Status", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        <select class="form-control bordercss" id="ddlPayStatus">
+                            <option value="-1" selected>Please Select</option>
+                            <option value="1">Paid</option>
+                            <option value="0">Not Paid</option>
+                        </select> 
+                    </div>
+                    @Html.Label("Date From", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        @Html.Editor("DateFrom", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                    </div>
+                </div>
+                <div class="row form-group">
+                    @Html.Label("Date To", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        @Html.Editor("DateTo", new { htmlAttributes = new { @class = "form-control DateInput check-date"} })
+                    </div>
+                   <div class="col-md-2"></div>
+                    <div class="col-md-2 col-sm-6 col-xs-12">
+                        <input type="button" name="btnSubmit" id="btnSearch" class="btn btn-sm btn-primary" value="Search" />
+                    </div>
+                    <div class="col-md-2 col-sm-6 col-xs-12">
+                        <input type="button" name="btnSubmit" id="btnView" class="btn btn-sm btn-info" value="Report View" />
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div id="grid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+
+

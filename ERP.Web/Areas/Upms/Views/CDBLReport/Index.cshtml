@@ -1,0 +1,271 @@
+﻿@using Common.Data.CommonDataModel
+@using Upms.Data.UPMSDataModel
+@{
+    ViewBag.Title = "CDBL Report";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var businessDay = (DateTime)ViewBag.BusinessDate;
+    var reports = (List<ReportInformation>)ViewBag.Reports;
+    var companies = (List<CompanyInformation>)ViewBag.Companies;
+    var branches = (List<BrokerBranch>)ViewBag.Branch;
+    var markets = (List<MarketInformation>)ViewBag.Market;
+    var dpList = (List<BrokerDepositoryPariticipant>)ViewBag.DP;
+}
+<style type="text/css">
+    .panel-custom > .panel-heading {
+        /*background: #26B99A !important;*/
+        color: #FFFFFF !important;
+    }
+
+    .panel-custom .panel-body .row:not(:last-child) {
+        margin-bottom: 10px;
+    }
+
+    .panel-custom .panel-body .radio {
+        margin-top: 0px;
+    }
+
+    .panel-custom .panel-body .radio-text, .panel-custom .panel-body input[type=text] {
+        color: #73879C;
+    }
+
+    .panel-custom .label-container {
+        text-align: right;
+    }
+
+    input[type=text]:read-only {
+        background: #FFFFFF;
+        cursor: default;
+    }
+
+    #error > .panel {
+        margin-bottom: 20px;
+    }
+
+        #error > .panel > .panel-heading {
+            padding: 0px 5px 0px 15px;
+        }
+
+    .radio-container label {
+        cursor: pointer;
+        padding: 5px;
+    }
+
+        .radio-container label.active {
+            background: #0e73a9;
+            border-radius: 4px;
+            /*margin-left: 10px;*/
+        }
+
+            .radio-container label.active span.radio-text {
+                color: #FFFFFF;
+            }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<div class="row">
+    <div class="col-sm-offset-1 col-sm-10">
+        <div class="panel panel-success panel-custom">
+            <div class="panel-heading PageHeader">
+                <h3 class="panel-title">CDBL Report</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Report Name :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-10 radio-container">
+                        <div class="row">
+                            @for (var r = 0; r < reports.Count; r++)
+                            {
+                                <label class="col-sm-4 @(r==0?"active":"")">
+                                    <input type="radio" class="radio radio-inline" @(r == 0 ? "checked='checked'" : "") name="fileType" value="@reports[r].SerialNo" /> <span class="radio-text">@reports[r].ReportName</span>
+                                </label>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" id="divDateRange">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Date From :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="text" placeholder="dd/mm/yyyy" name="transactionDateFrom" id="txtTransactionDateFrom" class="input-sm form-control DateInput check-date" required="required" value="@businessDay.ToString("dd/MM/yyyy")" />
+                    </div>
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Date To :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="text" placeholder="dd/mm/yyyy" name="transactionDateTo" id="txtTransactionDateTo" class="input-sm form-control DateInput check-date" required="required" value="@businessDay.ToString("dd/MM/yyyy")" />
+                    </div>
+                </div>
+
+                <div class="row" id="divCompany" style="display: none;">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Company :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-10">
+                        <select class="input-sm form-control" id="cmbCompany">
+                            <option value="0">Select Company</option>
+                            @foreach (var company in companies.OrderBy(x => x.CompanyShortName))
+                            {
+                                <option value="@company.Id">@company.CompanyShortName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="row" id="divBranch" style="display: none;">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Branch :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-10">
+                        <select class="input-sm form-control" id="cmbBranch">
+                            <option value="0">Select Branch</option>
+                            @foreach (var branch in branches)
+                            {
+                                <option value="@branch.Id">@branch.BrokerBranchName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="row" id="divMarket" style="display: none;">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Market :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-10">
+                        <select class="input-sm form-control" id="cmbMarket">
+                            <option value="0">Select Market</option>
+                            @foreach (var market in markets)
+                            {
+                                <option value="@market.Id">@market.MarketShortName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="row" id="divDp" style="display: none;">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("DP :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-10">
+                        <select class="input-sm form-control" id="cmbDp">
+                            <option value="0">Select DP</option>
+                            @foreach (var dp in dpList)
+                            {
+                                <option value="@dp.Id">@dp.DepositoryParticipantName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="row" id="divCode" style="display: none;">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Investor Code :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-10">
+                        <input type="text" class="input-sm form-control" id="txtCode" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Report Type :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-10">
+                        <select class="input-sm form-control bordercss" id="cmbReportType">
+                            <option value="Pdf" selected="selected">Pdf</option>
+                            <option value="ExcelBook">Microsoft Excel</option>
+                            <option value="Excel">Microsoft Excel (97-2003)</option>
+                            <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                            <option value="Word">Microsoft Word (97-2003)</option>
+                            <option value="XML">XML</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <div class="row">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <input type="submit" name="btnShow" id="btnShow" class="btn btn-sm btn-success" value="Show" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#txtTransactionDateFrom").on("change", function () {
+            var fromDate = $("#txtTransactionDateFrom").val();
+            $("#txtTransactionDateTo").datepicker('option', { minDate: fromDate });
+        });
+        $("#txtTransactionDateTo").on("change", function () {
+            var toDate = $("#txtTransactionDateTo").val();
+            $("#txtTransactionDateFrom").datepicker('option', { maxDate: toDate });
+        });
+        $("input[type=radio][name=fileType]").on("change", function () {
+            $(".radio-container label").removeClass("active");
+            $("input[type=radio][name=fileType]:checked").parents("label").addClass("active");
+            $("#divCompany,#divBranch,#divMarket,#divDp,#divCode").hide();
+            $("#divDateRange").show();
+            var typeId = $("input[type=radio][name=fileType]:checked").val();
+            if (typeId == "2") {
+                $("#divDateRange").hide();
+                $("#divCompany").show();
+            } else if (typeId == "3") {
+                $("#divCode").show();
+            } else if (typeId == "4" || typeId == "5") {
+                $("#divBranch").show();
+            }
+            else if (typeId == "6") {
+                $("#divCompany,#divBranch,#divMarket,#divDp").show();
+            }
+        });
+        $(document).on("click", "#btnShow", function () {
+            if ($("input[type=radio][name=fileType]:checked").length == 0) {
+                $.alert.open("Warning!", "No report selected.");
+                return false;
+            }
+            var reportNo = parseInt($("input[type=radio][name=fileType]:checked").val());
+            var dateFrom = $("#txtTransactionDateFrom").val().trim();
+            var dateTo = $("#txtTransactionDateTo").val().trim();
+            var reportType = $("#cmbReportType").val();
+            var companyId = parseInt($("#cmbCompany").val());
+            var branchId = parseInt($("#cmbBranch").val());
+            var marketId = parseInt($("#cmbMarket").val());
+            var dpId = parseInt($("#cmbDp").val());
+            var code = $("#txtCode").val().trim();
+            if (reportNo != 2) {
+                if (dateFrom == "") {
+                    $.alert.open("Error", "Please enter from date.");
+                    return false;
+                }
+                if (dateTo == "") {
+                    $.alert.open("Error", "Please enter to date.");
+                    return false;
+                }
+                if (new Date(dateFrom) > new Date(dateTo)) {
+                    $.alert.open("Error", "From Date must be less than or equal to To Date");
+                    return false;
+                }
+            }
+            if (reportNo == 1)
+                window.open('/CDBLReport/ShowClosingStockReport?fromDate=' + dateFrom + '&toDate=' + dateTo + '&type=' + reportType+"&reportNo="+reportNo);
+            else if (reportNo == 2)
+                window.open('/CDBLReport/ShowStockMismatchReport?companyId=' + companyId + '&type=' + reportType + "&reportNo=" + reportNo);
+            else if (reportNo == 3)
+                window.open('/CDBLReport/ShowClientWiseCashDividend?fromDate=' + dateFrom + '&toDate=' + dateTo + '&code=' + code + '&type=' + reportType + "&reportNo=" + reportNo);
+            else if (reportNo == 4)
+                window.open('/CDBLReport/ShowBranchWiseBOOpening?fromDate=' + dateFrom + '&toDate=' + dateTo + '&branch=' + branchId + '&type=' + reportType + "&reportNo=" + reportNo);
+            else if (reportNo == 5)
+                window.open('/CDBLReport/ShowBranchWiseBOClosing?fromDate=' + dateFrom + '&toDate=' + dateTo + '&branch=' + branchId + '&type=' + reportType + "&reportNo=" + reportNo);
+
+            return true;
+        });
+    });
+</script>

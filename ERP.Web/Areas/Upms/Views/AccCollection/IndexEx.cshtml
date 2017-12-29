@@ -1,0 +1,842 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<style>
+    .ui-autocomplete {
+        cursor: pointer;
+        height: 400px;
+        width: 300px;
+        overflow-y: scroll;
+        background-color: white;
+        color: rgb(0,188,212);
+        /*outline-style:outset;*/
+    }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .required::after {
+        content: " *";
+        color: red;
+    }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+<script type="text/javascript">
+
+
+    function GetIPOCompanyList() {
+
+        var ddlIPOCompany = $("#ddlIPOCompany");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetIPOCompanyList", "AccCollection", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (ComanyList) {
+                ddlIPOCompany.html('');
+                ddlIPOCompany.append($('<option></option>').val("0").html("Please select"));
+                $.each(ComanyList, function (id, option) {
+                    if (option.Id != 0) {
+                        ddlIPOCompany.append($('<option></option>').val(option.Id).html(option.CompanyName));
+                    }
+                    //else
+                    //{
+                    //    $.alert.open("error", "IPO not available");
+                    //    return false;
+                    //}
+
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+
+    function ChequeNoValidation() {
+
+        var ChequeNo = $("#ChequeNo").val();
+        var BankId = $("#ddlBankId").val();
+        if (ChequeNo != "" && BankId != 0) {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("ChequeNoValidation", "AccCollection", "http")',
+                data: { ChequeNo: ChequeNo, BankId: BankId },
+                dataType: 'json',
+                async: true,
+                success: function (Result) {
+                    if (Result != "1") {
+                        $("#ChequeNo").val("");
+                        $.alert.open("Warning", "Duplicate cheque number");
+                    }
+                    else {
+                        return true;
+                    }
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+
+    }
+
+
+    function GetBankList() {
+
+        var ddlBankList = $("#ddlBankId");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBankInfo", "LookupBank", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (BankList) {
+                ddlBankList.html('');
+                ddlBankList.append($('<option></option>').val("0").html("Please select"));
+                $.each(BankList, function (id, option) {
+                    ddlBankList.append($('<option></option>').val(option.Id).html(option.BankName));
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetBankBranchListForEdit(BankBranchId) {
+        var ddlBankBranch = $("#ddlBankBranchId");
+        var BankId = $("#ddlBankId").val();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBankBranchList", "InvestorDetail", "http")',
+            data: { BankId: BankId },
+            dataType: 'json',
+            async: true,
+            success: function (BankBrach) {
+                ddlBankBranch.html('');
+                ddlBankBranch.append($('<option></option>').val(" ").html("Please select"));
+                $.each(BankBrach, function (id, option) {
+                    ddlBankBranch.append($('<option></option>').val(option.Id).html(option.BranchName));
+                });
+                $("#ddlBankBranchId").val(BankBranchId);
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetBankBranchList() {
+        var ddlBankBranch = $("#ddlBankBranchId");
+        var BankId = $("#ddlBankId").val();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBankBranchList", "InvestorDetail", "http")',
+            data: { BankId: BankId },
+            dataType: 'json',
+            async: true,
+            success: function (BankBrach) {
+                ddlBankBranch.html('');
+                ddlBankBranch.append($('<option></option>').val(" ").html("Please select"));
+                $.each(BankBrach, function (id, option) {
+                    ddlBankBranch.append($('<option></option>').val(option.Id).html(option.BranchName));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetCollectionInfoBeforeApprove() {
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetCollectionInfoOfClosedInvestorBeforeApprove", "AccCollection", "http")',
+                    dataType: "json",
+                    data: {}
+                }
+            },
+            pageSize: 1000,
+        });
+
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 600,
+            groupable: true,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 100
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+
+            {
+                field: "rowNumber",
+                title: "SL",
+                template: "<span class='row-number'></span>",
+                width: "5%",
+                hidden: true
+
+            },
+
+            {
+                field: "VoucherNo",
+                title: "Receipt No",
+            },
+            {
+                field: "InvestorName",
+                title: "Investor Name",
+                width: "22%"
+
+            },
+             {
+                 field: "TransactionModeName",
+                 title: "Transaction Mode",
+                 width: "12%"
+             },
+            {
+                field: "ChequeNo",
+                title: "Cheque No",
+                width: "8%"
+
+            },
+             {
+                 field: "ChequeDateMsg",
+                 title: "Cheque Date",
+                 width: "12%"
+             },
+            {
+                field: "Amount",
+                title: "Amount",
+                width: "8%"
+
+            },
+            {
+                field: "BankName",
+                title: "Bank",
+                width: "15%"
+            },
+            {
+                field: "BankBranchName",
+                title: "Bank Branch",
+                hidden: true
+
+            },
+             {
+                 field: "TransactionDateMsg",
+                 title: "Received Date",
+                 width: "12%"
+             },
+            {
+                field: "PostDateMsg",
+                title: "Post Date",
+                hidden: true
+
+            },
+            {
+                field: "DocRefNo",
+                title: "Doc. Ref.No",
+                hidden: true
+            },
+            {
+                field: "BrokerBranchName",
+                title: "Broker Branch",
+                hidden: true
+
+            },
+            {
+                field: "Remarks",
+                title: "Remarks",
+                hidden: true
+            },
+            {
+                field: "ValuedateMsg",
+                title: "Value date",
+                hidden: true
+            },
+             {
+                 field: "InvestorBranchName",
+                 title: "Branch Name",
+                 hidden: true,
+             },
+             {
+                 title: "Action",
+                 width: "10%",// //Id,VoucherNo,InvestorCode,InvestorName,TransactionMode,ChequeNo, ChequeDateMsg,C.BankName,C.BankBranchName,C.Amount,TransactionDateMsg,PostDateMsg,C.DocRefNo,C.BranchId AS BrokerBranch,C.Remarks,ValuedateMsg
+                 template: function (dataItem) {
+                     return '<a href="#" title="Edit" onclick=" LoadEditData(' + dataItem.Id + ',' + dataItem.InvestorId + ',' + "'" + dataItem.InvestorName + "'" + ',' + "'" + dataItem.TransactionDateMsg + "'" + ',' + "'" + dataItem.TransactionModeId + "'" + ',' + "'" + dataItem.ChequeNo + "'" + ',' + "'" + dataItem.ChequeDateMsg + "'" + ',' + "'" + dataItem.BankId + "'" + ',' + "'" + dataItem.BankBranchId + "'" + ',' + dataItem.Amount + ',' + "'" + dataItem.DocRefNo + "'" + ',' + "'" + dataItem.PostDateMsg + "'" + ',' + dataItem.BrokerBranchId + ',' + "'" + dataItem.Remarks + "'" + ',' + "'" + dataItem.ValuedateMsg + "'" + ',' + dataItem.IPODeclarationId + ',' + "'" + dataItem.InvestorBranchName + "'" + ')" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a>';//<a href="#" title="Delete" onclick="Delete(' + dataItem.Id + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i>
+                 }
+             },
+            ],
+            dataBound: function () {
+                var rows = this.items();
+                $(rows).each(function () {
+                    var index = $(this).index() + 1;
+                    var rowLabel = $(this).find(".row-number");
+                    $(rowLabel).html(index);
+                });
+            }
+        });
+    }
+
+    function GetInvestorbyCode() {
+        var code = $('#InvestorCode').val().trim().indexOf("-") > 0 ? $('#InvestorCode').val().trim().split("-")[0].trim() : $('#InvestorCode').val().trim();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetClosedInvestorByCode", "AccCollection", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { InvestorCode: code },
+            success: function (InvestorList) {
+                if (InvestorList.length == 1) {
+                    $.each(InvestorList, function (id, option) {
+                        $("#InvestorCode").val(option.InvestorCode + '- ' + option.InvestorName);
+                        $("#hdnInvestorId").val(option.Id);
+                        $("#InvestorBranchName").val(option.InvestorBranchName);
+                    });
+
+                }
+                else {
+                    $("#InvestorCode").val("");
+                    $.alert.open("info", "Please Enter Closed Investor");
+                }
+
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+
+    @*var AllInvestorList = [];
+
+    function GetInvestorList(QType) {
+
+        $('#InvestorCode').attr("placeholder","Loading . .. ... ....")
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorList", "AccCollection", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { QType: QType },
+            success: function (InvestorList) {
+                $.each(InvestorList, function (id, option) {
+                    var obj2 = new Object();
+                    obj2.key = option.Id;
+                    obj2.value = option.InvestorCode;
+
+                    AllInvestorList[AllInvestorList.length] = obj2;
+                });
+                $('#InvestorCode').removeAttr("placeholder")
+            },
+            failure: function () {
+                $('#InvestorCode').removeAttr("placeholder")
+                $.alert.open("error", "Failed!");
+            }
+        });
+
+        $('#InvestorCode').autocomplete({
+            source: AllInvestorList,
+            select: function (event, ui) {
+
+                $("#InvestorCode").val(ui.item.value); // display the selected text
+                $("#hdnInvestorId").val(ui.item.key);// save selected id to hidden input
+                $("#hdnMode").val("A");
+            }
+        });
+    }*@
+
+    function LoadEditData(Id, InvestorId, InvestorName, TransactionDateMsg, TransactionModeId, ChequeNo, ChequeDateMsg, BankId, BankBranchId, Amount, DocRefNo, PostDateMsg, BrokerBranchId, Remarks, ValuedateMsg, IPODeclarationId, InvestorBranchName) {
+        $("#hdnAccCollectionId").val(Id);
+        $("#hdnInvestorId").val(InvestorId);
+        $("#Date").val(PostDateMsg);
+        $("#InvestorCode").val(InvestorName);
+        $("#TransactionMode").val(TransactionModeId);
+        $("#ChequeNo").val(ChequeNo);
+        $("#ChequeDate").val(ChequeDateMsg);
+        $("#ddlBankId").val(BankId);
+        $("#Amount").val(Amount);
+        $("#DocRefNo").val(DocRefNo);
+        $("#ReceiveDate").val(TransactionDateMsg);
+        $("#ValueDate").val(ValuedateMsg);
+        $("#BrokerBranchList").val(BrokerBranchId);
+        $("#Remarks").val(Remarks);
+        //if (IPODeclarationId > 0 )
+        //{
+        //    $("#chkGroup").prop("checked",true);
+        //    $("#divIpoGrp").show();
+        //    $("#ddlIPOCompany").val(IPODeclarationId);
+        //    AllInvestorList.length = 0;
+        //    GetInvestorList('1');
+        //}
+        if (TransactionModeId == 2) {
+            $("#ChequeNo").attr("disabled", true);
+            $("#ChequeDate").attr("disabled", true);
+            $("#ddlBankId").attr("disabled", true);
+            $("#ddlBankBranchId").attr("disabled", true);
+        }
+        else {
+            $("#ChequeNo").val(ChequeNo);
+            $("#ChequeDate").val(ChequeDateMsg);
+            $("#ddlBankId").val(BankId);
+            GetBankBranchListForEdit(BankBranchId)
+        }
+        //GetBankBranchListForEdit(BankBranchId)
+        $("#InvestorBranchName").val(InvestorBranchName);
+    }
+
+
+    $(document).ready(function () {
+
+        $("#hdnAccCollectionId").val("0");
+        $("#hdnInvestorId").val("0");
+        $("#hdnMode").val("B");
+        $("#divIpoGrp").hide();
+
+        GetBankList();
+        //GetInvestorList('0');
+        GetCollectionInfoBeforeApprove();
+        GetIPOCompanyList();
+
+
+        //$("#chkGroup").click(function () {
+
+        //    if ($("#chkGroup").is(":checked") == true)
+        //    {
+        //        $("#divIpoGrp").show();
+        //        AllInvestorList.length = 0;
+        //        $("#InvestorCode").val("");
+        //        $("#hdnInvestorId").val('0');
+        //        GetInvestorList('1');
+        //    }
+        //    else
+        //    {
+        //        $("#divIpoGrp").hide();
+        //        $("#InvestorCode").val("");
+        //        $("#hdnInvestorId").val('0');
+        //        GetInvestorList('0');
+
+        //    }
+        //});
+
+
+        $("#InvestorCode").blur(function () {
+            if ($("#InvestorCode").val().trim() != "") {
+                GetInvestorbyCode();
+            }
+        });
+
+
+        $("#btnClear").click(function (e) {
+            e.preventDefault();
+            $("#hdnAccCollectionId").val("0");
+            $("#hdnInvestorId").val('0');
+            $("#InvestorCode").val('');
+            $("#TransactionMode").val('');
+            $("#ChequeNo").val('');
+            $("#ChequeDate").val('');
+            $("#ddlBankId").val("0");
+            $("#ddlBankBranchId").val('');
+            $("#RoutingNo").val("")
+            $("#Amount").val(0);
+            $("#DocRefNo").val('');
+            $("#ReceiveDate").val('');
+            $("#ValueDate").val('');
+            $("#BrokerBranchList").val('');
+            $("#Remarks").val('');
+            $("#ddlIPOCompany").val('0');
+            $("#InvestorCode").focus();
+            $("#InvestorBranchName").val('');
+        });
+
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+
+            var InvestorId = $("#hdnInvestorId").val();
+            var Amount = $("#Amount").val();
+            var ReceiveDate = $("#ReceiveDate").val();
+            var Date = $("#Date").val();
+            var TransactionMode = $("#TransactionMode").val();
+            var RoutingNo = $("#RoutingNo").val();
+
+
+
+            if (InvestorId != "0" && Amount != "" && ReceiveDate != "" && Date != "" && TransactionMode != "" ) {
+                var AccCollectionId = $("#hdnAccCollectionId").val();
+
+                var ChequeNo = $("#ChequeNo").val();
+                var ChequeDate = $("#ChequeDate").val();
+                var BankId = $("#ddlBankId").val();
+                var BankBranchId = $("#ddlBankBranchId").val();
+
+                var ValueDate = $("#ValueDate").val();
+                var BranchId = $("#BrokerBranchList").val();
+                var Remarks = $("#Remarks").val();
+                var IPODeclarationId = 0;
+
+                if ($("#TransactionMode option:selected").text().toUpperCase() != "CASH" && $("#TransactionMode option:selected").text().toUpperCase() != "DIRECT DEPOSIT") {
+                    if (ChequeNo.trim() == "" || ChequeDate.trim() == "" || parseInt(BankId) == 0 || BankBranchId.trim() == "") {
+                        $.alert.open("error", "Insert all required field");
+                        return false;
+                    }
+                }
+                //if ($("#chkGroup").is(":checked") == true) {
+                //    if ($("#ddlIPOCompany").val() != "0")
+                //    {
+                //        IPODeclarationId = $("#ddlIPOCompany").val();
+                //    }
+                //    else
+                //    {
+                //        $.alert.open("error","Select IPO Company");
+                //        return false;
+                //    }
+                //}
+
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveChequeCash", "AccCollection", "http")',
+                    type: "GET",
+                    dataType: "json",
+                    async: true,
+                    data: { AccCollectionId: AccCollectionId, InvestorId: InvestorId, Date: Date, TransactionMode: TransactionMode, ChequeNo: ChequeNo, ChequeDate: ChequeDate, BankId: BankId, BankBranchId: BankBranchId, Amount: Amount, ReceiveDate: ReceiveDate, ValueDate: ValueDate, BranchId: BranchId, Remarks: Remarks, IPODeclarationId: IPODeclarationId, IsCloseInv: true, RoutingNo: RoutingNo },
+                    success: function (Result) {
+                        if (Result == "1") {
+                            $("#hdnAccCollectionId").val("0");
+                            $("#hdnInvestorId").val('0');
+                            $("#InvestorCode").val('');
+                            $("#TransactionMode").val(' ');
+                            $("#ChequeNo").val('');
+                            $("#ChequeDate").val('');
+                            $("#ddlBankId").val("0");
+                            $("#ddlBankBranchId").val('');
+                            $("#Amount").val(0);
+                            $("#InvestorBranchName").val('');
+                            $("#ReceiveDate").val('');
+                            $("#ValueDate").val('');
+                            $("#BrokerBranchList").val('');
+                            $("#Remarks").val('');
+                            $("#ddlIPOCompany").val('0');
+                            GetCollectionInfoBeforeApprove();
+                            $(".success").show(800).fadeToggle(3000);
+                        }
+                        else {
+                            $.alert.open("error", Result)
+                        }
+
+                    },
+                    failure: function () {
+                        $(".failed").show(800).fadeToggle(3000);
+                    }
+                });
+            }
+            else {
+                $.alert.open("error", "Insert all required field")
+            }
+        });
+
+        $("#ChequeNo").blur(function () {
+            ChequeNoValidation();
+
+        });
+
+        $("#ddlBankId").change(function () {
+            //if ($("#ddlBankId").val() != "" && $("#ddlBankId").val() != null) {
+            $("#RoutingNo").val("")
+            GetBankBranchList();
+            ChequeNoValidation();
+            //}
+        });
+        $("#ddlBankBranchId").change(function () { $("#RoutingNo").val("") });
+
+        $("#TransactionMode").change(function () {
+            if ($("#TransactionMode option:selected").text().toUpperCase() == "CASH" || $("#TransactionMode option:selected").text().toUpperCase() == "DIRECT DEPOSIT") {
+                $("#ChequeNo").val("");
+                $("#ChequeDate").val("");
+                $("#ddlBankId").val("0");
+                $("#ddlBankBranchId").val("");
+
+                $("#ChequeNo").attr("disabled", true);
+                $("#ChequeDate").attr("disabled", true);
+                $("#ddlBankId").attr("disabled", true);
+                $("#ddlBankBranchId").attr("disabled", true);
+                $("[for=ChequeNo]").removeClass("required");
+                $("[for=ChequeDate]").removeClass("required");
+                $("[for=ddlBankId]").removeClass("required");
+                $("[for=ddlBankBranchId]").removeClass("required");
+            }
+            else {
+                //alert(1);
+                $("#ChequeNo").attr("disabled", false);
+                $("#ChequeDate").attr("disabled", false);
+                $("#ddlBankId").attr("disabled", false);
+                $("#ddlBankBranchId").attr("disabled", false);
+                $("[for=ChequeNo]").addClass("required");
+                $("[for=ChequeDate]").addClass("required");
+                $("[for=ddlBankId]").addClass("required");
+                $("[for=ddlBankBranchId]").addClass("required");
+            }
+        });
+
+
+        $("#RoutingNo").blur(function () {
+
+           
+            var RouNo = $("#RoutingNo").val();
+            if (RouNo != "") {
+                $("#ddlBankId").val(0);
+                $("#ddlBankBranchId").empty();
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetBankBranchByRoutingNo", "AccCollection", "http")',
+                    type: "GET",
+                    dataType: "json",
+                    async: true,
+                    data: { RouNo: RouNo },
+                    success: function (data) {
+                        $("#ajaxLoader").hide();
+                        if (data.Result == "Success") {
+                            $("#ddlBankId").val(data.BankId);
+                            GetBankBranchListForEdit(BankBranchId = data.BankBranchId)
+                            $("#ddlBankId").attr("disabled", true);
+                            $("#ddlBankBranchId").attr("disabled", true);
+                        }
+                        else {
+                            $("#ddlBankId").val(0);
+                            $("#ddlBankBranchId").empty();
+                            $("#ddlBankId").attr("disabled", false);
+                            $("#ddlBankBranchId").attr("disabled", false);
+                            $.alert.open("error", data.Message)
+                        }
+                    },
+                    failure: function () {
+                        $("#ajaxLoader").hide()
+                        $(".failed").show(800).fadeToggle(3000);
+                    }
+                });
+
+            }
+        });
+
+        $("#RoutingNo").keyup(function () { if ($("#RoutingNo").val().length == 0) { $("#ddlBankId").attr("disabled", false); $("#ddlBankBranchId").attr("disabled", false); } });
+        //$("#ChequeDate").datepicker(
+        //  {
+        //      dateFormat: "dd-M-yy",
+        //      showAnim: "scale",
+        //      changeMonth: true,
+        //      changeYear: true,
+        //      yearRange: "1920:2025",
+        //      onSelect: function () {
+        //          $("#ddlBankId").focus();
+        //      }
+        //  });
+
+        //$("#Date").datepicker(
+        //{
+        //    dateFormat: "dd-M-yy",
+        //    showAnim: "scale",
+        //    changeMonth: true,
+        //    changeYear: true,
+        //    yearRange: "1920:2025"
+        //});
+
+
+        //$("#ReceiveDate").datepicker(
+        //{
+        //    dateFormat: "dd-M-yy",
+        //    showAnim: "scale",
+        //    changeMonth: true,
+        //    changeYear: true,
+        //    yearRange: "1920:2025"
+        //});
+
+        //$("#ValueDate").datepicker(
+        //{
+        //    dateFormat: "dd-M-yy",
+        //    showAnim: "scale",
+        //    changeMonth: true,
+        //    changeYear: true,
+        //    yearRange: "1920:2025"
+        //});
+
+    });
+</script>
+
+@using (Html.BeginForm("Index", "AccCollection", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "AccCollectionForm" }))
+{
+    @Html.AntiForgeryToken()
+    @*@{
+            ERP.Web.Helpers.SessionHelper.TransactionDate.ToString();
+        }*@
+
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">Cheque/Cash Receive of Closed Investor</h3>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <div class="clearfix"></div>
+                    <input type="hidden" id="hdnInvestorId" />
+                    <input type="hidden" id="hdnAccCollectionId" />
+                    <input type="hidden" id="hdnMode" />
+                </div>
+                <div class="x_content">
+                    <br />
+                    @*<div class="row form-group">
+                            <div class="col-md-2 col-sm-6 col-xs-12"></div>
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                <input type="checkbox" id="chkGroup"/><span style="color:black">  IPO Group Receive</span>
+                            </div>
+                            <div id="divIpoGrp">
+                                @Html.Label("IPO Company", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("IPOCompanyList", null, new { @id = "ddlIPOCompany", @class = "form-control bordercss" })
+                                </div>
+                            </div>
+
+                        </div>*@
+                    <div class="row form-group">
+                        @Html.Label("Transaction Date", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("Date", new { htmlAttributes = new { @class = "form-control DateInput check-date", @Value = @ViewData["BusinessDate"], @disabled = "false" } })
+                        </div>
+                        @Html.Label("Closed Investor Code", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("InvestorCode", new { htmlAttributes = new { @class = "form-control", @required = "required", @autofocus = "autofocus" } })
+                        </div>
+                        @*@Html.Label("Name", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @Html.Editor("InvestorName", new { htmlAttributes = new { @class = "form-control",@readonly="readonly" } })
+                            </div>*@
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Branch", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("InvestorBranchName", new { htmlAttributes = new { @class = "form-control", @disabled = "disabled" } })
+                        </div>
+                        @Html.Label("Transaction Mode", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.DropDownList("TransactionMode", new SelectList(ViewBag.TransactionModeList, "Id", "TransactionModeName"), "Please select", new { @class = "form-control bordercss" })
+                        </div>
+                       
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Cheque No", htmlAttributes: new { @class = "control-label col-md-2", @for = "ChequeNo" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("ChequeNo", new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                        @Html.Label("Cheque Date", htmlAttributes: new { @class = "control-label col-md-2 required", @for = "ChequeDate" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("ChequeDate", new { htmlAttributes = new { @class = "form-control  DateInput check-date" } })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Routing No", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("RoutingNo", new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                        @Html.Label("Bank", htmlAttributes: new { @class = "control-label col-md-2", @for = "ddlBankId" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.DropDownList("BankList", null, new { @id = "ddlBankId", @class = "form-control bordercss" })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Bank Branch", htmlAttributes: new { @class = "control-label col-md-2", @for = "ddlBankBranchId" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.DropDownList("BankBranchlist", null, new { @id = "ddlBankBranchId", @class = "form-control bordercss" })
+                        </div>
+                        @Html.Label("Amount", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("Amount", new { htmlAttributes = new { @class = "form-control", @type = "number" } })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Receive Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("ReceiveDate", new { htmlAttributes = new { @class = "form-control  DateInput check-date" } })
+                        </div>
+                        @Html.Label("Value Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("ValueDate", new { htmlAttributes = new { @class = "form-control  DateInput check-date" } })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Remarks", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.TextArea("Remarks", htmlAttributes: new { @class = "form-control", @rows = "4" })
+                        </div>
+                    </div>
+                    <div class="ln_solid"></div>
+                    <div class="form-group">
+                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            <button type="submit" id="btnSave" class="btn btn-success">Save</button>
+                            <button type="submit" id="btnClear" class="btn btn-primary">New</button>
+                        </div>
+                    </div>
+                    <div class="item form-group">
+                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            <div class="success" role="alert" style="display:none">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <p class="message-content">Saved Sucessfully</p>
+                            </div>
+                            <div class="failed" role="alert" style="display:none">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <p class="message-content">Fail to save</p>
+                            </div>
+                            <br />
+                        </div>
+                    </div>
+                    @*</form>*@
+                </div>
+                <div class="x_content">
+                    <div class="row">
+                        <div id="grid"> </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+
+

@@ -1,0 +1,192 @@
+﻿@{
+    ViewBag.Title = "CompanyInfoReport";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script type="text/javascript">
+
+    function GetSector() {
+        var ddlSector = $("#ddlSector");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetSectorList", "GeneralReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlSector.html('');
+                ddlSector.append($('<option></option>').val("0").html("All Sector"));
+                $.each(data, function (id, option) {
+                    ddlSector.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+    function GetGroup() {
+        var ddlGroup = $("#ddlGroup");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetGroupList", "GeneralReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ddlGroup.html('');
+                ddlGroup.append($('<option></option>').val("0").html("All Group"));
+                $.each(data, function (id, option) {
+                    ddlGroup.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    $(document).ready(function () {
+
+        GetSector();
+        GetGroup();
+       
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var Sector = $("#ddlSector").val();
+            var Group = $("#ddlGroup").val();
+            var OrderBy = $("#ddlOrderBy").val();
+            var LoanMargin = $("#ddlLoanMargin").val();
+            var Qtype = $("#ddlRptGroup").val();
+            var url = '/GeneralReport/GenerateCompanyInfoReport?reportNo=1&SectorId=' + Sector + '&GroupId=' + Group + '&Qtype=' + Qtype + '&LoanMargin=' + LoanMargin + '&OrderBy=' + OrderBy + '&exportType=' + $("#cmbReportType").val();
+            window.open(url);
+
+        });
+
+
+    });
+
+   
+</script>
+
+  
+
+@using (Html.BeginForm("CompanyInfoReport", "GeneralReport", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "CompanyInfoReportForm" }))
+{
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:100%;">
+            <h3 style="color: white;padding:2px">Securities Information Report</h3>
+        </div>
+    </div>
+    <div class="x_panel">
+        
+        <div class="x_content">
+            <br />
+            <fieldset>
+                <legend>Search Option</legend>
+                <div class="row">
+                    <div class="item form-group">
+                        @Html.Label("Sector", htmlAttributes: new { @class = "control-label col-md-1 col-sm-3 col-xs-12" })
+                        <div class="col-md-3 col-sm-6 col-xs-12">
+                            @Html.DropDownList("SectorList", null, new { @ID = "ddlSector", @class = "form-control bordercss" })
+                        </div>
+                        @Html.Label("Market Group", htmlAttributes: new { @class = "control-label col-md-1 col-sm-3 col-xs-12" })
+                        <div class="col-md-3 col-sm-6 col-xs-12">
+                            @Html.DropDownList("GroupList", null, new { @ID = "ddlGroup", @class = "form-control bordercss" })
+                        </div>
+                        @Html.Label("Margin Status", htmlAttributes: new { @class = "control-label col-md-1 col-sm-3 col-xs-12" })
+                        <div class="col-md-3 col-sm-6 col-xs-12">
+                            <select class="form-control bordercss" id="ddlLoanMargin">
+                                <option value="2">All</option>
+                                <option value="1">Margin</option>
+                                <option value="0">Non Margin</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+           
+            <fieldset>
+                <legend>Report View Option</legend>
+                <div class="row">
+
+                    <div class="item form-group">
+                        @Html.Label("Order By", htmlAttributes: new { @class = "control-label col-md-1 col-sm-3 col-xs-12" })
+                        <div class="col-md-3 col-sm-6 col-xs-12">
+                            <select class="form-control bordercss" id="ddlOrderBy">
+                                <option value="1">Securities</option>
+                                <option value="2">DSC trade Code</option>
+                            </select>
+                        </div>
+                        @Html.Label("Groupwise", htmlAttributes: new { @class = "control-label col-md-1 col-sm-3 col-xs-12" })
+                        <div class="col-md-3 col-sm-6 col-xs-12">
+                            <select class="form-control bordercss" id="ddlRptGroup">
+                                <option value="1">General</option>
+                                <option value="2">Sector</option>
+                                <option value="3">Market Group</option>
+                            </select>
+                        </div>
+                        @Html.Label("Report Type", new { @class = "control-label col-sm-1" })
+                        <div class="col-sm-3">
+                            <select class="input-sm form-control bordercss" id="cmbReportType">
+                                <option value="Pdf" selected="selected">Pdf</option>
+                                <option value="ExcelBook">Microsoft Excel</option>
+                                <option value="Excel">Microsoft Excel (97-2003)</option>
+                                <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                                <option value="Word">Microsoft Word (97-2003)</option>
+                                <option value="XML">XML</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+            
+
+            <div class="ln_solid"></div>
+            <div class="row">
+                <div class="col-md-2"></div>
+                <div class="col-md-4">
+                    <div class="form-group from-action">
+                        <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+
+
+
+
+@*@section Scripts {
+        @Scripts.Render("~/bundles/jqueryval")
+        @Scripts.Render("~/bundles/jqueryui")
+    }*@
+
+
+
+
+
+
+
+
+
+
+

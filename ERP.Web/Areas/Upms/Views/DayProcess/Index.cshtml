@@ -1,0 +1,497 @@
+﻿@using ERP.Web.Helpers
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script type="text/javascript">
+    @*var WorkingDays = [];
+    function FnunWorkingDates() {
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetWorkingDays", "DayProcess", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (WorkingDay) {
+
+                $.each(WorkingDay, function (id, option) {
+                    WorkingDays.push(option.CalendarDate);
+                });
+                console.log();
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+
+    }
+
+    function AllWorkinfDays(date) {
+        dmy = date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
+
+        if ($.inArray(dmy, WorkingDays) == -1) {
+            return [true, ""];
+        } else {
+            return [false, "", "Unavailable"];
+        }
+    }*@
+    var unavailableDates = [];
+    function AllWorkinfDays(date) {
+        dmy = date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
+
+        if ($.inArray(dmy, unavailableDates) == -1) {
+            return [false, "", "Unavailable"];
+        } else {
+
+            return [true, ""];
+        }
+    }
+
+
+
+
+
+    function FnunavailableDates() {
+        $("#AjaxLoader").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetHolidays", "DayProcess", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (HoliDays) {
+                $("#AjaxLoader").hide();
+                $.each(HoliDays, function (id, option) {
+                    unavailableDates.push(option.CalendarDate);
+                });
+            },
+            error: function (request, status, error) {
+                $("#AjaxLoader").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+
+    }
+
+    function unavailable(date) {
+        dmy = date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
+
+        if ($.inArray(dmy, unavailableDates) == -1) {
+            return [true, ""];
+        } else {
+            return [false, "", "Unavailable"];
+        }
+    }
+
+    $(document).ready(function () {
+        FnunavailableDates();
+        // FnunWorkingDates();
+
+        //Tab 4
+
+        function autoLogin(data) {
+            if (data.Result.toUpperCase() == "SUCCESS") {
+                $("#hidUserName").val(data.UserName);
+                $("#hidPassword").val(data.Password);
+                $("#frmLogIn").submit();
+            }
+        }
+
+        $("#btnSaveDayInitial").click(function (e) {
+            e.preventDefault();
+            $("#AjaxLoader").show();
+            if ($("#NextTransactionDay").val() != "") {
+                $.ajax({
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("DayInitialProcess", "DayInitital")',
+                    data: JSON.stringify({ businessDate: $("#NextTransactionDay").val().trim() }),
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        $("#AjaxLoader").hide();
+                        $.alert.open(data.Result, data.Message, function () {
+                            autoLogin(data);
+                        });
+                    },
+                    error: function (request, status, error) {
+                        alert("Please contact to your vendor.");
+                    }
+                });
+            }
+            else {
+                $("#AjaxLoader").hide();
+                $.alert.open("warning", "Close previous day");
+            }
+
+        });
+
+
+
+
+        //Tab 4 End
+
+
+
+
+        //tab 3
+        $("#btnSaveDayClosing").click(function (e) {
+            e.preventDefault();
+            if ($("#TransactionDay").val() != "") {
+                $("#AjaxLoader").show();
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveDayClosing", "DayProcess", "http")',
+                    data: {},
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        $("#AjaxLoader").hide();
+                        $.alert.open(data.Result, data.Message, function () {
+                            autoLogin(data);
+                        });
+                    },
+                    error: function (request, status, error) {
+                        $("#AjaxLoader").hide();
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+            else {
+                $("#AjaxLoader").hide();
+                $.alert.open("warning", "Day initial process not declare");
+            }
+
+
+        });
+
+        //tab 3 End
+        // Tab 2
+        $("#btnSaveWorkingDay").click(function (e) {
+            e.preventDefault();
+            $("#AjaxLoader").show();
+            var Description = $("#Descriptionw").val();
+            var FromDate = $("#FromDatew").val();
+            var ToDate = $("#ToDatew").val();
+
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("SaveWorkingDay", "DayProcess", "http")',
+                data: { Description: Description, FromDate: FromDate, ToDate: ToDate },
+                dataType: 'json',
+                async: true,
+                success: function (Result) {
+                    $("#AjaxLoader").hide();
+                    $("#Descriptionw").val("");
+                    $("#FromDatew").val("");
+                    $("#ToDatew").val("");
+
+                    $.alert.open("info", "Save successfull", function () {
+                        location.reload();
+                    });
+                },
+                error: function (request, status, error) {
+                    $("#AjaxLoader").hide();
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+
+        });
+
+
+
+        $("#FromDatew").datepicker({
+            dateFormat: "dd/mm/yy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true,
+            beforeShowDay: AllWorkinfDays
+            //yearRange: "2010:@DateTime.Today.Year",
+            //maxDate: "@DateTime.Today.ToString("dd/MM/yyyy")"
+        });
+        $("#ToDatew").datepicker({
+            dateFormat: "dd/mm/yy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true,
+            beforeShowDay: AllWorkinfDays,
+
+            //yearRange: "2010:@DateTime.Today.Year",
+            //maxDate: "@DateTime.Today.ToString("dd/MM/yyyy")"
+        });
+
+        //$("#FromDatew,#ToDatew").mask("99/99/2099");
+
+        $("#FromDatew").on("change", function () {
+            var fromDate = $("#FromDatew").val();
+            $("#ToDatew").datepicker('option', { minDate: fromDate });
+        });
+        $("#ToDatew").on("change", function () {
+            var toDate = $("#ToDatew").val();
+            $("#FromDatew").datepicker('option', { maxDate: toDate });
+        });
+        //tab 2 end
+        //Tab 1
+
+
+        $("#btnSaveHoliday").click(function (e) {
+            e.preventDefault();
+            $("#AjaxLoader").show();
+            var Description = $("#Description").val();
+            var FromDate = $("#FromDate").val();
+            var ToDate = $("#ToDate").val();
+            var DaytypeId = $("#ddlHohidayTypeList").val();
+
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("SaveHoliday", "DayProcess", "http")',
+                data: { DaytypeId: DaytypeId, Description: Description, FromDate: FromDate, ToDate: ToDate },
+                dataType: 'json',
+                async: true,
+                success: function (Result) {
+                    $("#AjaxLoader").hide();
+                    $("#Description").val("");
+                    $("#FromDate").val("");
+                    $("#ToDate").val("");
+                    $.alert.open("info", "Save successfull", function () {
+                        location.reload();
+                    });
+
+                },
+                error: function (request, status, error) {
+                    $("#AjaxLoader").hide();
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+
+        });
+
+        $("#NextTransactionDay").datepicker({
+            dateFormat: "dd/mm/yy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true,
+            beforeShowDay: unavailable,
+            yearRange: "2010:@DateTime.Today.Year"
+        });
+
+        $("#FromDate,#ToDate").datepicker({
+            dateFormat: "dd/mm/yy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true,
+            beforeShowDay: unavailable,
+            //yearRange: "2010:@DateTime.Today.Year", AllWorkinfDays
+            //maxDate: "@DateTime.Today.ToString("dd/MM/yyyy")" AllWorkinfDays
+        });
+
+        //$("#FromDate,#ToDate").mask("99/99/2099");
+
+        $("#FromDate").on("change", function () {
+            var fromDate = $("#FromDate").val();
+            $("#ToDate").datepicker('option', { minDate: fromDate });
+        });
+        $("#ToDate").on("change", function () {
+            var toDate = $("#ToDate").val();
+            $("#FromDate").datepicker('option', { maxDate: toDate });
+        });
+
+
+        //Tab 1
+    });
+</script>
+@if (ViewBag.DayInitialDate.ToString() == "" && ViewBag.DayEndDate.ToString() == "")
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#NextTransactionDay").prop("disabled", false);
+        });
+    </script>
+
+}
+@using (Html.BeginForm("Index", "DayProcess", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "IPOGroupForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="row">
+        <div class="col-sm-12">
+            <div id="AjaxLoader" class="ajaxLoader"></div>
+            <div class="panel panel-success panel-custom">
+                <div class="page-title">
+                    <div class="title_left PageHeader" style="width:90%;">
+                        <h3 style="color: white;padding:2px">&nbsp;&nbsp;Day process</h3>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-sm-12 info-container">
+                            <br />
+                            <div class="col-md-12 col-sm-6 col-xs-12">
+                                <div class="x_panel">
+
+                                    <div class="x_content">
+
+                                        <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                                            <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                                                <li role="presentation" class="active">
+                                                    <a href="#tab_content4" role="tab" id="profile-tab3" data-toggle="tab" aria-expanded="false">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(26,187,156);">Day Initial</span>  &nbsp;&nbsp;&nbsp;&nbsp;</a>
+                                                </li>
+                                                <li role="presentation" class="">
+                                                    <a href="#tab_content3" role="tab" id="profile-tab2" data-toggle="tab" aria-expanded="false">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(26,187,156)">Day Closing</span>  &nbsp;&nbsp;&nbsp;&nbsp;</a>
+                                                </li>
+                                                <li role="presentation" class="">
+                                                    <a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(26,187,156)">Working Day</span>  &nbsp;&nbsp;&nbsp;&nbsp;</a>
+                                                </li>
+                                                <li role="presentation" class="">
+                                                    <a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:rgb(26,187,156)">Holiday</span>  &nbsp;&nbsp;&nbsp;&nbsp;</a>
+                                                </li>
+                                            </ul>
+                                            <div id="myTabContent" class="tab-content">
+                                                <div role="tabpanel" class="tab-pane fade" id="tab_content1" aria-labelledby="home-tab">
+                                                    <br />
+                                                    <div class="row">
+                                                        <div class="row form-group">
+                                                            @Html.Label("Hohiday type", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                            <div class="col-md-5">
+                                                                @Html.DropDownList("HohidayType", new SelectList(ViewBag.HohidayTypeList, "Id", "DayTypeName"), "Please select", new { @id = "ddlHohidayTypeList", @class = "form-control bordercss" })
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="row form-group">
+                                                            @Html.Label("From Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                            <div class="col-md-5">
+                                                                @Html.Editor("FromDate", new { htmlAttributes = new { @class = "form-control DateInputRpt check-date" } })
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="row form-group">
+                                                            @Html.Label("To Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                            <div class="col-md-5">
+                                                                @Html.Editor("ToDate", new { htmlAttributes = new { @class = "form-control DateInputRpt check-date" } })
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="row form-group">
+                                                            @Html.Label("Description", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                            <div class="col-md-9">
+                                                                @Html.Editor("Description", new { htmlAttributes = new { @class = "form-control" } })
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div class="row">
+                                                        <div class="col-sm-11 text-center">
+                                                            <input type="button" name="btnSubmit" id="btnSaveHoliday" class="btn btn-sm btn-success" value="Save" />
+                                                        </div>
+                                                    </div>
+
+
+                                                </div>
+                                                <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+                                                    <br />
+                                                    <div class="row">
+                                                        <div class="row form-group">
+                                                            @Html.Label("From Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                            <div class="col-md-4">
+                                                                @Html.Editor("FromDatew", new { htmlAttributes = new { @class = "form-control DateInputRpt checkdate" } })
+                                                            </div>
+
+                                                            @Html.Label("To Date", htmlAttributes: new { @class = "control-label col-md-1" })
+                                                            <div class="col-md-4">
+                                                                @Html.Editor("ToDatew", new { htmlAttributes = new { @class = "form-control DateInputRpt check-date" } })
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="row form-group">
+                                                            @Html.Label("Description", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                            <div class="col-md-9">
+                                                                @Html.Editor("Descriptionw", new { htmlAttributes = new { @class = "form-control" } })
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div class="row">
+                                                        <div class="col-sm-11 text-center">
+                                                            <input type="button" name="btnSubmit" id="btnSaveWorkingDay" class="btn btn-sm btn-success" value="Save" />
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                                <div role="tabpanel" class="tab-pane fade" id="tab_content3" aria-labelledby="profile-tab">
+                                                    <br />
+                                                    <div class="row">
+                                                        <div class="row form-group">
+                                                            @Html.Label("Transaction Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                            <div class="col-md-5">
+                                                                <input type="text" id="TransactionDay" name="TransactionDay" class="form-control check-date" value="@ViewBag.DayEndDate" disabled="disabled" />
+                                                            </div>
+                                                        </div>
+                                                        <br />
+                                                        <div class="row">
+                                                            <div class="col-sm-11 text-center">
+                                                                <input type="button" name="btnSubmit" id="btnSaveDayClosing" class="btn btn-sm btn-success" value="Day end" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div role="tabpanel" class="tab-pane fade active in" id="tab_content4" aria-labelledby="profile-tab">
+                                                    <br />
+                                                    <div class="row">
+                                                        <div class="row form-group">
+                                                            @Html.Label("Transaction Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                            <div class="col-md-5">
+                                                                @*@Html.Editor("NextTransactionDay", new { htmlAttributes = new { @class = "form-control", @value = @td1, @disabled = "disabled" } })*@
+                                                                <input type="text" id="NextTransactionDay" name="NextTransactionDay" class="form-control check-date" value="@ViewBag.DayInitialDate" disabled="disabled" />
+                                                            </div>
+                                                        </div>
+                                                        <br />
+                                                        <div class="row">
+                                                            <div class="col-sm-11 text-center">
+                                                                <input type="button" name="btnSubmit" id="btnSaveDayInitial" class="btn btn-sm btn-success" value="Day Initial" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<form method="POST" action="/Account/Login" id="frmLogIn">    
+    @Html.AntiForgeryToken();
+    @Html.ValidationSummary(true)
+    <input type="hidden" name="UserName" value="" id="hidUserName">
+    <input type="hidden" name="Password" value="" id="hidPassword">
+    <input name="returnUrl" type="hidden" value="">
+</form>

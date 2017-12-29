@@ -1,0 +1,143 @@
+﻿@using Upms.Data.UPMSDataModel
+@{
+    ViewBag.Title = "Share Type Setup";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var transactionTypes = (List<TradeTransactionType>)ViewBag.TransactionTypes;
+}
+<style type="text/css">
+    .panel-custom > .panel-heading {
+        /*background: #26B99A !important;*/
+        color: #FFFFFF !important;
+    }
+    /*test*/
+    .panel-custom .panel-body .row:not(:last-child) {
+        margin-bottom: 10px;
+    }
+
+    .panel-custom .panel-body .radio {
+        margin-top: 0px;
+    }
+
+    .panel-custom .panel-body .radio-text, .panel-custom .panel-body input[type=text] {
+        color: #73879C;
+    }
+
+    .panel-custom .label-container {
+        text-align: right;
+    }
+
+    input[type=text]:read-only {
+        background: #FFFFFF;
+        cursor: default;
+    }
+
+    #error > .panel {
+        margin-bottom: 20px;
+    }
+
+        #error > .panel > .panel-heading {
+            padding: 0px 5px 0px 15px;
+        }
+
+    .radio-container label {
+        cursor: pointer;
+        padding: 5px;
+    }
+
+        .radio-container label.active {
+            background: #0e73a9;
+            border-radius: 4px;
+            /*margin-left: 10px;*/
+        }
+
+            .radio-container label.active span.radio-text {
+                color: #FFFFFF;
+            }
+
+    .file-module {
+        background: #f9f9f9;
+    }
+
+        .file-module .k-icon {
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+    .panel-file .panel-body table {
+        margin-bottom: 0px;
+    }
+
+        .panel-file .panel-body table thead {
+            color: #1ABB9C;
+        }
+
+    .panel-file .panel-body {
+        padding: 10px 0px 0px 0px;
+    }
+</style>
+<div class="row">
+    <div class="col-sm-offset-1 col-sm-10">
+        <div class="panel panel-success panel-custom panel-file">
+            <div class="panel-heading PageHeader">
+                <h3 class="panel-title">Share Type Setup</h3>
+            </div>
+            <div class="panel-body">
+                <table class="table table-responsive">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Select</th>
+                            <th>Share Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var aType in transactionTypes)
+                        {
+                            <tr>
+                                <td class="text-center">
+                                    <input id="chkFile@(aType.Id)" @(aType.IsOnePercent ? "checked='checked'" : "") type="checkbox" value="@aType.Id" style="height: 20px; width: 20px;" class="checkbox checkbox-inline" />
+                                </td>
+                                <td>
+                                    @aType.TransactionTypeName
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="panel-footer">
+                <div class="row">
+                    <div class="col-sm-12 text-center">
+                        <input type="button" class="btn btn-sm btn-success" value="Submit" id="btnSubmit" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script type="text/javascript" src="~/Scripts/jquery.maskedinput-1.3.min.js"></script>
+<script type="text/javascript">
+    $("#btnSubmit").on('click', function () {
+        var fileList = [];
+        if ($(".panel-file input[type=checkbox]:checked").length == 0) {
+            $.alert.open("Error!", "No file is selected.");
+            return false;
+        }
+        $(".panel-file input[type=checkbox]:checked").each(function () {
+            fileList.push($(this).val());
+        });
+        var jsonData = { fileList: fileList };
+        $.ajax({
+            type: "Post",
+            url: '@Url.Action("OnePercentShareSetup", "Access")',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(jsonData),
+            dataType: "json",
+            success: function (data) {
+                if (data == true) {
+                    $.alert.open("Success", "Saved successfully.");
+                }
+            },
+        });
+    });
+</script>

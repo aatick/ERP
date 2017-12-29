@@ -1,0 +1,376 @@
+﻿@{
+    ViewBag.Title = "AccCollApprove";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+<style>
+    tr.k-footer-template td {
+        color:rgb(31,188,158);
+    }
+    tr.k-group-footer td {
+        color: rgb(63,124,247);
+    }
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+
+<script type="text/javascript">
+
+
+
+
+    function RejectCollection() {
+        $.alert.open('confirm', 'Are you sure you want to REJECT selected records?', function (button) {
+            if (button == 'yes') {
+                $("#AjaxLoader").show();
+
+                var rowCount = $("#grid").data("kendoGrid").dataSource.data().length;
+                //var AllCheckId = new Array();
+                var idList = [];
+                for (i = 0; i < rowCount; i++) {
+                    if ($("#grid").data().kendoGrid._data[i] != null && $("#grid").data().kendoGrid._data[i] != undefined && $("#grid").data().kendoGrid._data[i] != "null" && $("#grid").data().kendoGrid._data[i] != "undefined") {
+                        var colId = $("#grid").data().kendoGrid._data[i].Id;
+                        var checkResult = $('#txtCheckId' + colId).is(":checked");
+                        if (checkResult == true) {
+                            //AllCheckId[AllCheckId.length] = colId;
+                            idList.push(colId);
+                        }
+                    }
+                }
+
+                var strList = idList.join(",");
+                if (strList.length > 0) {
+                    $.ajax({
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("RejectCollectionEx", "AccCollection", "http")',
+                        type: "GET",
+                        dataType: 'json',
+                        async: true,
+                        data: { strList: strList },
+                        success: function (Result) {
+                            $("#AjaxLoader").hide();
+                            if (Result == "Ok") {
+                                $.alert.open("info", "Save successfull")
+                            }
+                            else {
+                                $.alert.open("info", "Fail to save")
+                            }
+                            GetCollectionInfoBeforeApprove();
+                        },
+                        error: function (result) {
+                            $("#AjaxLoader").hide();
+                            $.alert.open("error", result)
+
+                        }
+                    });
+                }
+                else {
+                    $.alert.open("error", "Select atleast 1 row from list");
+                }
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+
+
+    function ApproveCollection() {
+        $.alert.open('confirm', 'Are you sure you want to APPROVE selected records?', function (button) {
+            if (button == 'yes') {
+		$("#AjaxLoader").show();
+
+                var rowCount = $("#grid").data("kendoGrid").dataSource.data().length;
+                var AllCheckId = new Array();
+                var idList = [];
+                for (i = 0; i < rowCount; i++) {
+                    if ($("#grid").data().kendoGrid._data[i] != null && $("#grid").data().kendoGrid._data[i] != undefined && $("#grid").data().kendoGrid._data[i] != "null" && $("#grid").data().kendoGrid._data[i] != "undefined") {
+                        var colId = $("#grid").data().kendoGrid._data[i].Id;
+                        var checkResult = $('#txtCheckId' + colId).is(":checked");
+                        if (checkResult == true) {
+                            AllCheckId[AllCheckId.length] = colId;
+                            idList.push(colId);
+                        }
+                    }
+                }
+
+                if (AllCheckId.length != 0) {
+                    var allTrx = new Object();
+
+                    var strList = idList.join(",");
+
+                    allTrx.AllCheckIds = AllCheckId;
+                    allTrx.strList = strList;
+
+                    var json = JSON.stringify(allTrx);
+
+                    $.ajax({
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("ApproveCollection", "AccCollection", "http")',
+                        type: "POST",
+                        dataType: 'json',
+                        async: true,
+                        data: json,
+
+                        success: function (result) {
+			    $("#AjaxLoader").hide();
+                            if (result == "1") {
+                                $.alert.open("info", "Save successfull")
+                            }
+                            else {
+                                $.alert.open("info", "Fail to save")
+                            }
+                            GetCollectionInfoBeforeApprove();
+                        },
+                        error: function (result) {
+			    $("#AjaxLoader").hide();
+                            $.alert.open("error", result)
+
+                        }
+                    });
+                }
+                else {
+                    $.alert.open("error", "Select atleast 1 row from list");
+                }
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+
+    function CheckedCalAmt() {
+       
+        var rowCount = $("#grid").data("kendoGrid").dataSource.data().length;
+        var totCheckedAmtSum = 0;
+        for (i = 0; i < rowCount; i++) {
+            if ($("#grid").data().kendoGrid._data[i] != null && $("#grid").data().kendoGrid._data[i] != undefined && $("#grid").data().kendoGrid._data[i] != "null" && $("#grid").data().kendoGrid._data[i] != "undefined") {
+                var colId = $("#grid").data().kendoGrid._data[i].Id;
+                //var colId = $("#grid table tbody tr").eq(i).find("td").eq(0).html();
+                var checkResult = $('#txtCheckId' + colId).is(":checked");
+
+                if (checkResult == true) {
+                    var payAmtId = parseInt($('#txtAmount' + $("#grid").data().kendoGrid._data[i].Id).html());
+                    totCheckedAmtSum = totCheckedAmtSum + payAmtId;
+                }
+            }
+        }
+
+        $("#txtCheckTot").html(totCheckedAmtSum);
+        //return totCheckedAmtSum;
+    }
+
+    function GetCollectionInfoBeforeApprove() {
+        $("#grid").kendoGrid({
+            dataSource: {
+                // type: "odata",
+                transport: {
+                    read: {
+                        url: '@Url.Action("GetCollectionInfoBeforeApprove", "AccCollection", "http")',
+                        dataType: "json",
+                        data: {}
+                    }
+                },
+                schema: {
+                    model: {
+                        fields: {
+                            Amount: { type: "number" },
+                            TransactionModeName: { type: "string" },
+                            VoucherNo: { type: "number" },
+                            Amount: { type: "number" },
+                           
+                        }
+                    }
+                },
+                pageSize: 500,
+                group: {
+                    field: "TransactionModeName", aggregates: [
+                      { field: "TransactionModeName", aggregate: "count" },
+                      { field: "Amount", aggregate: "sum" },
+                      { field: "VoucherNo", aggregate: "count" },
+                      
+                    ]
+                  
+                },
+
+                aggregate: [{ field: "TransactionModeName", aggregate: "count" },
+                              { field: "Amount", aggregate: "sum" },
+                              { field: "VoucherNo", aggregate: "count" }]
+              
+            },
+            sortable: true,
+            scrollable: false,
+            pageable: true,
+            columns: [
+			//{
+                //field: "Id",
+                //hidden: true,
+                //filterable: false
+            //},
+                 {
+                     title: "<input id='checkAll' type='checkbox' style='width:20px;height:20px;' class='check-box' />",
+                     template: function (dataItem) {
+                         return "<input type='checkbox' style='width:20px;height:20px;' class='check-boxAll' id='txtCheckId" + dataItem.Id + "'  onclick='CheckedCalAmt()' />"
+                     },
+                     width: "5%",
+                     footerTemplate: function () {
+                         return " <label class='control-label'><span id='txtCheckTot'>0<span></label>";
+                     }
+                 },
+                 {
+                     field: "VoucherNo",
+                     title: "Receipt No",
+                     width: "5%",
+                    
+                 },
+                {
+                    field: "InvestorName",
+                    title: "Investor Name",
+
+                },
+
+                 {
+                     field: "TransactionModeName",
+                     title: "Transaction Mode",
+                     width: "12%",
+                     hidden: true,
+                     aggregates: ["count"],
+                     groupHeaderTemplate: "Total Count: #=count#",
+                     //groupFooterTemplate: " Count: #=count#",
+                     groupHeaderTemplate: "Transaction Mode: #= value # (Count: #= count#)"
+                 },
+                {
+                    field: "ChequeNo",
+                    title: "Cheque No",
+                    width: "8%"
+
+                },
+                 {
+                     field: "ChequeDateMsg",
+                     title: "Cheque Date",
+                     width: "12%"
+
+                 },
+
+                {
+                    field: "BankName",
+                    title: "Bank",
+                    width: "15%"
+                },
+                {
+                    field: "BankBranchName",
+                    title: "Bank Branch",
+                },
+                {
+                    field: "TransactionDateMsg",
+                    title: "Received Date",
+                    width: "11%",
+                    footerTemplate: "Grand Total",
+                    groupFooterTemplate: "Total",
+                },
+                 {
+                     field: "Amount",
+                     title: "Amount",
+                     template: function (dataItem) {
+                         return '<label type="text" id="txtAmount' + dataItem.Id + '" />' + dataItem.Amount + '</label>'
+                     },
+                     aggregates: ["sum"],
+                    
+                     footerTemplate: "#=sum#",
+                     groupFooterTemplate: "#=sum#",
+                     width: "15%"
+                 },
+                //{
+                //    field: "TransactionModeName",
+                //    title: "TransactionModeName",
+                //    aggregates: ["min", "max", "count"],
+                //    footerTemplate: "<div>Min: #= min #</div><div>Max: #= max #</div>",
+                //    groupHeaderTemplate: "Transaction Mode: #= value # (Count: #= count#)"
+                //}
+            ]
+        });
+    }
+    $(document).ready(function () {
+        GetCollectionInfoBeforeApprove();
+
+        $('#checkAll').click(function () {
+            if ($('#checkAll').is(':checked') == true) {
+                $('.check-boxAll').prop('checked', true);
+                CheckedCalAmt();
+            } else {
+                $('.check-boxAll').prop('checked', false);
+                CheckedCalAmt();
+            }
+        });
+
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+            ApproveCollection();
+        });
+
+        $("#btnCancel").click(function (e) {
+            e.preventDefault();
+            RejectCollection();
+        });
+        
+
+        $("#btnPrint").click(function (e) {
+            e.preventDefault();
+            var url = '/AccCollection/CollectionApprovePrint';
+                window.open(url);
+        });
+
+      
+    });
+</script>
+
+@using (Html.BeginForm("AccCollApprove", "AccCollection", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "AccCollectionForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h4 style="color: white;padding:2px">&nbsp;&nbsp;&nbsp; Cheque/Cash Receive Approve</h4>
+        </div>
+        <button type="submit" id="btnPrint" class="btn btn-primary btn-sm pull-right">Print</button>
+    </div>
+    <div id="AjaxLoader" class="ajaxLoader"></div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <div class="row">
+                        <div id="grid"> </div>
+                    </div>
+                    <br />
+                    <br />
+                    <div class="row">
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                        </div>
+                        <div class="col-md-2 col-sm-6 col-xs-12">
+                            <button type="submit" id="btnCancel" class="btn btn-danger">Reject</button>
+                        </div>
+                        <div class="col-md-3 col-sm-6 col-xs-12">
+                            <button type="submit" id="btnSave" class="btn btn-success">Approve</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+

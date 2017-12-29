@@ -1,0 +1,449 @@
+﻿
+@{
+    ViewBag.Title = "CheckClDI";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+<link href="~/Content/css/bpopupStyle.css" rel="stylesheet" />
+<script src="~/Content/js/jquery.bpopup.min.js"></script>
+
+<script type="text/javascript">
+    //
+
+    function DishonourCollection() {
+
+         
+        var Id = $("#hdnCollectionId").val();
+        var DishonourCauseId = $("#ddlDishonourCause").val();
+        if (DishonourCauseId != "0")
+        {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("DishonourCollection", "AccCollection", "http")',
+                data: { Id: Id, DishonourCauseId: DishonourCauseId },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    $("#pop_close").trigger("click")
+                    $("#grid").data("kendoGrid").dataSource.read();
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+        else
+        {
+            $.alert.open("error","Select dishonour cause");
+        }
+
+       
+    }
+
+
+
+    function DishonourCollectionPopUp(e, Id) {
+
+        e.preventDefault();
+        $("#hdnCollectionId").val(Id);
+        GetCheckDishonourCauseList();
+        $('#element_to_pop_up').bPopup({
+            speed: 450,
+            transition: 'slideDown'
+        });
+    }
+
+    function GetCollectionInfoDishonour(BankId, ChequeNo, InvestorCode) {
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetCollectionInfoDishonour", "AccCollection", "http")',
+                    dataType: "json",
+                    data: { BankId: BankId, ChequeNo: ChequeNo, InvestorCode: InvestorCode }
+                }
+            },
+            pageSize: 25,
+        });
+
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 600,
+            groupable: true,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+            //{
+            //    title: "<input id='checkAll' type='checkbox' style='width:20px;height:20px;' class='check-box' />",
+            //    template: function (dataItem) {
+            //        return "<input type='checkbox' style='width:20px;height:20px;' class='check-boxAll' id='txtCheckId" + dataItem.Id + "'  onclick='CheckedCalAmt()' />"
+            //    },
+            //    footerTemplate: function () {
+            //        return " <label class='control-label'><span id='txtCheckTot'>0<span></label>";
+            //    }
+            //},
+            {
+                field: "rowNumber",
+                title: "SL",
+                template: "<span class='row-number'></span>",
+                width: "5%"
+            },
+
+            {
+                field: "VoucherNo",
+                title: "Receipt No",
+            },
+            {
+                field: "InvestorName",
+                title: "Investor Name",
+                width: "22%"
+
+            },
+             {
+                 field: "TransactionModeName",
+                 title: "Transaction Mode",
+             },
+            {
+                field: "ChequeNo",
+                title: "Cheque No"
+
+            },
+             {
+                 field: "ChequeDateMsg",
+                 title: "Cheque Date",
+             },
+            //{
+            //    field: "Amount",
+            //    title: "Amount"
+
+            //},
+            {
+                field: "Amount",
+                title: "Amount",
+                //template: function (dataItem) {
+                //    return '<label type="text" id="txtAmount' + dataItem.Id + '" />' + dataItem.Amount + '</label>'
+                //},
+                //footerTemplate: function () {
+                //    var TotalAmount = InitialCalTotalAmt();
+                //    //var CheckedTot = CheckedCalAmt();
+                //    return " <label class='control-label'>" + TotalAmount + " <span id='txtCheckTot'> <span></label>";
+                //}
+
+            },
+            {
+                field: "BankName",
+                title: "Bank",
+                width: "13%"
+            },
+            {
+                field: "BankBranchName",
+                title: "Bank Branch",
+                hidden: true
+
+            },
+             {
+                 field: "TransactionDateMsg",
+                 title: "Transaction Date",
+             },
+            {
+                field: "PostDateMsg",
+                title: "Post Date",
+                hidden: true
+
+            },
+            {
+                field: "DocRefNo",
+                title: "Doc. Ref.No",
+                hidden: true
+            },
+            {
+                field: "BrokerBranchName",
+                title: "Broker Branch",
+                hidden: true
+
+            },
+            {
+                field: "Remarks",
+                title: "Remarks",
+                hidden: true
+            },
+            {
+                field: "ValuedateMsg",
+                title: "Value date",
+                hidden:true
+
+            },
+             {
+                 title: "Action",
+                 width: "10%",
+                 template: function (dataItem) {
+                     
+                     return '<a href="#" title="Clearance" onclick="ClearanceCollection(' + dataItem.Id + ')" class="btn btn-info btn-xs"><i class="fa fa-check-square-o"></i></a>' +
+                            '<a href="#" title="Dishonour" onclick="DishonourCollectionPopUp(event,' + dataItem.Id + ')" class="btn btn-danger btn-xs"><i class="fa fa-times"></i></a>';
+                 }
+             },
+            ],
+            dataBound: function () {
+                var rows = this.items();
+                $(rows).each(function () {
+                    var index = $(this).index() + 1;
+                    var rowLabel = $(this).find(".row-number");
+                    $(rowLabel).html(index);
+                });
+            }
+        });
+    }
+
+
+    function ClearanceCollection(Id) {
+        $.alert.open('confirm', 'Are you sure you want to "clear" this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("ClearanceCollection", "AccCollection", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (result) {
+                        $("#grid").data("kendoGrid").dataSource.read();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+
+    function GetCheckDishonourCauseList() {
+
+        var ddlDishonourCause = $("#ddlDishonourCause");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCheckDishonourCauseList", "AccCollection", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (CauseList) {
+                ddlDishonourCause.html('');
+                ddlDishonourCause.append($('<option></option>').val("0").html("Please select"));
+                $.each(CauseList, function (id, option) {
+                    ddlDishonourCause.append($('<option></option>').val(option.Id).html(option.DishonourCause));
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    function GetBankList() {
+
+        var ddlBankList = $("#ddlBankId");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBankInfo", "LookupBank", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (BankList) {
+                ddlBankList.html('');
+                ddlBankList.append($('<option></option>').val("0").html("Please select"));
+                $.each(BankList, function (id, option) {
+                    ddlBankList.append($('<option></option>').val(option.Id).html(option.BankName));
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+  
+    //function CheckedCalAmt() {
+
+    //    var rowCount = $("#grid").data("kendoGrid").dataSource.data().length;
+    //    var totCheckedAmtSum = 0;
+    //    for (i = 0; i < rowCount; i++) {
+
+    //        var colId = $("#grid").data().kendoGrid._data[i].Id;
+
+    //        var checkResult = $('#txtCheckId' + colId).is(":checked");
+
+    //        if (checkResult == true) {
+    //            var payAmtId = parseInt($('#txtAmount' + $("#grid").data().kendoGrid._data[i].Id).html());
+    //            totCheckedAmtSum = totCheckedAmtSum + payAmtId;
+    //        }
+    //    }
+    //    $("#txtCheckTot").html(totCheckedAmtSum);
+    //    //return totCheckedAmtSum;
+   // }
+
+
+    //function InitialCalTotalAmt() {
+    //    var rowCount = $("#grid").data("kendoGrid").dataSource.data().length;
+    //    var totAmtSum = 0;
+    //    for (i = 0; i < rowCount; i++) {
+
+    //        var payAmtId = parseInt($('#txtAmount' + $("#grid").data().kendoGrid._data[i].Id).html());
+    //        totAmtSum = totAmtSum + payAmtId;
+
+    //    }
+    //    return totAmtSum;
+    //}
+
+
+    $(document).ready(function () {
+
+        GetBankList();
+        $("#ddlBankId").val("0");
+        $("#ChequeNo").val("");
+        $("#InvestorCode").val(" ");
+
+        //var BankId = "0";
+        //var ChequeNo = "";
+        //var InvestorCode = "";
+
+        GetCollectionInfoDishonour(BankId = "0", ChequeNo = "", InvestorCode = "");
+
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+            var BankId = $("#ddlBankId").val();
+            var ChequeNo = $("#ChequeNo").val().trim();
+            var InvestorCode = $("#InvestorCode").val().trim();
+
+           GetCollectionInfoDishonour(BankId, ChequeNo, InvestorCode);
+        });
+
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+
+            DishonourCollection()
+        });
+
+        //$('#checkAll').click(function () {
+
+        //    if ($('#checkAll').is(':checked') == true) {
+        //        $('.check-boxAll').prop('checked', true);
+        //        CheckedCalAmt();
+        //    } else {
+        //        $('.check-boxAll').prop('checked', false);
+        //        CheckedCalAmt();
+        //    }
+        //});
+
+    });
+</script>
+@using (Html.BeginForm("CheckClDI", "AccCollection", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "AccCollectionForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">Clearance/Dishonour</h3>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <div class="row">
+                        <div class="item form-group">
+                            @Html.Label("Bank", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @Html.DropDownList("Banklist", null, new { @id = "ddlBankId", @class = "form-control bordercss" })
+                            </div>
+                            @Html.Label("Cheque No", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @Html.Editor("ChequeNo", new { htmlAttributes = new { @class = "form-control" } })
+                            </div>
+                        </div>
+                    </div>
+                     <div class="row">
+                        <div class="item form-group">
+                            @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @Html.Editor("InvestorCode", new { htmlAttributes = new { @class = "form-control" } })
+                            </div>
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                <button type="submit" id="btnSearch" class="btn btn-primary">Search</button>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div id="grid"> </div>
+                    </div>
+                    <br />
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+     <div id="element_to_pop_up" style="height:30%;width:50%">
+                <a id="pop_close" class="b-close">x</a>
+                <asp:Label ID="Label17" runat="server" Text="Result Details" CssClass="lblStyle"></asp:Label>
+                <br />
+         <input type="hidden" id="hdnCollectionId"/> 
+                 <div class="row">                   
+                       
+                         <div class="col-md-11 col-sm-6 col-xs-12">
+                             @Html.Label("Select Dishonour Cause", htmlAttributes: new { @class = "control-label col-md-5 required" })
+                             @Html.DropDownList("DishonourCauseList", null, new { @id = "ddlDishonourCause", @class = "form-control bordercss" })
+                         </div>
+                 </div>
+                 <br />
+                 <div class="row">
+                     <div class="col-md-7 col-sm-6 col-xs-12">
+                 
+                     </div>  
+                     <div class="col-md-3 col-sm-6 col-xs-12">
+                         <button type="submit" id="btnSave" class="btn btn-primary">Save</button>
+                     </div>  
+                 </div>
+    </div>
+}
+
+
+
+

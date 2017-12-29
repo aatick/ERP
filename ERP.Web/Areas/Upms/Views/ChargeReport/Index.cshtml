@@ -1,0 +1,223 @@
+﻿@using Common.Data.CommonDataModel
+@{
+    ViewBag.Title = "Charge Report";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    //var businessDay = (DateTime)ViewBag.BusinessDate;
+    var reports = (List<ReportInformation>)ViewBag.Reports;
+}
+<style type="text/css">
+    .panel-custom > .panel-heading {
+        /*background: #26B99A !important;*/
+        color: #FFFFFF !important;
+    }
+
+    .panel-custom .panel-body .row:not(:last-child) {
+        margin-bottom: 10px;
+    }
+
+    .panel-custom .panel-body .radio {
+        margin-top: 0px;
+    }
+
+    .panel-custom .panel-body .radio-text, .panel-custom .panel-body input[type=text] {
+        color: #73879C;
+    }
+
+    .panel-custom .label-container {
+        text-align: right;
+    }
+
+    input[type=text]:read-only {
+        background: #FFFFFF;
+        cursor: default;
+    }
+
+    #error > .panel {
+        margin-bottom: 20px;
+    }
+
+        #error > .panel > .panel-heading {
+            padding: 0px 5px 0px 15px;
+        }
+
+    .radio-container label {
+        cursor: pointer;
+        padding: 5px;
+    }
+
+        .radio-container label.active {
+            background: #0e73a9;
+            border-radius: 4px;
+            /*margin-left: 10px;*/
+        }
+
+            .radio-container label.active span.radio-text {
+                color: #FFFFFF;
+            }
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<div class="row">
+    <div class="col-sm-offset-1 col-sm-10">
+        <div class="panel panel-success panel-custom">
+            <div class="panel-heading PageHeader">
+                <h3 class="panel-title">Charge Report</h3>
+            </div>
+            <div class="panel-body">
+                @*<div class="row">
+                        <div class="col-sm-2 label-container">
+                            @Html.Label("Date From :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-4">
+                            <input type="text" placeholder="dd/mm/yyyy" name="transactionDateFrom" id="txtTransactionDateFrom" class="input-sm form-control" required="required" value="@businessDay.ToString("dd/MM/yyyy")" />
+                        </div>
+                        <div class="col-sm-2 label-container">
+                            @Html.Label("Date To :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-4">
+                            <input type="text" placeholder="dd/mm/yyyy" name="transactionDateTo" id="txtTransactionDateTo" class="input-sm form-control" required="required" value="@businessDay.ToString("dd/MM/yyyy")" />
+                        </div>
+                    </div>*@
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Report Name :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-10 radio-container">
+                        <div class="row">
+                            @for (var r = 0; r < reports.Count; r++)
+                            {
+                                <label class="col-sm-4 @(r==0?"active":"")">
+                                    <input type="radio" class="radio radio-inline" @(r == 0 ? "checked='checked'" : "") name="fileType" value="@reports[r].SerialNo" /> <span class="radio-text">@reports[r].ReportName</span>
+                                </label>
+                            }
+                            @*<label class="col-sm-4 active">
+                                    <input type="radio" class="radio radio-inline" checked="checked" name="fileType" value="1" /> <span class="radio-text">Net Brokerage Income</span>
+                                </label>
+                                <label class="col-sm-4">
+                                    <input type="radio" class="radio radio-inline" name="fileType" value="2" /> <span class="radio-text">CNS Report</span>
+                                </label>
+                                <label class="col-sm-4">
+                                    <input type="radio" class="radio radio-inline" name="fileType" value="3" /> <span class="radio-text">Members Payment Report</span>
+                                </label>*@
+                        </div>
+                        @*<div class="row">
+                                <label class="col-sm-4">
+                                    <input type="radio" class="radio radio-inline" name="fileType" value="4" /> <span class="radio-text">Instrument Wise Netting Report</span>
+                                </label>
+                                <label class="col-sm-4">
+                                    <input type="radio" class="radio radio-inline" name="fileType" value="5" /> <span class="radio-text">Client Wise Netting Report</span>
+                                </label>
+                                <label class="col-sm-4">
+                                    <input type="radio" class="radio radio-inline" name="fileType" value="6" /> <span class="radio-text">Income Statement Report</span>
+                                </label>
+                            </div>*@
+                    </div>
+                </div>
+                @*<div class="row">
+                        <div class="col-sm-2 label-container">
+                            @Html.Label("Stock Exchange :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-10">
+                            <select class="input-sm form-control" id="cmbMarket">
+                                <option value="0" selected="selected">Select Stock Exchange</option>
+                                @foreach (var m in markets)
+                                {
+                                    <option value="@m.Id">@m.MarketShortName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>*@
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Report Type :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-10">
+                        <select class="input-sm form-control bordercss" id="cmbReportType">
+                            <option value="Pdf" selected="selected">Pdf</option>
+                            <option value="ExcelBook">Microsoft Excel</option>
+                            <option value="Excel">Microsoft Excel (97-2003)</option>
+                            <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                            <option value="Word">Microsoft Word (97-2003)</option>
+                            <option value="XML">XML</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <div class="row">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <input type="submit" name="btnShow" id="btnShow" class="btn btn-sm btn-success" value="Show" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="~/Scripts/jquery.maskedinput-1.3.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        @*$("#txtTransactionDateFrom,#txtTransactionDateTo").datepicker({
+           dateFormat: "dd/m/yy",
+            showAnim: "scale",
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "2010:@DateTime.Today.Year",
+            maxDate: "@DateTime.Today.ToString("dd/MM/yyyy")"
+        });*@
+        //$("#txtTransactionDateFrom,#txtTransactionDateTo").mask("99/99/2099");
+        //$("#txtTransactionDateFrom").on("change", function () {
+        //    var fromDate = $("#txtTransactionDateFrom").val();
+        //    $("#txtTransactionDateTo").datepicker('option', { minDate: fromDate });
+        //});
+        //$("#txtTransactionDateTo").on("change", function () {
+        //    var toDate = $("#txtTransactionDateTo").val();
+        //    $("#txtTransactionDateFrom").datepicker('option', { maxDate: toDate });
+        //});
+        $("input[type=radio][name=fileType]").on("change", function () {
+            $(".radio-container label").removeClass("active");
+            $("input[type=radio][name=fileType]:checked").parents("label").addClass("active");
+        });
+        $(document).on("click", "#btnShow", function () {
+            if ($("input[type=radio][name=fileType]:checked").length == 0) {
+                $.alert.open("Warning!", "No report selected.");
+                return false;
+            }
+            var reportNo = parseInt($("input[type=radio][name=fileType]:checked").val());
+            //var dateFrom = $("#txtTransactionDateFrom").val().trim();
+            //var dateTo = $("#txtTransactionDateTo").val().trim();
+            var reportType = $("#cmbReportType").val();
+            //var marketId = $("#cmbMarket").val();
+            //if (dateFrom == "") {
+            //    $.alert.open("Error", "Please enter from date.");
+            //}
+            //else if (dateTo == "") {
+            //    $.alert.open("Error", "Please enter to date.");
+            //}
+            //else if (new Date(dateFrom) > new Date(dateTo)) {
+            //    alert(1);
+            //}
+            //else {
+            if (reportNo == 1)
+                window.open('/ChargeReport/ShowChargeInfoReport?type=' + reportType + "&reportNo=" + reportNo);
+            //else if (reportNo == 2)
+            //    window.open('/TradeReport/ShowCNSReport?transactionDateFrom=' + dateFrom + '&transactionDateTo=' + dateTo + '&type=' + reportType + '&marketId=' + marketId);
+            //else if (reportNo == 3)
+            //    window.open('/TradeReport/ShowMemberPaymentReport?transactionDateFrom=' + dateFrom + '&transactionDateTo=' + dateTo + '&type=' + reportType + '&marketId=' + marketId);
+            //else if (reportNo == 4)
+            //    window.open('/TradeReport/ShowNettingReport?transactionDateFrom=' + dateFrom + '&transactionDateTo=' + dateTo + '&type=' + reportType + '&reportType=0&marketId=' + marketId);
+            //else if (reportNo == 5)
+            //    window.open('/TradeReport/ShowNettingReport?transactionDateFrom=' + dateFrom + '&transactionDateTo=' + dateTo + '&type=' + reportType + '&reportType=1&marketId=' + marketId);
+            //else if (reportNo == 6)
+            //    window.open('/TradeReport/ShowDateWiseIncomeStatement?transactionDateFrom=' + dateFrom + '&transactionDateTo=' + dateTo + '&type=' + reportType + '&marketId=' + marketId);
+            //}
+            return true;
+        });
+    });
+</script>

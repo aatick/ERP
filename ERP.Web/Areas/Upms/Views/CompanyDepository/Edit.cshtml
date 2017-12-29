@@ -1,0 +1,169 @@
+﻿@model ERP.Web.ViewModels.CompanyDepositoryViewModel
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+<style>
+    .required::after {
+        content: " *";
+        color: red;
+    }
+</style>
+
+<script type="text/javascript">
+
+    function Validation() {
+        // DepositoryCompanyName ShortName Email ContactPerson  ContactPhone ContactEmail
+        var depName = $($("#DepositoryCompanyName")).val();
+        var ShortName = $($("#CompanyDepositoryShortName")).val();
+        var Email = $($("#Email")).val();
+        var ContactPerson = $($("#ContactPerson")).val();
+        var ContactPhone = $($("#ContactPhone")).val();
+        var ContactEmail = $($("#ContactEmail")).val();
+
+        if (depName == "" || ShortName == "" || Email == "" || ContactPerson == "" || ContactPhone == "" || ContactEmail == "") {
+            $.alert.open("error", "Insert required field");
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+    $(document).ready(function () {
+        $('#btnSave').click(function (e) {
+            e.preventDefault();
+            if (!validator.checkAll($('form'))) {
+                return false;
+
+            }
+            else {
+                if (Validation() == true) {
+                    $('#CompanyDepositoryInfo').ajaxSubmit({
+                        type: "POST",
+                        target: '#thumbnil',
+                        data: {},
+                        dataType: 'json',
+                        resetForm: true,
+                        success: function (data) {
+                            if (data.data.Id != null) {
+
+                                $(".success").show(800).fadeToggle(3000);
+                            }
+                            else {
+                                $(".failed").show(800).fadeToggle(3000);
+                            }
+                        },
+                        error: function () {
+                            $.alert.open("error", "Fail to save");
+                        }
+                    });
+                }
+            }
+        });
+    });
+
+  
+
+</script>
+
+@Html.ActionLink("Back To List", "Index", null, new { @class = "btn btn-primary btn-sm pull-right" })
+
+@using (Html.BeginForm("Edit", "CompanyDepository", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "CompanyDepositoryInfo" }))
+{
+    @Html.AntiForgeryToken()
+     <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">Securities Depository  Edit</h3>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <br />
+
+                    <div class="row form-group">
+                        @Html.Label("Depository Name", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.DepositoryCompanyName, new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                            @Html.HiddenFor(model => model.Id)
+                        </div>
+                        @Html.Label("Short Name", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.CompanyDepositoryShortName, new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+
+                        @Html.Label("Address", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                        @Html.Label("Email", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+
+                        @Html.LabelFor(model => model.Fax, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.Fax, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                        @Html.Label("Contact Person", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.ContactPerson, new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+
+                        @Html.Label("Contact Phone", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.ContactPhone, new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                        </div>
+                        @Html.Label("Contact Email", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.ContactEmail, new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                        </div>
+                    </div>
+                    <div class="ln_solid"></div>
+
+                    <div class="form-group">
+                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            <button type="submit" id="btnSave" class="btn btn-success">Save</button>
+                        </div>
+                    </div>
+                    <div class="item form-group">
+                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            <div class="success" role="alert" style="display:none">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <p class="message-content">Saved Sucessfully</p>
+                            </div>
+                            <div class="failed" role="alert" style="display:none">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <p class="message-content">Fail to save</p>
+                            </div>
+                            <br />
+
+                        </div>
+                    </div>
+                    @*</form>*@
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+
+

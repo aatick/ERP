@@ -1,0 +1,207 @@
+﻿
+@{
+    ViewBag.Title = "Reopen";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<style>
+    .ui-autocomplete {
+        cursor: pointer;
+        height: 400px;
+        width: 300px;
+        overflow-y: scroll;
+        background-color: white;
+        color: rgb(0,188,212);
+        /*outline-style:outset;*/
+    }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+<script type="text/javascript">
+
+    function GetInvestorInfo() {
+        var InvestorCode = $('#InvestorCode').val().trim().indexOf("-") > 0 ? $('#InvestorCode').val().trim().split("-")[0].trim() : $('#InvestorCode').val().trim();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorInfo_For_AccountClose", "InvestorDetail", "http")',
+            data: { InvestorCode: InvestorCode },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                if (data.Result == "Success")
+                {
+                    if (data.InvestorInfo.length != 0) {
+                        $.each(data.InvestorInfo, function (id, option) {
+                            if (option.InvestorStatus == "Closed") {
+                                $("#HdnInvestorId").val(option.InvestorId);
+                                $("#InvestorCode").val(option.InvestorCode);
+                                $("#txtAccountStatus").val(option.InvestorStatus);
+                            }
+                            else {
+                                $("#HdnInvestorId").val(0);
+                                $("#InvestorCode").val("");
+                                $("#txtAccountStatus").val("");
+                                $.alert.open("error", "This investor is active");
+                            }
+                        });
+                    }
+                    else {
+                        $("#HdnInvestorId").val(0);
+                        $.alert.open("error", "Invalid investor code");
+                    }
+                }
+                else
+                {
+                    $.alert.open("error", data.message);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function SaveAccountReOpen() {
+
+
+
+        var InvestorId = $("#HdnInvestorId").val() == "" ? 0 : $("#HdnInvestorId").val();
+
+        if (InvestorId != 0 && InvestorCode != "")
+        {
+                $.alert.open("confirm", " Do you want to Re- Open this investor? ", function (button) {
+                    if (button == 'yes') {
+                        $.ajax({
+                            type: 'GET',
+                            contentType: "application/json; charset=utf-8",
+                            url: '@Url.Action("SaveAccountReOpen", "InvestorDetail", "http")',
+                            data: { InvestorId: InvestorId },
+                            dataType: 'json',
+                            async: true,
+                            success: function (data) {
+                                if (data.Result == "Success")
+                                {
+                                    $("#HdnInvestorId").val(0);
+                                    $("#InvestorCode").val("")
+                                    $("#txtAccountStatus").val("");
+                                    $.alert.open(data.Result, data.Message);
+                                }
+                                else
+                                {
+                                    $.alert.open(data.Result, data.Message);
+                                }
+                            },
+                            error: function (request, status, error) {
+                                alert(request.statusText + "/" + request.statusText + "/" + error);
+                            }
+                        });
+
+                    }
+
+                });
+            
+           
+        }
+        else
+        {
+            $.alert.open("error","Insert Investor");
+        }
+
+
+    }
+
+
+
+
+    $(document).ready(function () {
+
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+            SaveAccountReOpen();
+        });
+
+
+        $("#InvestorCode").blur(function () {
+
+            if ($("#InvestorCode").val() != "")
+            {
+                GetInvestorInfo();
+            }
+        });
+
+    });
+
+</script>
+
+<div class="page-title">
+    <div class="title_left PageHeader" style="width:90%;">
+        <h3 style="color:white;padding:2px">&nbsp;&nbsp;&nbsp; Account Re-Open</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">
+            <div id="AjaxLoader" class="ajaxLoader"></div>
+            <div class="x_title">
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+
+                <div class="row">
+                    <div class="col-sm-12 info-container">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="row form-group">
+                                    @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        <input type="text" class="input-sm form-control" id="InvestorCode" autofocus="autofocus" />
+                                        <input type="hidden" id="HdnInvestorId" value="0" />
+                                    </div>
+                                    @Html.Label("Account Status", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        <input type="text" class="input-sm form-control" id="txtAccountStatus" disabled="disabled" />
+                                    </div>
+                                </div>
+
+                                <br />
+
+                                <div class="form-group">
+                                    <div class="col-md-6 col-sm-6 col-xs-12 text-right">
+                                        <button type="submit" id="btnSave" class="btn btn-success">Investor Account Re-Open</button>
+
+                                    </div>
+                                </div>
+                               
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+

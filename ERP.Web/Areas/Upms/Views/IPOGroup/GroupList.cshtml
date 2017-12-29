@@ -1,0 +1,291 @@
+﻿
+@{
+    ViewBag.Title = "GroupList";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+<link href="~/Content/css/bpopupStyle.css" rel="stylesheet" />
+<script src="~/Content/js/jquery.bpopup.min.js"></script>
+
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+
+<script type="text/javascript">
+
+    function GetIPOGroupList(GroupId) {
+       
+
+        if (GroupId == ""){  GroupId = 0;}
+        $("#grid").kendoGrid({
+            dataSource: {
+                // type: "odata",
+                transport: {
+                    read: {
+                         url: '@Url.Action("GetIPOGroupList", "IPOGroup", "http")',
+                        dataType: "json",
+                        data: { GroupId: GroupId }
+                    }
+                },
+                schema: {
+                    model: {
+                        fields: {
+                            InvestorCode: { type: "string" },
+                            InvestorName: { type: "string" },
+                            GroupName: { type: "string" },
+                            GroupCode: { type: "string" },
+                            GroupId: { type: "int" },
+
+                        }
+                    }
+                },
+                pageSize: 1000,
+                group: {
+                    field: "GroupCode", aggregates: [
+                      { field: "GroupName", aggregate: "count" },
+                      { field: "GroupId", aggregate: "count" },
+                    ]
+                    //field: "GroupId", aggregates: [
+                    //  { field: "GroupId", aggregate: "count" },
+                    //],
+
+                },
+
+                aggregate: [{ field: "InvestorName", aggregate: "count" }
+                             ]
+
+            },
+            sortable: true,
+            scrollable: false,
+            pageable: true,
+            columns: [
+                 {
+                     field: "InvestorCode",
+                     title: "Investor Code",
+
+                 },
+                {
+                    field: "InvestorName",
+                    title: "Investor Name",
+
+                },
+                 {
+                     field: "GroupId",
+                     title: "GroupId",
+                     hidden:true
+
+                 },
+                  {
+                      field: "MemberId",
+                      title: "MemberId",
+                      hidden:true
+
+                  },
+
+                 {
+                     field: "GroupName",
+                     title: "Group Name",
+                     hidden: true,
+                     aggregates: ["count"],
+                     groupHeaderTemplate: "Total Count: #=count#",
+                     //groupFooterTemplate: " Count: #=count#",
+                     groupHeaderTemplate: "Group: #= value # ( Members: #= count#)"
+                     //Template: function (dataItem) {
+                     //    return '<label>' + dataItem.GroupName + '</label>' + '<input type="text"/>'
+                     //}
+                 },
+                {
+                      title: "Action",
+                      width: "10%",
+                      template: function (dataItem) {
+                          return '<a href="#" title="Delete group member" onclick="DeleteGroupMember(' + dataItem.GroupId + ',' + dataItem.MemberId + ')" class="btn btn-danger btn-sm pull-right"><i class="fa fa-trash-o"></i></a>';//<a href="#" title="Delete" onclick="Delete(' + dataItem.Id + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i>
+                      }
+                  },
+            ]
+        });
+    }
+
+    @*function AddGroupMember()
+    {
+        var GroupId = $("#hdnGroupId").val();
+        var MemberId = $("#hdnInvestorId").val();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("AddIPOGroupMember", "IPOGroup", "http")',
+            data: { GroupId: GroupId, MemberId: MemberId },
+            dataType: 'json',
+            async: true,
+            success: function (Result) {
+                GetIPOGroupList();
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }*@
+
+
+    function DeleteGroupMember(GroupId, MemberId)
+    {
+
+      
+        $.alert.open('confirm', 'Are you sure you want to DELETE this member?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("DeleteIPOGroupMember", "IPOGroup", "http")',
+                    data: { GroupId: GroupId, MemberId: MemberId },
+                    dataType: 'json',
+                    async: true,
+                    success: function (Result) {
+                        GetIPOGroupList();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+    function GetInvestorByCode() {
+
+        var InvestorCode = $('#txtInvestorCode').val();
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorByCode", "IPOGroup", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { InvestorCode: InvestorCode },
+            success: function (InvInfo) {
+
+                if (InvInfo.length == 1) {
+                    $.each(InvInfo, function (id, option) {
+                        $("#txtInvestorCode").val(option.InvestorCode);
+                        $("#hdnInvestorId").val(option.Id)
+
+                    });
+                }
+                else {
+                    $("#TransferorCode").val("");
+                    $.alert.open("info", "Not found!");
+                }
+
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+
+
+         $(document).ready(function () {
+             GetIPOGroupList(0);
+
+
+             $("#ddlIPOGroup").change(function () {
+                 var GroupId = $("#ddlIPOGroup").val();
+                 GetIPOGroupList(GroupId);
+             });
+
+             //$("#txtInvestorCode").blur(function () {
+
+             //    GetInvestorByCode();
+             //});
+
+             //$("#btnAddmember").click(function (e) {
+
+             //    e.preventDefault();
+             //    AddGroupMember();
+             //});
+
+             $('#printGrid').click(function (e) {
+                 e.preventDefault();
+                 var GroupId = $("#ddlIPOGroup").val();
+                 if (GroupId == "") { GroupId = 0; }
+                 window.open('/IPOGroup/PrintIPOGroupList?GroupId=' + GroupId);
+             });
+         });
+</script>
+@using (Html.BeginForm("Index", "AccCollection", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "AccCollectionForm" }))
+{
+    @Html.AntiForgeryToken()
+    @*@{
+            UcasPortfolio.Web.Helpers.SessionHelper.TransactionDate.ToString();
+        }*@
+    
+  
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">&nbsp;&nbsp; IPO Group List</h3>
+        </div>
+        @Html.ActionLink("Add New", "Create", "IPOGroup", null, new { @class = "btn btn-primary btn-sm pull-right" })
+    </div>
+    <div class="clearfix"></div>
+    
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <button type="submit" id="printGrid" class="btn btn-info btn-sm pull-right"><i class="fa fa-print"></i> Print </button>
+                <div class="row form-group">
+                    @Html.Label("IPO Group", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4">
+                        @Html.DropDownList("IPOGroupList", new SelectList(ViewBag.IPOGroupList, "Id", "GroupCode"), "All IPO Group", new { @id = "ddlIPOGroup", @class = "form-control bordercss" })
+                    </div>
+                </div>
+                <div class="x_content">
+                    <div class="row">
+                        <div id="grid"> </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+     @*<div id="element_to_pop_up" style="height:30%;width:50%">
+                <a id="pop_close" class="b-close">x</a>
+                <asp:Label ID="Label17" runat="server" Text="Result Details" CssClass="lblStyle"></asp:Label>
+                <br />
+         <input type="hidden" id="hdnGroupId"/> 
+                 <div class="row">                   
+                     <div id="divInvestor">
+                         @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2" })
+                         <div class="col-md-8 col-sm-6 col-xs-12">
+                             @Html.Editor("txtInvestorCode", new { htmlAttributes = new { @class = "form-control", @placeHolder = "Investor Code" } })
+                             <input type="hidden" id="hdnInvestorId" />
+                         </div>
+                     </div>
+                 </div>
+                 <br />
+                 <div class="row">
+                     <div class="col-md-7 col-sm-6 col-xs-12">
+                 
+                     </div>  
+                     <div class="col-md-3 col-sm-6 col-xs-12">
+                         <button type="submit" id="btnAddmember" class="btn btn-primary">Add Member</button>
+                     </div>  
+                 </div>
+    </div>*@
+    
+}
+
+

@@ -1,0 +1,252 @@
+﻿@using Common.Data.CommonDataModel
+@using Upms.Data.UPMSDataModel
+@{
+    ViewBag.Title = "Allocation";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    //var companies = (List<ERP.Web.IPOController.IpoCompanyModel>)ViewBag.Companies;
+    var companies = (List<IPODeclaration>)ViewBag.Companies;
+    var branches = (List<BrokerBranch>)ViewBag.Branches;
+    var investorTypes = (List<InvestorType>)ViewBag.InvestorTypes;
+    var reports = (List<ReportInformation>)ViewBag.Reports;
+}
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+
+<link href="~/Content/css/bpopupStyle.css" rel="stylesheet" />
+<script src="~/Content/js/jquery.bpopup.min.js"></script>
+
+<script type="text/javascript">
+
+    function GetEmployeebyCode() {
+
+        var EmployeeCode = $("#txtEmployee").val();
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBrokerEmoloyeeList", "IPO", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { EmployeeCode: EmployeeCode },
+            success: function (EmployeeList) {
+                $.each(EmployeeList, function (id, option) {
+                    $("#txtEmployee").val(option.EmployeeName);
+                    $("#hdnEmployeeId").val(option.Id);
+
+                });
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+    var AllEmployeeList = [];
+
+    function GetBrokerEmoloyeeList() {
+
+        $('#txtEmployee').attr("placeholder", "Loading . .. ... ....")
+        var IPODeclarationId = $("#cmbCompany").val();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBrokerEmoloyeeList", "IPO", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { EmployeeCode: "" },
+            success: function (EmployeeList) {
+                $.each(EmployeeList, function (id, option) {
+                    var obj2 = new Object();
+                    obj2.key = option.Id;
+                    obj2.value = option.EmployeeName;
+
+                    AllEmployeeList[AllEmployeeList.length] = obj2;
+                });
+                $('#txtEmployee').removeAttr("placeholder")
+            },
+            failure: function () {
+                $('#txtEmployee').removeAttr("placeholder")
+                $.alert.open("error", "Failed!");
+            }
+        });
+
+        $('#txtEmployee').autocomplete({
+            source: AllEmployeeList,
+            select: function (event, ui) {
+
+                $("#txtEmployee").val(ui.item.value);
+                $("#hdnEmployeeId").val(ui.item.key);
+                $("#hdnMode").val("A");
+            }
+        });
+    }
+
+    $(document).ready(function () {
+
+        GetBrokerEmoloyeeList();
+        $("#hdnEmployeeId").val(0)
+        $("#txtEmployee").focus(function () {
+            $("#hdnMode").val("B");
+        });
+
+        $("#cmbCompany").focus();
+        $(".IpoApplication").show();
+
+        $("#txtEmployee").blur(function () {
+            if ($("#hdnMode").val() != "A" && $("#txtEmployee").val() != "") {
+                GetEmployeebyCode();
+            }
+
+        });
+
+
+
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+
+            var Qtype = $("#cmbIPOStatus").val();
+            var IpoDeclarationId = $("#cmbCompany").val();
+            var BrokerBranch = $("#cmbBranch").val();
+            var UserId = $("#hdnEmployeeId").val();
+            var FromDate = $("#txtFromDate").val();
+            var InvestorType = $("#ddlInvestorType").val();
+
+            if ($("#cmbCompany").val() != "0" && Qtype != 0) {
+                var url = '/Report/Rpt_IPO_Allocation?reportNo=' + Qtype + '&IpoDeclarationId=' + IpoDeclarationId + '&BrokerBranch=' + BrokerBranch + '&FromDate=' + FromDate + '&exportType=Pdf&InvestorType=' + InvestorType;
+                window.open(url);
+            }
+            else {
+                $.alert.open("error", "Select IPO company and status");
+            }
+        });
+    });
+
+</script>
+@using (Html.BeginForm("IpoAllocation", "IPO", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "ApoForm" }))
+{
+    @Html.AntiForgeryToken()
+
+
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">&nbsp;&nbsp; IPO Allocation Reports</h3>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div id="AjaxLoader" class="ajaxLoader"></div>
+                <div class="x_title">
+                    <input type="hidden" id="hdnEmployeeId" />
+                    <input type="hidden" id="hdnMode" />
+                </div>
+                <div class="x_content">
+                    <br />
+
+                    <div class="row form-group">
+                        @Html.Label("IPO Company", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <select class="input-sm form-control bordercss" id="cmbCompany">
+                                <option value="0">Select Company</option>
+                                @foreach (var company in companies)
+                                {
+                                    <option value="@company.Id">@(company.CompanyName + " (" + company.TradingCode + ")")</option>
+                                }
+                            </select>
+                        </div>
+                        @Html.Label("Report", htmlAttributes: new { @class = "control-label col-md-1 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <select class="input-sm form-control bordercss" id="cmbIPOStatus">
+                                <option value="0">Select Report</option>
+                                @foreach (var Rpt in reports)
+                                {
+                                    <option value="@Rpt.SerialNo">@(Rpt.ReportName)</option>
+                                }
+                            </select>
+
+                            @*<select class="input-sm form-control bordercss" id="cmbIPOStatus">
+                                    <option value="0">Please Select</option>
+                                    <option value="3">IPO Declaration Information</option>
+                                    <option value="1">IPO Order</option>
+                                    <option value="2">IPO Application</option>
+                                </select>*@
+                        </div>
+
+                    </div>
+                    <div class="row form-group IpoApplication">
+                        @Html.Label("Investor Type", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <select class="input-sm form-control bordercss" id="ddlInvestorType">
+                                <option value="0">Select Type</option>
+                                @foreach (var type in investorTypes)
+                                {
+                                    <option value="@type.Id">@type.InvestorTypeShortName</option>
+                                }
+                            </select>
+                        </div>
+
+                        @Html.Label("Branch", htmlAttributes: new { @class = "control-label col-md-1" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <select class="input-sm form-control bordercss" id="cmbBranch">
+                                <option value="0">Select Branch</option>
+                                @foreach (var br in branches)
+                                {
+                                    <option value="@br.Id">@br.BrokerBranchName</option>
+                                }
+                            </select>
+                        </div>
+
+                    </div>
+                    <div class="row form-group IpoApplication">
+
+                        @Html.Label("Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <input type="text" class="input-sm form-control DateInput check-date" id="txtFromDate" />
+                        </div>
+                    </div>
+                    <div class="row form-group IpoApplication">
+
+
+                        @*@Html.Label("Report Type", new { @class = "control-label col-sm-2" })
+                                   <div class="col-sm-4">
+                                       <select class="input-sm form-control bordercss" id="cmbReportType">
+                                           <option value="Pdf" selected="selected">Pdf</option>
+                                           <option value="ExcelBook">Microsoft Excel</option>
+                                           <option value="Excel">Microsoft Excel (97-2003)</option>
+                                           <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                                           <option value="Word">Microsoft Word (97-2003)</option>
+                                           <option value="XML">XML</option>
+                                       </select>
+                            </div>*@
+                    </div>
+                    <div class="ln_solid"></div>
+                    <div class="row form-group">
+                        <div class="col-md-3"></div>
+                        <div class="col-md-3">
+                            <button type="submit" id="btnSearch" class="btn btn-primary">View</button>
+                        </div>
+                    </div>
+
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+
+

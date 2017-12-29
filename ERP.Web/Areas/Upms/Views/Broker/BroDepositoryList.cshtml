@@ -1,0 +1,225 @@
+﻿
+@{
+    ViewBag.Title = "Broker Depository|List";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<style>
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+<script type="text/javascript">
+
+    function GetEditDataById(Id) {
+        //window.location.href = "/Batch/Edit/" + BatchId;
+        var link = '@Url.Action("BroDepositoryEdit", "Broker", new { Id = -1 }, "http")'
+        link = link.replace("-1", Id);
+        window.location.href = link;
+    }
+
+    function DeleteById(Id) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("DeleteBrokerDepository", "Broker", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        $("#grid").data("kendoGrid").dataSource.read();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+    var record = 0;
+    function GetBrokerDepositoryInfo() {
+
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetBrokerDepositoryInfo", "Broker", "http")',
+                    dataType: "json",
+                    data: { }
+                }
+            },
+            pageSize: 20
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 550,
+            groupable: true,
+            reorderable: true,
+            resizable: true,
+            filterable: true,
+            sortable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+            {
+                template: "#= ++record #",
+                title: "SL",
+                width: "10%",
+            },
+            {
+                field: "DPCode",
+                title: "DP Code",
+                width: "10%"
+            },
+             {
+                 field: "BORefNo",
+                 title: "BO Ref: No",
+                 width: "10%"
+             },
+              {
+                  field: "DepositoryParticipantName",
+                  title: "Depository Name",
+                  width: "30%"
+              },
+               {
+                   field: "DPShortName",
+                   title: "Short Name",
+                   width: "10%"
+               },
+               {
+                   field: "Address",
+                   title: "Address",
+                   hidden: true
+               },
+                {
+                    field: "ContactPerson",
+                    title: "Contact Person",
+                },
+                {
+                    field: "ContactNo",
+                    title: "Contact Phone",
+                },
+                {
+                    field: "PayInOut",
+                    title: "Pay In Out",
+                    hidden: true
+                },
+                 {
+                     field: "ClearingAccDSE",
+                     title: "Clearing Acc DSE",
+                     hidden: true
+                 },
+                {
+                    field: "ClearingAccCSE",
+                    title: "Clearing Acc CSE",
+                    hidden:true
+                },
+
+            {
+
+                title: "Action",
+                width: "10%",
+                template: function (dataItem) {
+
+                    return '<a href="#"  onclick="GetEditDataById(' + dataItem.Id + ')"  title="Edit" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a>' //+
+                        //'<a href="#" title="Delete" onclick="DeleteById(' + dataItem.ID + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></a>'
+                }
+            }
+            ],
+            dataBinding: function () {
+                record = (this.dataSource.page() - 1) * this.dataSource.pageSize();
+            }
+        });
+        $("#autoSearch").keyup(function () {
+            var selecteditem = $('#autoSearch').val();
+            var kgrid = $("#grid").data("kendoGrid");
+            selecteditem = selecteditem.toUpperCase();
+            var selectedArray = selecteditem.split(" ");
+            if (selecteditem) {
+                //kgrid.dataSource.filter({ field: "UserName", operator: "eq", value: selecteditem });
+                var orfilter = { logic: "or", filters: [] };
+                var andfilter = { logic: "and", filters: [] };
+                $.each(selectedArray, function (i, v) {
+                    if (v.trim() == "") {
+                    }
+                    else {
+                        $.each(selectedArray, function (i, v1) {
+                            if (v1.trim() == "") {
+                            }
+                            else {
+                                orfilter.filters.push({ field: "DPCode", operator: "contains", value: v1 },
+                                                      { field: "BORefNo", operator: "contains", value: v1 },
+                                                      { field: "DepositoryParticipantName", operator: "contains", value: v1 });
+                                andfilter.filters.push(orfilter);
+                                orfilter = { logic: "or", filters: [] };
+                            }
+
+                        });
+                    }
+                });
+                kgrid.dataSource.filter(andfilter);
+            }
+            else {
+                kgrid.dataSource.filter({});
+            }
+
+        });
+    }
+
+    $(document).ready(function () {
+        GetBrokerDepositoryInfo();
+    });
+
+</script>
+@*@Html.ActionLink("Add New", "BroDepository", null, new { @class = "btn btn-primary btn-sm pull-right" })*@
+@using (Html.BeginForm("BroDepositoryList", "Broker", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "BrokerForm" }))
+{
+
+    <div class="page-title">
+        <div class="title_left">
+            <h4 style="color: rgb(26,187, 156)">Broker Depository Information</h4>
+        </div>
+    </div>
+    <div class="x_panel">
+        @*<div class="x_title">
+
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>*@
+        <div class="x_content">
+            <div class="block_content">
+                <div class="row">
+                    <div class="form-group">
+                        @Html.Label("Search", htmlAttributes: new { @class = "control-label col-md-1" })
+                        <div class="col-md-5">
+                            <input type="text" id="autoSearch" class="form-control" placeholder="Search by DB code,BO reference no or name" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="grid"> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+

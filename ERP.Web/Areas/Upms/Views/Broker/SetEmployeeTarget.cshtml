@@ -1,0 +1,115 @@
+﻿@using Common.Data.CommonDataModel
+@{
+    ViewBag.Title = "Set Employee Target";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var employees = (List<BrokerEmployee>)ViewBag.Employee;
+}
+<style type="text/css">
+    .panel-heading {
+        color: #FFFFFF !important;
+    }
+
+    .panel-body {
+        padding: 10px 0px;
+    }
+
+        .panel-body .row {
+            margin-bottom: 10px;
+        }
+
+            .panel-body .row:last-child {
+                margin-bottom: 20px;
+            }
+
+            .panel-body .row label {
+                text-align: right;
+            }
+
+    input[type=checkbox] {
+        margin-top: -2px;
+    }
+
+    .daily-target, .fund-acquisition {
+        text-align: right;
+    }
+</style>
+<div class="row">
+    <div class="col-sm-offset-1 col-sm-10" style="margin-top: 15px;">
+        <div class="panel panel-success">
+            <div class="panel-heading PageHeader"><h3 class="panel-title">Set Employee Target</h3></div>
+            <div class="panel-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Sl.</th>
+                            <th>Employee Name</th>
+                            <th>Joining Date</th>
+                            <th class="text-right">Daily Trade Target</th>
+                            <th class="text-right">Fund Acquisition<br />Target Of Year</th>
+                            <th class="text-center">Is Calculate</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < employees.Count; i++)
+                        {
+                            <tr>
+                                <td>@(i + 1)</td>
+                                <td>@employees[i].EmployeeName</td>
+                                <td><input type="text" class="joining-date" value="@(employees[i].JoiningDate.HasValue ? Convert.ToDateTime(employees[i].JoiningDate).ToString("dd/MM/yyyy") : "")" /></td>
+                                <td class="text-right"><input type="number" class="daily-target" style="width: 100px;" value="@employees[i].DailyTradeTarget.ToString("####")" /></td>
+                                <td class="text-right"><input type="number" class="fund-acquisition" style="width: 100px;" value="@employees[i].FundAcquisitionTargetOfYear.ToString("####")" /></td>
+                                <td class="text-center"><input type="checkbox" class="checkbox checkbox-inline is-calculate" @(employees[i].IsCalculate ? "checked='checked'" : "") /></td>
+                                <td class="text-center"><input type="button" class="btn btn-sm btn-success btn-update" data-id="@employees[i].Id" value="Update" /></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(".joining-date").datepicker({
+        dateFormat: "dd/mm/yy",
+        showAnim: "scale",
+        changeMonth: true,
+        changeYear: true,
+        maxDate: "@DateTime.Today.ToString("dd/MM/yyyy")"
+    });
+    $(document).on("click", ".btn-update", function () {
+        var joiningDate = $(this).parents("tr").eq(0).find(".joining-date").eq(0).val().trim();
+        var dailyTarget = $(this).parents("tr").eq(0).find(".daily-target").eq(0).val().trim();
+        var fundAcquisition = $(this).parents("tr").eq(0).find(".fund-acquisition").eq(0).val().trim();
+        var isCalculate = $(this).parents("tr").eq(0).find(".is-calculate").eq(0).is(":checked") ? 1 : 0;
+        var id = $(this).attr("data-id");
+
+        var target = { id: id, joiningDate: joiningDate, dailyTarget: dailyTarget == "" ? 0 : dailyTarget, fundAcquisition: fundAcquisition == "" ? 0 : fundAcquisition, isCalculate: isCalculate };
+        submit(target);
+        return true;
+    });
+
+    function submit(target) {
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("UpdateEmployeeTarget", "Broker")',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(target),
+            dataType: "json",
+            success: function (data) {
+                if (data.Status == true) {
+                    $.alert.open("Successfull!", data.Message);
+                } else {
+                    $.alert.open("Error!", data.Message);
+                }
+            },
+        });
+    }
+</script>
+
+
+
+
+
+
+

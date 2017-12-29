@@ -1,0 +1,273 @@
+﻿
+@using Common.Data.CommonDataModel
+@{
+    ViewBag.Title = "CdblGnlRpt";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var reports = (List<ReportInformation>)ViewBag.Reports;
+}
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+
+<script type="text/javascript">
+
+    @*function GetCDBLFileNames() {
+        var CDBLReport = $("#ddlCDBLReportList");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCDBLFileNames", "CDBLReport", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (CDBLFileList) {
+                CDBLReport.html('');
+                CDBLReport.append($('<option></option>').val("0").html("Please select"));
+                $.each(CDBLFileList, function (id, option) {
+                    CDBLReport.append($('<option></option>').val(option.CDBLFileName).html(option.FileNameMsg).attr("name", option.CDBLFileName));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }*@
+
+
+    $(document).ready(function () {
+        // GetCDBLFileNames();
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var IsPending = $("#chIsPending").is(":checked") == false ? 0 : 1;
+
+            var DateFrom = $("#DateFrom").val();
+            var DateTo = $("#DateTo").val();
+            if ($("#ddlCDBLReportList").val() != "0" && DateFrom != "" && DateTo != "") {
+
+                // TradePayIn TradePayOut DematShare CompanyWiseClosingStock ChangeOwnershipOut ChangeOwnershipIn CDBLCharges CashFraction  BonusRightShareDeclaration   AccountOpeningFromCDBL BonusRightShareCredit
+
+                //
+                //if ($("#ddlReportName").val() == "AccountOpeningFromCDBL")
+                //{
+                var url = '/CDBLReport/Get_General_CDBLReport?rptslnx=' + $("#ddlCDBLReportList option:selected").val() + '&Qtype=' + $("#ddlSearchType option:selected").val() + '&FromDate=' + DateFrom + '&ToDate=' + DateTo + '&IsPending=' + IsPending + '&exportType=' + $("#cmbReportType").val();
+                window.open(url);
+                // }
+                //else if ($("#ddlReportName").val() == "BonusRightShareCredit")//
+                //{
+                //    var url = '/ CDBLReport/Get_GeneralReport?Qtype=Relation&exportType=' + $("#cmbReportType").val();
+                //    window.open(url);
+                //}
+                //else if ($("#ddlReportName").val() == "BonusRightShareDeclaration") {
+                //    var url = '/ CDBLReport/Get_GeneralReport?Qtype=Designation&exportType=' + $("#cmbReportType").val();
+                //    window.open(url);
+                //}
+                //else if ($("#ddlReportName").val() == "CashFraction") {
+                //    var url = '/ CDBLReport/Get_GeneralReport?Qtype=Department&exportType=' + $("#cmbReportType").val();
+                //    window.open(url);
+                //}
+                //else if ($("#ddlReportName").val() == "CDBLCharges") {
+                //    var url = '/ CDBLReport/Get_GeneralReport?Qtype=Country&exportType=' + $("#cmbReportType").val();
+                //    window.open(url);
+                //}
+                //else if ($("#ddlReportName").val() == "ChangeOwnershipIn") {
+                //    var url = '/ CDBLReport/Get_GeneralReport?Qtype=Division&exportType=' + $("#cmbReportType").val();
+                //    window.open(url);
+                //}
+                //else if ($("#ddlReportName").val() == "ChangeOwnershipOut") {
+                //    var url = '/ CDBLReport/Get_GeneralReport?Qtype=District&exportType=' + $("#cmbReportType").val();
+                //    window.open(url);
+                //}//
+                //else if ($("#ddlReportName").val() == "CompanyWiseClosingStock") {
+                //    var url = '/ CDBLReport/Get_GeneralReport?Qtype=Thana&exportType=' + $("#cmbReportType").val();
+                //    window.open(url);
+                //}
+                //else if ($("#ddlReportName").val() == "DematShare") {
+                //    var url = '/ CDBLReport/GetBankWiseAllBranch?exportType=' + $("#cmbReportType").val();
+                //    window.open(url);
+                //}
+                //else if ($("#ddlReportName").val() == "TradePayOut") {
+                //    var url = '/ CDBLReport/BrokerInformationReport?exportType=' + $("#cmbReportType").val();
+                //    window.open(url);
+                //}
+                //else if ($("#ddlReportName").val() == "TradePayIn") {
+                //    var url = '/ CDBLReport/BrokerDepositoryParticipantInfo?exportType=' + $("#cmbReportType").val();
+                //    window.open(url);
+                //}
+
+            }
+            else {//
+                $.alert.open("error", "Select report and date");
+            }
+            //var BrokerId = $("#BrokerId").val();
+            //if (BrokerId != "") {
+            //    var url = '/GeneralReport/GenerateTraderInfoReport?BrokerId=' + BrokerId + '&exportType=' + $("#cmbReportType").val();
+            //    window.open(url);
+            //}
+            //else {
+            //    $.alert.open("error", "Select broker")
+            //}
+
+        });
+
+
+
+
+        $("#DateFrom").on("change", function () {
+            var fromDate = $("#DateFrom").val();
+            $("#DateTo").datepicker('option', { minDate: fromDate });
+        });
+        $("#DateTo").on("change", function () {
+            var toDate = $("#DateTo").val();
+            $("#DateFrom").datepicker('option', { maxDate: toDate });
+        });
+
+        $("#divCheck").hide();
+        $("#ddlCDBLReportList").change(function () {
+
+            if ($("#ddlCDBLReportList").val() == "4" || $("#ddlCDBLReportList").val() == "20" || $("#ddlCDBLReportList").val() == "22") {
+                $("#divCheck").show();
+                if ($("#ddlCDBLReportList").val() == "20" || $("#ddlCDBLReportList").val() == "22") {
+                    $("#divSearchType").hide();
+                }
+                else {
+                    $("#divSearchType").show();
+                }
+            }
+            else {
+                $("#divSearchType").show();
+                $("#divCheck").hide();
+                if ($("#ddlCDBLReportList").val() == "23") {
+                    $("#divSearchType").hide();
+                }
+                else {
+                    $("#divSearchType").show();
+                }
+            }
+
+        });
+
+    });
+</script>
+
+
+
+@using (Html.BeginForm("Index", "GeneralReport", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "GeneralForm" }))
+{
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:100%;">
+            <h4 style="color: white;padding:2px"> &nbsp;&nbsp;&nbsp;CDBL Reports</h4>
+        </div>
+        @*<img src="~/Images/EBLSL-logo.jpg" />*@
+    </div>
+    <div class="x_panel">
+        <div class="x_title">
+            <input type="hidden" id="hdnOccupationId" />
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <div class="row">
+                <div class="col-sm-8">
+                    <div class="item form-group">
+                        @Html.Label("Report", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                        <div class="col-sm-6">
+                            <select class="input-sm form-control bordercss" id="ddlCDBLReportList">
+                                <option value="0">Select Report</option>
+                                @foreach (var Rpt in reports)
+                                {
+                                    <option value="@Rpt.SerialNo">@(Rpt.ReportName)</option>
+                                }
+                            </select>
+                            @*@Html.DropDownList("CDBLReportList", null, new { @id = "ddlCDBLReportList", @class = "form-control bordercss" })*@
+
+                        </div>
+                        <div class="col-sm-3" id="divCheck">
+                            <input type="checkbox" style="width:20px;height:20px;" id="chIsPending" /><span style="color:black;">Is Pending</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" id="divSearchType">
+                <div class="col-md-8">
+                    <div class="item form-group">
+                        @Html.Label("Data Status", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                        <div class="col-sm-6">
+                            <select class="input-sm form-control bordercss" id="ddlSearchType">
+                                <option value="All" selected="selected">All</option>
+                                <option value="OnlyProcess">Only Process</option>
+                                <option value="OnlyUpload">Only Upload</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="divDate">
+                <div class="row">
+                    <div class="col-sm-8">
+                        <div class="item form-group">
+                            @Html.Label("Date From", new { @class = "control-label col-sm-3" })
+                            <div class="col-sm-6">
+                                <input type="text" id="DateFrom" class="form-control DateInput check-date" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-8">
+                        <div class="item form-group">
+                            @Html.Label("Date To", new { @class = "control-label col-sm-3" })
+                            <div class="col-sm-6">
+                                <input type="text" id="DateTo" class="form-control DateInput check-date" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-8">
+                    <div class="item form-group">
+                        @Html.Label("Report Type", new { @class = "control-label col-sm-3" })
+                        <div class="col-sm-6">
+                            <select class="input-sm form-control bordercss" id="cmbReportType">
+                                <option value="Pdf" selected="selected">Pdf</option>
+                                <option value="ExcelBook">Microsoft Excel</option>
+                                <option value="Excel">Microsoft Excel (97-2003)</option>
+                                <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                                <option value="Word">Microsoft Word (97-2003)</option>
+                                <option value="XML">XML</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ln_solid"></div>
+            <div class="row">
+                <div class="col-md-2"></div>
+                <div class="col-md-4">
+                    <div class="form-group from-action">
+                        <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+
+
+

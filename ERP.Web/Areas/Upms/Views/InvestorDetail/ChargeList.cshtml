@@ -1,0 +1,215 @@
+﻿@using ERP.Web.ViewModels
+@{
+    ViewBag.Title = "Investor wise charge list";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var charges = (List<InvestorCharge>)ViewBag.Charges;
+    var noOfPage = charges[0].TotalRecord / 10;
+    if (charges[0].TotalRecord % 10 > 0)
+    {
+        noOfPage += 1;
+    }
+}
+<style type="text/css">
+    .panel-custom > .panel-heading {
+        color: #FFFFFF !important;
+    }
+    .panel-custom .panel-body .row:not(:last-child) {
+        margin-bottom: 10px;
+    }
+
+    .panel-custom .panel-body .radio {
+        margin-top: 0px;
+    }
+
+    .panel-custom .panel-body .radio-text, .panel-custom .panel-body input[type=text] {
+        color: #73879C;
+    }
+
+    .panel-custom .label-container {
+        text-align: right;
+    }
+
+    input[type=text]:read-only {
+        background: #FFFFFF;
+        cursor: default;
+    }
+
+    #error > .panel {
+        margin-bottom: 20px;
+    }
+
+        #error > .panel > .panel-heading {
+            padding: 0px 5px 0px 15px;
+        }
+
+    .radio-container label {
+        cursor: pointer;
+        padding: 5px;
+    }
+
+        .radio-container label.active {
+            background: #0e73a9;
+            border-radius: 4px;
+            /*margin-left: 10px;*/
+        }
+
+            .radio-container label.active span.radio-text {
+                color: #FFFFFF;
+            }
+
+    #divSlabContainer table td {
+        padding: 5px;
+    }
+
+    #lblInvestorName .well-sm {
+        padding: 5px;
+        display: inline-block;
+        margin-bottom: 0px;
+    }
+
+    .pagination.bootpag {
+        margin: 0px;
+    }
+</style>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="panel panel-success panel-custom">
+            <div class="panel-heading PageHeader">
+                <h3 class="panel-title">Investor wise charge list</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-offset-2 col-sm-3 text-right">
+                        @Html.Label("Search Investor & Charge :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="text" id="txtSearchText" class="input-sm form-control" />
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="button" class="btn btn-sm btn-success" value="Search" id="btnSearch" />
+                    </div>
+                </div>
+                <div style="height: 1px; border-bottom: 1px solid #DDDDDD; width: 100%; margin-top: 5px; margin-bottom: 5px;"></div>
+                <table class="table table-responsive table-striped" style="margin-bottom: 0px;">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Sl.</th>
+                            <th class="text-center">Investor Code</th>
+                            <th>Investor Name</th>
+                            <th>Charge Name</th>
+                            <th class="text-right">Charge Amount</th>
+                            <th class="text-right">Minimum Charge</th>
+                            <th class="text-center">Is Percentage</th>
+                            <th class="text-center">Is Slab</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < charges.Count; i++)
+                        {
+                            <tr>
+                                <td class="text-center">@(i + 1)</td>
+                                <td class="text-center">@charges[i].InvestorCode</td>
+                                <td>@charges[i].InvestorName</td>
+                                <td>@charges[i].ChargeName</td>
+                                <td class="text-right">@charges[i].ChargeAmount.ToString("F")</td>
+                                <td class="text-right">@charges[i].MinimumCharge.ToString("F")</td>
+                                <td class="text-center">@(charges[i].IsPercentage ? "Yes" : "No")</td>
+                                <td class="text-center">@(charges[i].IsSlab ? "Yes" : "No")</td>
+                                <td class="text-center"><input data-chargeid="@charges[i].ChargeId" type="button" class="btn btn-sm btn-success btn-edit" value="Edit" /></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="row">
+                    <div class="col-sm-6 text-left">
+                        Record Per Page :
+                        <select style="display: inline-block;" id="cmbRecordPerPage">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                            <option value="40">40</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-6 text-right">
+                        <div id="pagination"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="~/Scripts/jquery.maskedinput-1.3.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#btnSearch").on("click", function () {
+            var text = $("#txtSearchText").val().trim();
+            getChargeList(text, $("#cmbRecordPerPage").val(), 1);
+        });
+
+        function getChargeList(searchText, record, page) {
+            var jsonData = { searchText: searchText,row:record,page: page  };
+            $.ajax({
+                type: "Post",
+                url: '@Url.Action("GetInvestorCharge", "InvestorDetail")',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(jsonData),
+                dataType: "json",
+                success: function (data) {
+                    var html = "";
+                    var start = ((page - 1) * record) + 1;
+                    $.each(data, function (i, d) {
+                        html += '<tr>';
+                        html += '<td class="text-center">' + (start++) + '</td>';
+                        html += '<td class="text-center">' + d.InvestorCode + '</td>';
+                        html += '<td>' + d.InvestorName + '</td>';
+                        html += '<td>' + d.ChargeName + '</td>';
+                        html += '<td class="text-right">' + d.ChargeAmount.toFixed(2) + '</td>';
+                        html += '<td class="text-right">' + d.MinimumCharge.toFixed(2) + '</td>';
+                        html += '<td class="text-center">' + (d.IsPercentage ? "Yes" : "No") + '</td>';
+                        html += '<td class="text-center">' + (d.IsSlab ? "Yes" : "No") + '</td>';
+                        html += '<td class="text-center"><input data-chargeid="'+d.ChargeId+'" type="button" class="btn btn-sm btn-success btn-edit" value="Edit" /></td>';
+                        html += '</tr>';
+                    });
+                    $("table tbody").html(html);
+                    var noOfPage = data[0].TotalRecord / record;
+                    if (data[0].TotalRecord % record > 0) {
+                        noOfPage += 1;
+                    }
+                    $("#pagination").bootpag({ total: noOfPage, page: page });
+                },
+            });
+        }
+
+        $("#cmbRecordPerPage").on("change", function() {
+            var text = $("#txtSearchText").val().trim();
+            getChargeList(text, $(this).val(), 1);
+        });
+
+        $("#pagination").bootpag({
+            total: @noOfPage,
+            page: 1,
+            maxVisible: 5,
+            leaps: true,
+            firstLastUse: true,
+            first: '←',
+            last: '→',
+            wrapClass: 'pagination',
+            activeClass: 'active',
+            disabledClass: 'disabled',
+            nextClass: 'next',
+            prevClass: 'prev',
+            lastClass: 'last',
+            firstClass: 'first'
+        }).on("page", function (event, num) {
+            var text = $("#txtSearchText").val().trim();
+            getChargeList(text, $("#cmbRecordPerPage").val(), num);
+        });
+        $(document).on("click", ".btn-edit", function() {
+            var code = $(this).parents("tr").find("td:nth-child(2)").html().trim();
+            var name=$(this).parents("tr").find("td:nth-child(3)").html().trim();
+            window.location = "/InvestorDetail/InvestorWiseChargeSetup?code="+code+"&cid="+$(this).attr("data-chargeid");
+        });
+    });
+</script>

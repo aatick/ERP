@@ -1,0 +1,390 @@
+﻿@using Common.Data.CommonDataModel
+@{
+    ViewBag.Title = "Charges";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var branches = (List<BrokerBranch>)ViewBag.Branches;
+}
+
+<style>
+    .ui-autocomplete {
+        cursor: pointer;
+        height: 400px;
+        width: 300px;
+        overflow-y: scroll;
+        background-color: white;
+        color: rgb(0,188,212);
+        /*outline-style:outset;*/
+    }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .required::after {
+        content: " *";
+        color: red;
+    }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+<script type="text/javascript">
+
+
+    function getInvestorInfo() {
+
+        var IpoDeclarationId = $("#cmbCompany").val();
+
+        if ($("#txtCode").val().indexOf('-') > -1 && $("#txtCode").val().indexOf(',') > -1) {
+
+            $.alert.open("error", "At a time ',' and '-' are not allow to use");
+        }
+        else {
+           
+            var branchId = $("#cmbBranch").val();
+            var investorTypeId = $("#cmbType").val();
+            var code = $("#txtCode").val().trim();
+            var InvStatus = $("#ddlInvestorStatus").val() == "" ? 0 : $("#ddlInvestorStatus").val();
+
+            var dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: '@Url.Action("GETINVESTORDetailsByCodesWithStatus", "IPOGroup", "http")',
+                        dataType: "json",
+                        data: { branchId: branchId, investorTypeId: investorTypeId, InvStatus: InvStatus, code: code }
+                    }
+                },
+                pageSize: 25,
+            });
+
+            $("#grid").kendoGrid({
+                dataSource: dataSource,
+                height: 400,
+                groupable: false,
+                reorderable: true,
+                filterable: true,
+                sortable: true,
+                resizable: true,
+                columnMenu: true,
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 100
+                },
+                columns: [{
+                    field: "InvestorId",
+                    hidden: true,
+                    filterable: false
+                },
+
+                {
+                    field: "RowSl",
+                    title: "SL",
+                },
+                {
+                    field: "InvestorCode",
+                    title: "Investor Code",
+                },
+                {
+                    field: "BOID",
+                    title: "BOID",
+                },
+                 {
+                     field: "InvestorName",
+                     title: "Investor Name",
+                     width: "25%"
+                 },
+                {
+                    field: "AccountType",
+                    title: "Account Type",
+                    width: "18%"
+                },// <a href="#" title="Delete group member"  class="btn btn-danger btn-sm pull-right"><i class="fa fa-trash-o"></i></a>
+                {
+                    title: "Cancel",
+                   // showOn: "Delete",
+                    command: [{
+                        name: " ", imageClass: 'fa fa-trash-o', click: function (e) {
+                            e.preventDefault();
+                            var dataItem = this.dataItem($(e.target).closest("tr"));
+                            var dataSource = $("#grid").data("kendoGrid").dataSource;
+                            dataSource.remove(dataItem);
+                            dataSource.sync();
+
+                        }
+                    }], title: "&nbsp;", width: "15%"
+                }
+                  //{
+                  //    title: "Cancel",
+                  //    command: [{
+                  //        name: "Cancel", imageClass: "fa fa-trash-o", click: function (e) {
+                  //            e.preventDefault();
+                  //            var dataItem = this.dataItem($(e.target).closest("tr"));
+                  //                var dataSource = $("#grid").data("kendoGrid").dataSource;
+                  //                dataSource.remove(dataItem);
+                  //                dataSource.sync();
+                              
+                  //        }
+                  //    }], title: "&nbsp;", width: "15%"
+                  //}
+                  
+                ]
+            });
+        }
+
+    }
+
+
+    function GetInvestorType() {
+
+        var IssueMethodId = "3";
+        var ddlIPOIvnType = $("#cmbType");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorType", "IPO", "http")',
+            data: { IssueMethodId: IssueMethodId },
+            dataType: 'json',
+            async: true,
+            success: function (IpoInvestorType) {
+                ddlIPOIvnType.html('');
+                ddlIPOIvnType.append($('<option></option>').val("0").html("All"));
+                $.each(IpoInvestorType, function (id, option) {
+                    if (option.Id != 0) {
+                        ddlIPOIvnType.append($('<option></option>').val(option.Id).html(option.InvestorTypeName));
+                    }   
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+
+        GetInvestorType();
+
+        $("#ddlInvestorStatus").val(2);
+
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+            getInvestorInfo();
+        });
+
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+           
+
+           
+            if ($("#ddlTransactionList").val() != "" && $("#grid").data("kendoGrid").dataSource.data().length != 0 && $("#ChargeAmount").val() != "" && $("#TransactionDate").val() != "")
+            {
+                var AllInvestorId = new Array();
+
+                var rowCount = $("#grid").data("kendoGrid").dataSource.data().length;
+                var AllInvestorId = new Array();
+                for (i = 0; i < rowCount; i++) {
+                    if ($("#grid").data().kendoGrid._data[i] != null && $("#grid").data().kendoGrid._data[i] != undefined && $("#grid").data().kendoGrid._data[i] != "null" && $("#grid").data().kendoGrid._data[i] != "undefined") {
+                        var InvId = $("#grid").data().kendoGrid._data[i].InvestorId;
+                        AllInvestorId[AllInvestorId.length] = InvId;
+                    }
+                }
+
+                var allTrx = new Object();
+
+                allTrx.AllInvestorIds = AllInvestorId;
+                allTrx.TransId = $("#ddlTransactionList").val();
+                allTrx.Amount = $("#ChargeAmount").val();
+                allTrx.TransactionDate = $("#TransactionDate").val();
+                allTrx.ddlTransMode = $("#ddlTransMode").val();
+                allTrx.Remarks = $("#Remarks").val();
+
+
+                var json = JSON.stringify(allTrx);
+
+
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveInvestorManualCharge", "IPOGroup", "http")',
+                    type: "POST",
+                    dataType: "json",
+                    async: true,
+                    data: json,
+                    success: function (Result) {
+                        if (Result == "1")
+                        {
+                            $("#ChargeAmount").val(0);
+                            $("#Remarks").val("");
+                            $("#ddlTransactionList").val("");
+                            $("#txtCode").val("");
+
+                            $("#grid").data("kendoGrid").dataSource.data([]);
+                            $(".success").show(800).fadeToggle(3000);
+                        }
+                        else
+                        {
+                            $(".failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    failure: function (Result) {
+
+                        $.alert.open("error", Result);
+                    }
+                });
+            }
+            else
+            {
+                $.alert.open("error","Insert required field");
+            }
+           
+        });
+
+        //$("#TransactionDate").datepicker(
+        // {
+        //     dateFormat: "dd-M-yy",
+        //     showAnim: "scale",
+        //     changeMonth: true,
+        //     changeYear: true,
+        //     yearRange: "1920:2025",
+        //     onSelect: function () {
+        //         $("#ddlBankId").focus();
+        //     }
+        // });
+
+    });
+</script>
+@using (Html.BeginForm("Charges", "IPOGroup", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "IPOGroupForm" }))
+{
+    @Html.AntiForgeryToken()
+    @*@{
+            UcasPortfolio.Web.Helpers.SessionHelper.TransactionDate.ToString();
+        }*@
+
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">&nbsp;&nbsp;Investor wise manual charges</h3>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <br />
+                    <div class="row form-group">
+                        @Html.Label("Transaction Date", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4">
+                            @Html.Editor("TransactionDate", new { htmlAttributes = new { @class = "form-control DateInput check-date", @Value = @ViewData["BusinessDate"], @required = "required", @disabled = "disabled" } })
+                        </div>
+                        @Html.Label("Transaction Type", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4">
+                            @Html.DropDownList("TransactionList", new SelectList(ViewBag.TransactionList, "Id", "TransactionTypeName"), "Please select", new { @id = "ddlTransactionList", @class = "form-control bordercss" })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                       
+                        @Html.Label("Transaction Mode", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4">
+                            <select class="form-control bordercss" id="ddlTransMode">
+                                <option value="Deduction" selected>Deduction (Client Credit)</option>
+                                <option value="Addition">Addition (Client Debit)</option>
+                            </select>
+                        </div>
+                        @Html.Label("Charge Amount", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4">
+                            @Html.Editor("ChargeAmount", new { htmlAttributes = new { @class = "form-control", @required = "required", @type = "number" } })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                       
+                        @Html.Label("Remarks", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.Editor("Remarks", new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12 info-container">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">Search Option</div>
+                                <div class="panel-body">
+                                    <div class="row form-group">
+                                        @Html.Label("Branch", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                            <select class="input-sm form-control bordercss" id="cmbBranch">
+                                                <option value="0">Select Branch</option>
+                                                @foreach (var br in branches)
+                                                {
+                                                    <option value="@br.Id">@br.BrokerBranchName</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        @Html.Label("Type", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                            @Html.DropDownList("InvestorTypeList", null, new { @id = "cmbType", @class = "form-control bordercss" })
+                                        </div>
+                                    </div>
+                                    <div class="row form-group">
+                                        @Html.Label("Investoe Status", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                        <div class="col-md-4">
+                                            @Html.DropDownList("InvestorStatus", new SelectList(ViewBag.InvestorStatus, "Id", "InvestorStatus"), "All", new { @id = "ddlInvestorStatus", @class = "form-control bordercss" })
+                                        </div>
+                                        @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                            @Html.Editor("txtCode", new { htmlAttributes = new { @class = "form-control" } })
+                                        </div>
+                                       
+                                    </div>
+                                    <br />
+                                    <div>
+                                        <div class="col-sm-5"></div>
+                                        <div class="col-sm-2">
+                                            <input type="button" class="btn btn-sm btn-info" style="width:60%" id="btnSearch" value="Search" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="x_content">
+                    <div class="row">
+                        <div id="grid"> </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-5">
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" id="btnSave" class="btn btn-success">Save</button>
+                        </div>
+                    </div>
+                    <div class="ln_solid"></div>
+                    <div class="item form-group">
+                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            <div class="success" role="alert" style="display:none">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <p class="message-content">Saved Sucessfully</p>
+                            </div>
+                            <div class="failed" role="alert" style="display:none">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <p class="message-content">Fail to save</p>
+                            </div>
+                            <br />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+

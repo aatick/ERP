@@ -1,0 +1,145 @@
+﻿
+@{
+    ViewBag.Title = "SpecialInvestorAccessReport";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script type="text/javascript">
+
+
+
+    $(document).ready(function () {
+
+        $("#divInv").hide();
+        $("#divUser").hide();
+
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var ReportType = $("#ddlReportType").val();
+            var InvestorCode = $("#InvestorCode").val();
+            var UserCode = $("#UserCode").val();
+
+
+            var url = '/Access/Get_AccessReport?rptslnx=' + ReportType + '&InvestorCode=' + InvestorCode + '&UserCode=' + UserCode + '&cmbReportType=' + $("#cmbReportType").val();;
+            window.open(url);
+        });
+
+        $("#ddlReportType").change(function () {
+            var ReportType = $("#ddlReportType").val();
+            if (ReportType == 1) {
+                $("#divInv").show();
+                $("#divUser").hide();
+            }
+            else if (ReportType == 2) {
+                $("#divInv").hide();
+                $("#divUser").show();
+            }
+            else {
+                $("#divInv").hide();
+                $("#divUser").hide();
+            }
+
+        });
+
+    });
+</script>
+
+
+
+@using (Html.BeginForm("Index", "GeneralReport", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "GeneralForm" }))
+{
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:100%;">
+            <h4 style="color: white;padding:2px"> &nbsp;&nbsp;&nbsp;Access Reports</h4>
+        </div>
+        @*<img src="~/Images/EBLSL-logo.jpg" ---/>*@
+    </div>
+    <div class="x_panel">
+        <div class="x_title">
+            <input type="hidden" id="hdnOccupationId" />
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="item form-group">
+                        @Html.Label("Report", htmlAttributes: new { @class = "control-label col-md-2 col-sm-3 col-xs-12" })
+                        <div class="col-sm-4 ">
+                            <select class="form-control bordercss" id="ddlReportType">
+                                <option value="1" selected>All</option>
+                                <option value="2">Investor wise</option>
+                                <option value="3">User wise</option>
+                            </select>
+                        </div>
+                        <div id="divInv">
+                            @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4">
+                                @Html.Editor("InvestorCode", new { htmlAttributes = new { @class = "form-control" } })
+                            </div>
+                        </div>
+                        <div id="divUser">
+                            @Html.Label("User Code", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4">
+                                @Html.Editor("UserCode", new { htmlAttributes = new { @class = "form-control" } })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-8">
+                    <div class="item form-group">
+                        @Html.Label("Report Type", new { @class = "control-label col-sm-3" })
+                        <div class="col-sm-6">
+                            <select class="input-sm form-control bordercss" id="cmbReportType">
+                                <option value="Pdf" selected="selected">Pdf</option>
+                                <option value="ExcelBook">Microsoft Excel</option>
+                                <option value="Excel">Microsoft Excel (97-2003)</option>
+                                <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                                <option value="Word">Microsoft Word (97-2003)</option>
+                                <option value="XML">XML</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ln_solid"></div>
+            <div class="row">
+                <div class="col-md-2"></div>
+                <div class="col-md-4">
+                    <div class="form-group from-action">
+                        <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+
+
+
+
+
+

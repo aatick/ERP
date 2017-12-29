@@ -1,0 +1,162 @@
+﻿@using Common.Data.CommonDataModel
+@using Upms.Data.UPMSDataModel
+@{
+    ViewBag.Title = "Generate Pay In/Pay Out (CDBL)";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var businessDay = (DateTime)ViewBag.BusinessDate;
+    var reports = (List<ReportInformation>)ViewBag.Reports;
+    var markets = (List<MarketInformation>)ViewBag.Markets;
+    var fileLocation = (string)ViewBag.FileLocation;
+}
+<style type="text/css">
+    .panel-custom > .panel-heading {
+        /*background: #26B99A !important;*/
+        color: #FFFFFF !important;
+    }
+
+    .panel-custom .panel-body .row:not(:last-child) {
+        margin-bottom: 10px;
+    }
+
+    .panel-custom .panel-body .radio {
+        margin-top: 0px;
+    }
+
+    .panel-custom .panel-body .radio-text, .panel-custom .panel-body input[type=text] {
+        color: #73879C;
+    }
+
+    .panel-custom .label-container {
+        text-align: right;
+    }
+
+    input[type=text]:read-only {
+        background: #FFFFFF;
+        cursor: default;
+    }
+
+    #error > .panel {
+        margin-bottom: 20px;
+    }
+
+        #error > .panel > .panel-heading {
+            padding: 0px 5px 0px 15px;
+        }
+
+    .radio-container label {
+        cursor: pointer;
+        padding: 5px;
+    }
+
+        .radio-container label.active {
+            background: #0e73a9;
+            border-radius: 4px;
+            /*margin-left: 10px;*/
+        }
+
+            .radio-container label.active span.radio-text {
+                color: #FFFFFF;
+            }
+</style>
+<div class="row">
+    <div class="col-sm-offset-1 col-sm-10">
+        <div class="panel panel-success panel-custom">
+            <div class="panel-heading PageHeader">
+                <h3 class="panel-title">Generate Pay In/Out Files</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Transaction Date :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="text" placeholder="dd/mm/yyyy" name="transactionDateFrom" id="txtTransactionDateFrom" class="input-sm form-control DateInput check-date" required="required" value="@businessDay.ToString("dd/MM/yyyy")" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("File Name :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-10 radio-container">
+                        <div class="row">
+                            @for (var r = 0; r < reports.Count; r++)
+                            {
+                                <label class="col-sm-4 @(r==0?"active":"")">
+                                    <input type="radio" class="radio radio-inline" @(r == 0 ? "checked='checked'" : "") name="fileType" value="@reports[r].SerialNo" /> <span class="radio-text">@reports[r].ReportName</span>
+                                </label>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Market :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <select class="input-sm form-control" id="cmbMarket">
+                            @foreach (var m in markets)
+                            {
+                                <option value="@m.Id">@m.MarketShortName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("File Location :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control input-sm" id="txtFileLocation" readonly="readonly" disabled="disabled" value="@fileLocation" />
+                    </div>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <div class="row">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <input type="submit" name="btnGenerate" id="btnGenerate" class="btn btn-sm btn-success" value="Generate" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="~/Scripts/jquery.maskedinput-1.3.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("input[type=radio][name=fileType]").on("change", function () {
+            $(".radio-container label").removeClass("active");
+            $("input[type=radio][name=fileType]:checked").parents("label").addClass("active");
+        });
+        $(document).on("click", "#btnGenerate", function () {
+            if ($("input[type=radio][name=fileType]:checked").length == 0) {
+                $.alert.open("Warning!", "No file name selected.");
+                return false;
+            }
+            var reportNo = parseInt($("input[type=radio][name=fileType]:checked").val());
+            var marketId = $("#cmbMarket").val();
+            var date = $("#txtTransactionDateFrom").val().trim();
+            if (date == "") {
+                $.alert.open("Error", "Please enter transaction date.");
+            }
+            else {
+                var url = '@Url.Action("GeneratePayInOut", "FileGeneration")';
+                var jsonData = { transactionDate: date, marketId: marketId, isPayIn: (reportNo == 1 ? 1 : 0) };
+                $.ajax({
+                    type: "Post",
+                    url: url,
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(jsonData),
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.Status == true) {
+                            $.alert.open("Success", data.Message);
+                        } else {
+                            $.alert.open("Error", data.Message);
+                        }
+                    },
+                });
+            }
+            return true;
+        });
+    });
+</script>

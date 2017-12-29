@@ -1,0 +1,1232 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+
+    .k-grid tbody .k-button, .k-ie8 .k-grid tbody button.k-button {
+        min-width: 0;
+    }
+
+    a.k-button.k-button-icontext.k-grid-Edit {
+        min-width: 0;
+    }
+
+    #grid a.k-button.k-button-icontext.k-grid-Edit {
+        min-width: 0;
+    }
+
+
+    /*.k-grid tbody .k-button, .k-ie8 .k-grid tbody button.k-button {
+        min-width: 0;
+    }*/
+    a.k-button.k-button-icontext.k-i-close {
+        min-width: 0;
+    }
+
+    #grid a.k-button.k-button-icontext.k-i-close {
+        min-width: 0;
+    }
+
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 100px; /* Location of the box */
+        left: 20px;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    /* Modal Content */
+    .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        height: 90%;
+        overflow: auto;
+    }
+
+    .modal-content2 {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 40%;
+        height: 60%;
+        overflow: auto;
+    }
+
+    /* The Close Button */
+    .close {
+        color: red;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+
+<script type="text/javascript">
+
+    //Introducer
+    function GetEditDataById2(Mode) {
+
+        var Id = $("#HdnInvestorId").val();
+        var Mode = Mode;
+        var link = '@Url.Action("Edit", "InvestorDetail", new { id = -1,Mode= -2 }, "http")'
+        link = link.replace("-1", Id);
+        link = link.replace("-2", Mode);
+        window.location.href = link;
+    }
+
+
+    function GetEditDataById(Id) {
+        //GetEditDataById
+        var Mode = "Details";
+        var link = '@Url.Action("Edit", "InvestorDetail", new { id = -1,Mode= -2 }, "http")'
+        link = link.replace("-1", Id);
+        link = link.replace("-2", Mode);
+        window.location.href = link;
+    }
+    @*function GetPrintDataById(StaffId) {
+
+        window.location.href = '@Url.Action("StaffDetails", "StaffInfo")?StaffId=' + StaffId;
+    }*@
+
+
+
+    function DeleteEmployeeInfoById(StaffId) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("StaffInfoDelete", "StaffInfo", "http")',
+                    data: { StaffId: StaffId },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        $("#grid").data("kendoGrid").dataSource.read();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+    @*var dataSource = new kendo.data.DataSource({
+    transport: {
+        read: {
+            url: '@Url.Action("GetStaffInformation", "StaffInfo", "http")',
+            dataType: "json"
+        }
+    }
+});*@
+    /////////////////////////////////////////////////////
+    //$(".ob-icon-only", "#grid").parent().css("min-width", 0);
+    //////////////////////////////////////////
+
+    // var modal = document.getElementById('myModal');
+
+    // Get the button that opens the modal
+    //var btn = document.getElementById("myBtn");
+
+    // Get the <span> element that closes the modal
+    //var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks the button, open the modal
+    //btn.onclick = function () {
+    //    modal.style.display = "block";
+    //}
+
+    // When the user clicks on <span> (x), close the modal
+    //span.onclick = function () {
+    //    modal.style.display = "none";
+    //}
+
+    //// When the user clicks anywhere outside of the modal, close it
+    //window.onclick = function (event) {
+    //    if (event.target == modal) {
+    //        modal.style.display = "none";
+    //    }
+    //}
+
+
+    function GetInvestorWiseAccountInfo(InvestorId) {
+        $("#HdnInvestorId").val(InvestorId);
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorWiseAccountInfo", "InvestorDetail", "http")',
+            data: { InvestorId: InvestorId },
+            dataType: 'json',
+            async: true,
+            success: function (JoinHolder) {
+                $.each(JoinHolder, function (id, j) {
+                    // Id,,,,,DPBranchName,,BOTypeName,,BOCategoryName,,BrokerBranchName, BrokerName,,InvestorTypeName,,AccountTypeName,,SubAccountName,,BranchName,BankName,,InvestorStatus,,OperationTypeName,BOID, BOAccountOpeningDateMsg,TraderIdCSE,TraderIdDSE,BankAccountNo,OmnibusInvestorCode,ComissionRate,CounterPartyRate,LoanRatio,InterestRate,MaxLoan,IsSMSTrade,IsMailPortfolio,IsLinkBO,LinkBOAccount,IsEDC,IRN
+                    $("#InvestorAccountId").val(j.Id);
+                    $("#DPBranchName").val(j.DPBranchName);
+                    $("#BOTypeName").val(j.BOTypeName);
+                    $("#BOCategoryName").val(j.BOCategoryName);
+                    $("#BrokerBranchName").val(j.BrokerBranchName);
+                    $("#BrokerName").val(j.BrokerName);
+                    $("#InvestorTypeName").val(j.InvestorTypeName);
+                    $("#AccountTypeName").val(j.AccountTypeName);
+                    $("#SubAccountName").val(j.SubAccountName);
+
+                    $("#BranchName").val(j.BranchName);
+                    $("#BankName").val(j.BankName);
+                    $("#InvestorStatus").val(j.InvestorStatus);
+                    $("#OperationTypeName").val(j.OperationTypeName);
+                    $("#BOID").val(j.BOID);
+                    $("#BOAccountOpeningDateMsg").val(j.BOAccountOpeningDateMsg);
+                    $("#TraderIdCSE").val(j.TraderIdCSE);
+                    $("#TraderIdDSE").val(j.TraderIdDSE);
+                    $("#BankAccountNo").val(j.BankAccountNo);
+                    //$("#OmnibusInvestorCode").val(j.OmnibusInvestorCode);
+                    $("#ComissionRate").val(j.ComissionRate);
+                    $("#CounterPartyRate").val(j.CounterPartyRate);
+                    $("#LoanRatio").val(j.LoanRatio);
+                    $("#InterestRate").val(j.InterestRate);
+                    $("#MaxLoan").val(j.MaxLoan);
+                    $("#IsSMSTradeMsg").val(j.IsSMSTradeMsg);
+                    $("#IsMailPortfolioMsg").val(j.IsMailPortfolioMsg);
+                    $("#IsLinkBOMsg").val(j.IsLinkBOMsg);
+                    $("#LinkBOAccount").val(j.LinkBOAccount);
+
+                    $("#IsEDCMsg").val(j.IsEDCMsg);
+                    $("#IRN").val(j.IRN);
+
+                });
+                $("#InvestorAccount").show();
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }  //GetInvestorWiseAccountInfo
+
+
+    //@*function GetInvestorWiseJoinHolder(InvestorId) {
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorWiseJoinHolder", "InvestorDetail", "http")',
+            data: { InvestorId: InvestorId },
+            dataType: 'json',
+            async: true,
+            success: function (JoinHolder) {
+                $.each(JoinHolder, function (id, j) {
+
+                   // SELECT J.Id,J.InvestorId,D.InvestorCode,D.InvestorName,J.OccupationId,O.Occupation,J.CountryId,C.CountryName,J.PresentAddress,
+	//J.PresentThanaId,T.ThanaName AS PresentThanaName,T.DistrictId,LD.DistrictName AS PresentDistrictName,
+	//CASE WHEN  J.Title IS NULL THEN J.JoinHolderName ELSE J.Title +'. '+J.JoinHolderName END AS JoinHolderName,J.FatherName,J.MotherName,REPLACE(CONVERT(VARCHAR,
+	//J.DateOfBirth,106),'','-') AS DateOfBirthMsg,J.Gender,J.PermanentAddress,J.PermanentThanaId,TT.ThanaName AS PermanentThanaName,PD.DistrictName AS PermanentDistrictName,
+	//J.Phone,J.Mobile,J.SMSMobile,J.SystemEmail,J.EmergencyContactNo,J.NationalId,J.DrivingLicenseNo,J.BirthCertificateNo,CASE WHEN J.IsResident = 1 THEN 'Yes' ELSE 'No' END AS IsResidentMsg,
+	//CASE WHEN J.HasPassport = 1 THEN 'Yes' ELSE 'No' END AS HasPassportMsg,J.PassportNo,REPLACE(CONVERT(VARCHAR,J.PassportIssueDate,106),'','-') AS PassportIssueDateMsg,REPLACE(CONVERT(VARCHAR,J.PassportExpireDate,106),'','-') AS PassportExpireDateMsg,
+	//J.PassportIssuePlace FROM InvestorJointHolder AS J
+
+                    $("#JoinHolderId").val(j.Id);
+                    $("#Occupationname").val(j.Occupationname);
+                    $("#CountryName").val(j.CountryName);
+                    $("#PresentAddress").val(j.PresentAddress);
+                    $("#PresentThanaName").val(j.PresentThanaName);
+                    $("#PresentDistrictName").val(j.PresentDistrictName);
+                    $("#JoinHolderName").val(j.JoinHolderName);
+                    $("#FatherName").val(j.FatherName);
+                    $("#MotherName").val(j.MotherName);
+
+                    $("#DateOfBirthMsg").val(j.DateOfBirthMsg);
+                    $("#Gender").val(j.Gender);
+                    $("#PermanentAddress").val(j.PermanentAddress);
+                    $("#PermanentThanaName").val(j.PermanentThanaName);
+                    $("#PermanentDistrictName").val(j.PermanentDistrictName);
+                    $("#Phone").val(j.Phone);
+                    $("#Mobile").val(j.Mobile);
+                    $("#SMSMobile").val(j.SMSMobile);
+                    $("#SystemEmail").val(j.SystemEmail);
+
+                    $("#EmergencyContactNo").val(j.EmergencyContactNo);
+                    $("#NationalId").val(j.NationalId);
+                    $("#DrivingLicenseNo").val(j.DrivingLicenseNo);
+                    $("#BirthCertificateNo").val(j.BirthCertificateNo);
+                    $("#IsResidentMsg").val(j.IsResidentMsg);
+                    $("#HasPassportMsg").val(j.HasPassportMsg);
+                    $("#PassportNo").val(j.PassportNo);
+                    $("#PassportIssueDateMsg").val(j.PassportIssueDateMsg);
+                    $("#PassportExpireDateMsg").val(j.PassportExpireDateMsg);
+                    $("#PassportIssuePlace").val(j.PassportIssuePlace);
+
+                });
+                $("#JoinHolder").show();
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }*@
+
+    function GetInvestorWiseIntroducerInfo(InvestorId) {
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorWiseIntroducerInfo", "InvestorDetail", "http")',
+            data: { InvestorId: InvestorId },
+            dataType: 'json',
+            async: true,
+            success: function (Introducer) {
+                $.each(Introducer, function (id, j) {
+                    //IntroducerType IntroducerName
+                    //
+
+                    $("#HdnInvestorId").val(j.InvestorId);
+                    $("#IntroducerId").val(j.Id);
+                    if (j.EmployeeId == null) {
+                        $("#IntroducerType").val("Investor");
+                    }
+                    else {
+                        $("#IntroducerType").val("Employee");
+                    }
+
+                    $("#IntroducerName").val(j.IntroducerName);
+
+                });
+                $("#Introducer").show();
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }  //GetInvestorWiseIntroducerInfo
+
+    function GetInvestorWiseJoinHolder(InvestorId) {
+        //alert("1")
+        $("#HdnInvestorId").val(InvestorId);
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetInvestorWiseJoinHolder", "InvestorDetail", "http")',
+                    dataType: "json",
+                    data: { InvestorId: InvestorId }
+                }
+            },
+            pageSize: 15,
+        });
+        $("#JoinHoldergrid").kendoGrid({
+            dataSource: dataSource,
+            height: 350,
+            groupable: true,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+            //{
+            //    field: "RowSl",
+            //    title: "SL",
+            //    width: 90
+            //},
+            {
+                field: "JoinHolderName",
+                title: "Name",
+                //groupable: false
+            },
+
+            {
+                field: "FatherName",
+                title: "Father Name"
+
+            },
+             {
+                 field: "MotherName",
+                 title: "Mother Name"
+
+             },
+              {
+                  field: "DateOfBirthMsg",
+                  title: "Date Of Birth",
+                  hidden: true,
+
+              },
+            {
+                field: "BirthCertificateNo",
+                title: "Birth Certificate No",
+                hidden: true,
+            },
+             {
+                 field: "Gender",
+                 title: "Gender"
+
+             },
+              {
+                  field: "IsMinorMsg",
+                  title: "Minor",
+                  hidden: true,
+              },
+             {
+                 field: "CountryName",
+                 title: "Country Name"
+
+             },
+              {
+                  field: "NationalId",
+                  title: "National Id",
+                  hidden: true,
+
+              },
+               {
+                   field: "Occupationname",
+                   title: "Occupation Name"
+
+               },
+
+           {
+               field: "Mobile",
+               title: "Mobile",
+           },
+            {
+                field: "Email",
+                title: "Email",
+                hidden: true,
+
+            },
+            {
+                field: "Phone",
+                title: "Phone",
+                hidden: true,
+
+            },
+             {
+                 field: "SMSMobile",
+                 title: "SMS Mobile"
+
+             },
+              {
+                  field: "SystemEmail",
+                  title: "System Email",
+              },
+               {
+                   field: "EmergencyContactNo",
+                   title: "Emergency Contact No",
+               },
+              {
+                  field: "IsResidentMsg",
+                  title: "Resident",
+                  hidden: true,
+
+              },
+           {
+               field: "PresentAddress",
+               title: "Present Address",
+           },
+           {
+               field: "PresentThanaName",
+               title: "Present Thana",
+               hidden: true,
+
+           },
+              {
+                  field: "PresentDistrictName",
+                  title: "Present District",
+                  hidden: true,
+
+              },
+
+           {
+               field: "PermanentAddress",
+               title: "Permanent Address",
+               hidden: true,
+           },
+            {
+                field: "PermanentThanaName",
+                title: "Permanent Thana",
+                hidden: true,
+            },
+             {
+                 field: "PermanentDistrictName",
+                 title: "Permanent District",
+                 hidden: true,
+             },
+              {
+                  field: "HasPassport",
+                  title: "Passport",
+              },
+            {
+                field: "PassportNo",
+                title: "Passport No",
+                hidden: true,
+            },
+             {
+                 field: "PassportIssueDateMsg",
+                 title: "Passport Issue Date",
+                 hidden: true,
+             },
+             {
+                 field: "PassportIssuePlace",
+                 title: "Passport Issue Place",
+                 hidden: true,
+             },
+             {
+                 field: "PassportExpireDateMsg",
+                 title: "Passport Expire Date",
+                 hidden: true,
+             },
+             {
+                 field: "DrivingLicenseNo",
+                 title: "Driving License No",
+                 hidden: true,
+             },
+
+            //{
+            //    title: "Commands",
+            //    template: function (dataItem) {
+            //        return "<a href='#' data-toggle='tooltip' class='k-button k-button-icontext k-grid-Edit' title='Edit' onclick='GetEditDataById(" + dataItem.Id + ")'><i class='fa fa-pencil-square-o fa'></i></a>";
+            //        //<a href='#' data-toggle='tooltip' class='k-button k-button-icontext k-grid-Edit' title='Delete' onclick='DeleteEmployeeInfoById(" + dataItem.Id + ")'><i class='fa fa-trash-o fa'></i></a>  <a href='#' data-toggle='tooltip'class='k-button k-button-icontext k-grid-Edit' title='Print' onclick='GetPrintDataById(" + dataItem.Id + ")'><i class='fa fa-print'></i></a>"
+
+            //    }
+            //}
+            ]
+        });
+        $("#JoinHolder").show();
+    }  //GetInvestorWiseJoinHolder
+
+    function GetInvestorWiseNomineeInfo(InvestorId) {
+        //alert("1")
+        $("#HdnInvestorId").val(InvestorId);
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetInvestorWiseNomineeInfo", "InvestorDetail", "http")',
+                    dataType: "json",
+                    data: { InvestorId: InvestorId }
+                }
+            },
+            pageSize: 15,
+        });
+        $("#Nomineegrid").kendoGrid({
+            dataSource: dataSource,
+            height: 400,
+            //width:10000,
+            groupable: true,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+            //{
+            //    field: "RowSl",
+            //    title: "SL",
+            //    width: 90
+            //},
+            {
+                field: "NomineeName",
+                title: "Name",
+                //groupable: false
+            },
+             {
+                 field: "Relation",
+                 title: "Relation"
+
+             },
+              {
+                  field: "Percentage",
+                  title: "Percentage",
+              },
+            {
+                field: "FatherName",
+                title: "Father Name"
+
+            },
+             {
+                 field: "MotherName",
+                 title: "Mother Name"
+
+             },
+              {
+                  field: "DateOfBirthMsg",
+                  title: "Date Of Birth",
+                  hidden: true,
+
+              },
+            {
+                field: "BirthCertificateNo",
+                title: "Birth Certificate No",
+                hidden: true,
+            },
+             {
+                 field: "Gender",
+                 title: "Gender"
+
+             },
+              {
+                  field: "IsMinorMsg",
+                  title: "Minor",
+                  hidden: true,
+              },
+             {
+                 field: "CountryName",
+                 title: "Country Name"
+
+             },
+              {
+                  field: "NationalId",
+                  title: "National Id",
+                  hidden: true,
+
+              },
+               {
+                   field: "Occupationname",
+                   title: "Occupation Name"
+
+               },
+
+           {
+               field: "Mobile",
+               title: "Mobile",
+           },
+            {
+                field: "Email",
+                title: "Email",
+                hidden: true,
+
+            },
+            {
+                field: "Phone",
+                title: "Phone",
+                hidden: true,
+
+            },
+              {
+                  field: "IsResidentMsg",
+                  title: "Resident",
+                  hidden: true,
+
+              },
+           {
+               field: "PresentAddress",
+               title: "Present Address",
+           },
+           {
+               field: "PresentThanaName",
+               title: "Present Thana",
+               hidden: true,
+
+           },
+              {
+                  field: "PresentDistrictName",
+                  title: "Present District",
+                  hidden: true,
+
+              },
+
+           {
+               field: "PermanentAddress",
+               title: "Permanent Address",
+               hidden: true,
+           },
+            {
+                field: "PermanentThanaName",
+                title: "Permanent Thana",
+                hidden: true,
+            },
+             {
+                 field: "PermanentDistrictName",
+                 title: "Permanent District",
+                 hidden: true,
+             },
+              {
+                  field: "HasPassport",
+                  title: "Passport",
+              },
+            {
+                field: "PassportNo",
+                title: "Passport No",
+                hidden: true,
+            },
+             {
+                 field: "PassportIssueDateMsg",
+                 title: "Passport Issue Date",
+                 hidden: true,
+             },
+             {
+                 field: "PassportIssuePlace",
+                 title: "Passport Issue Place",
+                 hidden: true,
+             },
+             {
+                 field: "PassportExpireDateMsg",
+                 title: "Passport Expire Date",
+                 hidden: true,
+             },
+             {
+                 field: "DrivingLicenseNo",
+                 title: "Driving License No",
+                 hidden: true,
+             },
+
+            //{
+            //    title: "Commands",
+            //    template: function (dataItem) {
+            //        return "<a href='#' data-toggle='tooltip' class='k-button k-button-icontext k-grid-Edit' title='Edit' onclick='GetEditDataById(" + dataItem.Id + ")'><i class='fa fa-pencil-square-o fa'></i></a>";
+            //        //<a href='#' data-toggle='tooltip' class='k-button k-button-icontext k-grid-Edit' title='Delete' onclick='DeleteEmployeeInfoById(" + dataItem.Id + ")'><i class='fa fa-trash-o fa'></i></a>  <a href='#' data-toggle='tooltip'class='k-button k-button-icontext k-grid-Edit' title='Print' onclick='GetPrintDataById(" + dataItem.Id + ")'><i class='fa fa-print'></i></a>"
+
+            //    }
+            //}
+            ]
+        });
+        $("#NomineeModal").show();
+    }  //GetInvestorWiseNomineeInfo
+
+    function GetInvestorInfoList() {
+        var InvestorCode = $("#txtInvestorCode").val();
+        var MobileNo = $("#txtMobile").val();
+        var InvestorName = $("#InvestorName").val();
+
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetInvestorInfo", "InvestorDetail", "http")',
+                    dataType: "json",
+                    data: { InvestorCode: InvestorCode, MobileNo: MobileNo, InvestorName: InvestorName }
+                }
+            },
+            pageSize: 15,
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 600,
+            groupable: true,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+            {
+                field: "RowSl",
+                title: "SL",
+                width: 60,
+
+            },
+            {
+                template: "<div class='customer-photo' >" +
+                                    "<img src='/InvestorDetail/RetrieveImage/" + "#:Id#" + "' alt='No Image' height=50 width=50 class='img-circle' /> </div>",
+                title: "Image",
+                filterable: false,
+                width: 75
+            },
+            {
+                template: "<div class='customer-photo' >" +
+                                    "<img src='/InvestorDetail/RetrieveSign/" + "#:Id#" + "' alt='No Image' height=30 width=50' /> </div>",
+                title: "Signature",
+                filterable: false,
+                width: 100
+            },
+            {
+                field: "InvestorCode",
+                title: "Investor Code",
+                groupable: false
+            },
+            {
+                field: "InvestorName",
+                title: "Name",
+                width: 150
+
+            },
+             {
+                 field: "PhoneRes",
+                 title: "PhoneRes",
+                 hidden: true
+
+             },
+            {
+                field: "Mobile",
+                title: "Mobile",
+            },
+            {
+                field: "StatusName",
+                title: "Status",
+            },
+            {
+                field: "BrokerBranchName",
+                title: "Branch",
+            },
+             //{
+             //    title: "Join Holder",
+             //    template: function (dataItem) {
+             //       // return '<a href="#" title="Join holder" onclick="GetInvestorWiseJoinHolder(' + dataItem.Id + ')" class="btn btn-info btn-xs"><i class="fa fa-user-plus" aria-hidden="true"></i></a>'
+             //       // return "<a href='#'  title='Join holder' onclick='GetInvestorWiseJoinHolder(" + dataItem.Id + ")'><i class='fa fa-user-plus' aria-hidden='true'></i></a>";
+             //        return '<a href="#" title="Join Holder" onclick="GetInvestorWiseJoinHolder(' + dataItem.Id + ')" class="btn btn-primary btn-xs"> Join Holder </a>'
+             //        //return "<a href='#' data-toggle='tooltip' class='k-button k-button-icontext k-grid-Edit' title='Join Holder' onclick='GetInvestorWiseJoinHolder(" + dataItem.Id + ")'><i class='fa fa-pencil-square-o fa'></i></a>";
+             //    }
+             //},
+             //{
+             //    title: "Introducer",
+             //    template: function (dataItem) {
+             //        return '<a href="#" title="Introducer" onclick="GetInvestorWiseIntroducerInfo(' + dataItem.Id + ')" class="btn btn-primary btn-xs"> Introducer </a>'
+             //        //return "<a href='#' data-toggle='tooltip' class='k-button k-button-icontext k-grid-Edit' title='Introducer' onclick='GetInvestorWiseIntroducerInfo(" + dataItem.Id + ")'><i class='fa fa-pencil-square-o fa'></i></a>";
+             //    }
+             //},
+             // {
+             //     title: "Account",
+             //     template: function (dataItem) {
+             //         return '<a href="#" title="Account" onclick="GetInvestorWiseAccountInfo(' + dataItem.Id + ')" class="btn btn-primary btn-xs"> Account </a>'
+             //         // return "<a href='#' data-toggle='tooltip' class='k-button k-button-icontext k-grid-Edit' title='Account' onclick='GetInvestorWiseAccountInfo(" + dataItem.Id + ")'><i class='fa fa-pencil-square-o fa'></i></a>";
+             //     }
+             // },
+             //  {
+             //      title: "Nominee",
+             //      template: function (dataItem) {
+             //          return '<a href="#" title="Nominee" onclick="GetInvestorWiseNomineeInfo(' + dataItem.Id + ')" class="btn btn-primary btn-xs"> Nominee </a>'//<i class="fa fa-folder"></i>
+
+             //          // return "<a href='#' data-toggle='tooltip' class='k-button k-button-icontext k-grid-Edit' title='Nominee' onclick='GetInvestorWiseNomineeInfo(" + dataItem.Id + ")'><i class='fa fa-pencil-square-o fa'></i></a>";
+             //      }
+             //  },
+            {
+                title: "Action",
+                template: function (dataItem) {
+                    //return "<a href='#' data-toggle='tooltip' class='k-button k-button-icontext k-grid-Edit' title='Edit' onclick='GetEditDataById(" + dataItem.Id + ")'><i class='fa fa-pencil-square-o fa'></i></a>";
+                    return '<a href="#" title="Join Holder" onclick="GetInvestorWiseJoinHolder(' + dataItem.Id + ')" class="btn btn-primary btn-xs" style="display: inline-block;"> Join Holder </a>' +
+                            '<a href="#" title="Introducer" onclick="GetInvestorWiseIntroducerInfo(' + dataItem.Id + ')" class="btn btn-primary btn-xs" style="display: inline-block;"> Introducer </a>' +
+                            '<a href="#" title="Account" onclick="GetInvestorWiseAccountInfo(' + dataItem.Id + ')" class="btn btn-primary btn-xs" style="display: inline-block;"> Account </a>' +
+                            '<a href="#" title="Nominee" onclick="GetInvestorWiseNomineeInfo(' + dataItem.Id + ')" class="btn btn-primary btn-xs" style="display: inline-block;"> Nominee </a>' +
+                            '<a href="#"  onclick="GetEditDataById(' + dataItem.Id + ')"  title="Edit" class="btn btn-info btn-xs" style="display: inline-block;"><i class="fa fa-pencil"></i></a>'
+                    //<a href='#' data-toggle='tooltip' class='k-button k-button-icontext k-grid-Edit' title='Delete' onclick='DeleteEmployeeInfoById(" + dataItem.Id + ")'><i class='fa fa-trash-o fa'></i></a>  <a href='#' data-toggle='tooltip'class='k-button k-button-icontext k-grid-Edit' title='Print' onclick='GetPrintDataById(" + dataItem.Id + ")'><i class='fa fa-print'></i></a>"
+                   
+
+                },
+                width: 340
+            }
+            ]
+        });
+    }  //GetInvestorInfoList
+
+
+
+    $(document).ready(function () {
+
+        GetInvestorInfoList()
+
+        $("#myBtn").click(function () {
+            $("#myModal").show();
+        });
+        $(".close").click(function () {
+
+            $("#JoinHolder").hide();
+            $("#Introducer").hide();
+            $("#InvestorAccount").hide();
+            $("#NomineeModal").hide();
+        });
+
+        $("#JoinHolder").click(function (event) {
+            if (event.target === this) {
+                $("#JoinHolder").hide();
+            }
+
+        });
+        $("#Introducer").click(function (event) {
+            if (event.target === this) {
+                $("#Introducer").hide();
+            }
+
+        });
+        $("#InvestorAccount").click(function (event) {
+            if (event.target === this) {
+                $("#InvestorAccount").hide();
+            }
+
+        });
+        $("#NomineeModal").click(function (event) {
+            if (event.target === this) {
+                $("#NomineeModal").hide();
+            }
+
+        });
+
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+            if ($("#txtInvestorCode").val().indexOf('-') > -1 && $("#txtInvestorCode").val().indexOf(',') > -1) {
+
+                $.alert.open("error", "At a time ',' and '-' are not allow to use");
+            }
+            else {
+                GetInvestorInfoList();
+            }
+
+
+        });
+
+
+    });
+</script>
+
+<div class="page-title">
+    <div class="title_left">
+        <h3 style="color: rgb(26,187, 156)">Investor Information</h3>
+    </div>
+    @Html.ActionLink("Add New", "Create", "InvestorDetail", null, new { @class = "btn btn-primary btn-sm pull-right" })
+</div>
+<div class="x_panel">
+    @*<div class="x_title">
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+        </div>*@
+    <div class="x_content">
+        <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left">
+            <div class="row">
+                <div class="col-md-1">
+
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" id="txtInvestorCode" placeholder="Investor Code" />
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" id="InvestorName" placeholder="Investor Name" />
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" id="txtMobile" placeholder="Mobile" />
+                </div>
+                <div class="col-md-2">
+                    <button type="button" id="btnSearch" class="btn btn-success">Search</button>
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-sm-12">
+                    <div id="grid"></div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- Nominee -->
+<div id="NomineeModal" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+        <div style="padding:4px;height:30px;background-color:rgb(26,187, 156)"><span style="color:white;font-size:large">Nominee Info</span><span class="close">&times;</span></div>
+        <br />
+        <div class="row">
+            <div class="col-sm-12">
+                <div id="Nomineegrid"></div>
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-md-10 col-sm-6 col-xs-12">
+            </div>
+            <div class="col-md-2 col-sm-6 col-xs-12">
+                <button type="submit" id="btnIntroducer" onclick="GetEditDataById2('Nominee')" class="btn btn-success">Edit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Introducer -->
+
+<div id="Introducer" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content2">
+
+        <div style="padding:4px;height:30px;background-color:rgb(26,187, 156)"><span style="color:white;font-size:large">Introducer</span><span class="close">&times;</span></div>
+        <br />
+        <br />
+        <input type="hidden" id="IntroducerId" />
+        <input type="hidden" id="HdnInvestorId" />
+        <fieldset>
+            <div class="row form-group">
+                @Html.Label("Introducer Type", htmlAttributes: new { @class = "control-label col-md-3" })
+                <div class="col-md-8 col-sm-6 col-xs-12">
+                    @Html.Editor("IntroducerType", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                </div>
+            </div>
+            <div class="row form-group">
+                @Html.Label("Name", htmlAttributes: new { @class = "control-label col-md-3" })
+                <div class="col-md-8 col-sm-6 col-xs-12">
+                    @Html.Editor("IntroducerName", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                </div>
+            </div>
+            <div class="row form-group">
+                <div class="col-md-3 col-sm-6 col-xs-12">
+
+                </div>
+                <div class="col-md-8 col-sm-6 col-xs-12">
+                    <button type="submit" id="btnIntroducer" onclick="GetEditDataById2('Introducer')" class="btn btn-success">Edit</button>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+</div>
+
+
+<!--Investor Account Modal -->
+<div id="InvestorAccount" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <div style="padding:4px;height:30px;background-color:rgb(26,187, 156)"><span style="color:white;font-size:large">Account Info</span><span class="close">&times;</span></div>
+        <br />
+        <input type="hidden" id="InvestorAccountId" />
+        <div class="row form-group">
+            @Html.Label("BO Type ", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("BOTypeName", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+            @Html.Label("DP Branch ", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("DPBranchName", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+        </div>
+        <div class="row form-group">
+            @Html.Label("BO Category ", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("BOCategoryName", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+            @Html.Label("Broker Branch ", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("BrokerBranchName", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+        </div>
+        <div class="row form-group">
+            @Html.Label("Broker ", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("BrokerName", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+            @Html.Label("Investor Type ", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("InvestorTypeName", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+        </div>
+        <div class="row form-group">
+            @Html.Label("Account Type ", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("AccountTypeName", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+            @Html.Label("Sub Account ", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("SubAccountName", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+        </div>
+        <div class="row form-group">
+            @Html.Label("Branch ", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("BranchName", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+            @Html.Label("Bank", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("BankName", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+        </div>
+        <div class="row form-group">
+            @Html.Label("Investor Status", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("InvestorStatus", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+            @Html.Label("Operation Type ", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("OperationTypeName", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+        </div>
+        <div class="row form-group">
+            @Html.Label("BO ID", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("BOID", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+            @Html.Label("BO Account Opening Date", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("BOAccountOpeningDateMsg", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+        </div>
+        <div class="row form-group">
+            @Html.Label("Trader Id DSE", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("TraderIdDSE", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+            @Html.Label("Trader Id CSE", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("TraderIdDSE", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+
+
+        </div>
+
+        <div class="row form-group">
+            @*@Html.Label("Omnibus Investor Code", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("OmnibusInvestorCode", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>*@
+            @Html.Label("EDC", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("IsEDCMsg", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+            @Html.Label("Comission Rate", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("ComissionRate", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+        </div>
+        <div class="row form-group">
+            @Html.Label("Counter Party Rate", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("CounterPartyRate", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+            @Html.Label("Loan Ratio", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("LoanRatio", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+        </div>
+        <div class="row form-group">
+            @Html.Label("Bank Account No", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("BankAccountNo", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+            @Html.Label("Interest Rate", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("InterestRate", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+        </div>
+
+        <div class="row form-group">
+            @Html.Label("Max Loan", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("MaxLoan", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+            @Html.Label("SMS Trade", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("IsSMSTradeMsg", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+        </div>
+        <div class="row form-group">
+
+            @Html.Label("Mail Portfolio", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("IsMailPortfolioMsg", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+            @Html.Label("Link BO", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("IsLinkBOMsg", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+        </div>
+        <div class="row form-group">
+            @Html.Label("IRN", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("IRN", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+            @Html.Label("Link BO Account", htmlAttributes: new { @class = "control-label col-md-2", @style = "text-align:right" })
+            <div class="col-md-3 col-sm-6 col-xs-12">
+                @Html.Editor("LinkBOAccount", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            </div>
+        </div>
+        @*<div class="row form-group">
+           
+        </div>*@
+        <div class="row">
+            <div class="col-md-9 col-sm-6 col-xs-12">
+            </div>
+            <div class="col-md-2 col-sm-6 col-xs-12">
+                <button type="submit" id="btnIntroducer" onclick="GetEditDataById2('Account')" class="btn btn-success">Edit</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Join Holder Modal -->
+<div id="JoinHolder" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+
+        <div style="padding:4px;height:30px;background-color:rgb(26,187, 156)"><span style="color:white;font-size:large">Join Holder Info</span><span class="close">&times;</span></div>
+        <br />
+        <input type="hidden" id="JoinHolderId" />
+        <div class="row">
+            <div class="col-sm-12">
+                <div id="JoinHoldergrid"></div>
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-md-10 col-sm-6 col-xs-12">
+            </div>
+            <div class="col-md-2 col-sm-6 col-xs-12">
+                <button type="submit" id="btnIntroducer" onclick="GetEditDataById2('JoinHolder')" class="btn btn-success">Edit</button>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+

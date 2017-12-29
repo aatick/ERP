@@ -1,0 +1,210 @@
+﻿@model ERP.Web.ViewModels.DayInitialViewModel
+
+@{
+    ViewBag.Title = "Start Work Process";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    //var office = Model == null ? null : Model.officeListItems;
+}
+
+
+
+<script type="text/javascript">
+
+    function displayLoanSummaryReport()
+    {
+
+        var startDate = $("#startDate").val();
+        var endDate = $("#endDate").val();
+        var reportParam = startDate + ',' + endDate;
+        var url = '/Report/Print?reportId=LoanSummary&reportparams=' + reportParam;
+        window.open(url, "_blank");
+    }
+
+    function displayProductReport() {
+
+        var processtDate = $("#processtDate").val();
+        var endDate = $("#endDate").val();
+        var reportParam = startDate + ',' + endDate;
+        var url = '/Report/Print?reportId=Product&reportparams=' + reportParam;
+        window.open(url, "_blank");
+    }
+
+    function initiateDayInitial() {
+      //  e.preventDefault();
+        var officeId = 1;// $("#OfficeId").val();
+        var businessDate = $("#BusinessDate").val();
+
+        $("#loading").show();
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("DayInitialProcess", "DayInitital", "http")',
+            data: { businessDate: businessDate },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#loading").hide();
+                var msg = "Work process successful";
+                var css = "success";
+                if (data.Message != null) {
+                    msg = data.Message;
+                    css = "failed";
+                }
+
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html(msg);
+                $("#dvMessage").show();
+                if (data.Message == null)
+                    $("#dvMessage").toggle('fade', 1500);
+
+            },
+            error: function (request, status, error) {
+                $("#loading").hide();
+                $("#dvMessage").attr('class', 'failed');
+                $("#dvMessage").html(request.statusText);
+                $("#dvMessage").show();
+            }
+        });
+    }
+    $(document).ready(function () {
+
+        $("#BusinessDate").datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+                yearRange: "1920:2025"
+            });
+
+
+        $("#confirmDlg").dialog({
+            autoOpen: false,
+            height: 150,
+            width: 400,
+            modal: true,
+            title:'Confirmation',
+            buttons: {
+                "Yes": function () {
+                    initiateDayInitial();
+                    $(this).dialog("close");
+                },
+                "No": function () {
+                    //alert("No Office selected. Employee office will be used.");
+                    $(this).dialog("close");
+                }
+            }
+        });
+
+        $('#BusinessDate').bind('focus', function (e) {
+            $("#dvMessage").hide();
+        });
+       // $("#OfficeId").change(function () {
+        //    var officeId = $("#OfficeId").val();
+        //});
+
+        $('#btnProcess').click(function (e) {
+            e.preventDefault();
+            var bdate = $("#BusinessDate").val();
+            var msg = "Do you want to run the Process? " + bdate.toString();
+            $("#lblMsg").text(msg);
+            $("#confirmDlg").dialog('open');
+
+          //  $("#confirmDlg").dialog('open');       
+        });
+
+    });
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+     
+       // $("#BusinessDate").datepicker();
+        //gBankerDatePicker("BusinessDate");
+    });
+
+
+</script>
+
+@using (Html.BeginForm("Index", "DayInitial", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "DayInitialForm" }))
+{
+     @Html.AntiForgeryToken();
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:100%;">
+            <h4 style="color: white;padding:2px"> &nbsp;&nbsp;&nbsp;Start Work Process</h4>
+        </div>
+        @*<img src="~/Images/EBLSL-logo.jpg" />*@
+    </div>
+    <div id="confirmDlg" style="display:none">
+    <div class="form-group">
+        <label id="lblMsg"></label>
+
+    </div>
+
+</div>
+    <div class="x_panel">
+        <div class="x_title">
+            <input type="hidden" id="hdnOccupationId" />
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        @Html.Label("Business Day", htmlAttributes: new { @class = "control-label" })
+                        @Html.EditorFor(model => model.BusinessDate, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.BusinessDate, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>          
+            <div class="ln_solid"></div>
+            <div class="row">
+                <div class="col-md-2"></div>
+                <div class="col-md-4">
+                    <div class="form-group from-action">
+                        <input id="btnProcess" type="submit" value="Process" class="btn btn-primary" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+
+
+
+
+
+
+
+
+@*<h2 class="page-title">Start Work Process</h2>
+
+
+<div>
+    <br />
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                @Html.LabelFor(model => model.BusinessDate, htmlAttributes: new { @class = "control-label" })
+
+                @Html.EditorFor(model => model.BusinessDate, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.BusinessDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+    }
+        <input id="btnProcess" type="submit" value="Process" />
+    </div>*@

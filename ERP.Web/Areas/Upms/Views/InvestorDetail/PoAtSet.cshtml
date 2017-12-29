@@ -1,0 +1,384 @@
+﻿ 
+@{
+    ViewBag.Title = "PoAtSet";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+<style>
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+<script type="text/javascript">
+
+
+
+    function GetInvestorwisePowerOfAttorneyInfo() {
+        var code = $('#InvestorCode').val().trim().indexOf("-") > 0 ? $('#InvestorCode').val().trim().split("-")[0].trim() : $('#InvestorCode').val().trim();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorwisePowerOfAttorneyInfo", "InvestorDetail", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { InvestorCode: code },
+            success: function (poAttList) {
+                var index = 1;
+                var dtTable = $("#grid");
+                var tableBody = dtTable.find('tbody');
+                tableBody.empty();
+                if (poAttList.length >= 1) {
+                   // $("#divSetNewAtt").show();
+                    $.each(poAttList, function (id, E) {
+                        $("#InvestorCode").val(E.InvestorName);
+                        $("#InvestorId").val(E.InvestorId);
+                        if(E.Id != 0)
+                        {
+                            if (E.ValidTo != "")
+                            {
+                                tableBody.append('<tr>' +
+                                         '<td style="width:40px">' + E.RowSl + '</td>' +
+                                         '<td>' + E.PowerOfAttorneyName + '</td>' +
+                                         '<td style="width:100px">' + E.ValidFrom + '</td>' +
+                                         '<td style="width:100px">' + E.ValidTo + '</td>' +
+                                         '</tr>'
+                                         )
+                            }
+                            else
+                            {
+                                tableBody.append('<tr>' +
+                                         '<td style="width:40px">' + E.RowSl + '</td>' +
+                                         '<td>' + E.PowerOfAttorneyName + '</td>' +
+                                         '<td style="width:100px"><label id="lblFromDate">' + E.ValidFrom + '</label></td>' +
+                                         '<td style="width:150px"><input type="text" id="txtDateTo" class="col-sm-6" /> &nbsp;&nbsp;<input type="button" onclick="SetPowAttEndDate(' + E.Id + ');" id="btnEnd" value="end"/></td>' +
+                                         '</tr>'
+                                         )
+                            }
+                            $("#txtDateTo").attr("placeholder", "dd/mm/yyyy");
+                            var frDate = new Date( $("#lblFromDate").html());
+                            var Day = frDate.getDate();
+                            var Mon = parseInt(frDate.getMonth()) + 1;
+                            var Yer = frDate.getFullYear();
+                            //alert(Day);
+                            
+                            $("#txtDateTo").datepicker(
+                                   {
+                                       dateFormat: "dd/mm/yy",
+                                       showAnim: "scale",
+                                       changeMonth: true,
+                                       changeYear: true,
+                                       //minDate: "09/11/2017"
+                                       minDate: "" + Day + "/" + Mon + "/" + Yer + ""
+                                       //maxDate: "@DateTime.Today.ToString("dd/MM/yyyy")"
+                                      // maxDate: "+10Y"
+                                   });
+                        }
+                           
+                    });
+                   // alert($("#lblFromDate").html());
+
+                }
+                else {
+                    $.alert.open("info", "Investor not found");
+                    $("#InvestorCode").val("");
+                    $("#InvestorId").val("0");
+                }
+
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+
+
+    function SetPowAttEndDate(Id)
+    {
+        var ToDate = $("#txtDateTo").val();
+        if (ToDate != "")
+        {
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("EditPowerOfAttorneyEndDate", "InvestorDetail", "http")',
+                type: "GET",
+                dataType: "json",
+                async: true,
+                data: { Id: Id, ToDate:ToDate },
+                success: function (data) {
+                    GetInvestorwisePowerOfAttorneyInfo();
+                    $.alert.open("info", "Save successfull...");
+                },
+                failure: function () {
+                    $.alert.open("error", "Failed!");
+                }
+            });
+        }
+        else
+        {
+            $.alert.open("error","Insert date to");
+        }
+    }
+
+    $(document).ready(function () {
+        $("#InvestorId").val("0");
+
+        $("#InvestorCode").blur(function () {
+            if ($("#InvestorCode").val().trim() != "") {
+                GetInvestorwisePowerOfAttorneyInfo();
+            }
+        });
+
+
+        $("#btnSave").click(function (e) {
+
+            e.preventDefault();
+            if ($("#InvestorId").val() != "0" && $("#PowerOfAttorneyId").val() != "0" && $("#DateFrom").val() != "")
+            {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveInvestorPowerOfAttorney", "InvestorDetail", "http")',
+                    type: "GET",
+                    dataType: "json",
+                    async: true,
+                    data: { PowerOfAttorneyId: $("#PowerOfAttorneyId").val(), InvestorId: $("#InvestorId").val(), DateFrom: $("#DateFrom").val() },
+                    success: function (data) {
+                      
+                        if(data.Result == "Ok")
+                        {
+                            $("#PowerOfAttorney").val("");
+                            $("#PowerOfAttorneyId").val(0);
+                            $("#DateFrom").val("");
+                            $("#thumbnil").removeAttr("src");
+                            $("#thumbnil2").removeAttr("src");
+                            GetInvestorwisePowerOfAttorneyInfo();
+                            $.alert.open("info", "Save successfull....");
+                        }
+                        else
+                        {
+                            $.alert.open("error", data.Message);
+                        }
+                    },
+                    failure: function () {
+                        $.alert.open("error", "Failed!");
+                    }
+                });
+            }
+            else
+            {
+                $.alert.open("error","Select investor, power of attorney and date from");
+            }
+            
+
+        });
+
+
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+               
+            var Code = $("#PowerOfAttorneyCode").val();
+            var Name = $("#PowerOfAttorneyName").val();
+            var Mobile = $("#Mobile").val();
+
+            if (Code == "" && Name == "" && Mobile == "")
+            {
+                $.alert.open("error","At least 1 search value required.(Code or name or mobile)");
+            }
+            else
+            {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("FindInvestorPowerOfAttorney", "InvestorDetail", "http")',
+                    type: "GET",
+                    dataType: "json",
+                    async: true,
+                    data: { Code: Code, Name: Name, Mobile: Mobile },
+                    success: function (Result) {
+                        if (Result.Id != 0) {
+                            $("#PowerOfAttorney").val(Result.PowerOfAttorneyName);
+                            $("#PowerOfAttorneyId").val(Result.Id);
+                            $("#thumbnil").attr("src", "/InvestorDetail/RetrieveImageOfAttorney/" + Result.Id + "");
+                            $("#thumbnil2").attr("src", "/InvestorDetail/RetrieveSignOfAttorney/" + Result.Id + "");
+                        }
+                        else {
+                            $.alert.open("info", "Power of attorney not found");
+
+
+                            $("#PowerOfAttorney").val("");
+                            $("#PowerOfAttorneyId").val(0);
+                            $("#thumbnil").empty();
+                            $("#thumbnil2").empty();
+                        }
+
+                    },
+                    failure: function () {
+                        $.alert.open("error", "Failed!");
+                    }
+                });
+            }
+
+            
+
+        });
+
+
+    });
+
+</script>
+
+<div role="main">
+    
+   
+    <div class="">
+        <div class="page-title">
+            <div class="title_left PageHeader" style="width:90%;">
+                <h3 style="color: white;padding:2px">&nbsp;&nbsp; Investor's power of attorney</h3>
+            </div>
+        </div>
+        <div class="col-md-12 col-sm-6 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <ul class="list-unstyled timeline">
+                        <li>
+                            <div class="block">
+                                <div class="tags">
+                                    <a href="" class="tag">
+                                        <span>Power of attorney list</span>
+                                    </a>
+                                </div>
+                                <div class="block_content">
+                                    <br />
+                                    <div class="row">
+                                        <div class="item form-group">
+                                            @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2 text-right required" })
+                                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                                @Html.Editor("InvestorCode", new { htmlAttributes = new { @class = "form-control", @autofocus = "autofocus" } })
+                                                @Html.Hidden("InvestorId", new { htmlAttributes = new { @class = "form-control" } })
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <br />
+                                    <div class="row">
+                                        <div class="item form-group">
+                                            <div class="col-sm-1"></div>
+                                            <div id="example" class="col-sm-9">
+                                                <table id="grid">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width:40px">No.</th>
+                                                            <th>Power of attorney name</th>
+                                                            <th style="width:100px">Valid from</th>
+                                                            <th style="width:150px">Valid to</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody></tbody>
+                                                </table>
+                                                <br />
+                                                <script>
+                                                    $(document).ready(function () {
+                                                        $("#grid").kendoGrid({
+                                                             height: 250,
+                                                            //sortable: true
+                                                        });
+                                                    });
+                                                </script>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                            </div>
+                        </li>
+                        <li id="divSetNewAtt">
+                            <div class="block">
+                                <div class="tags">
+                                    <a href="" class="tag">
+                                        <span>Set New </span>
+                                    </a>
+                                </div>
+                                <div class="block_content">
+                                    <br />
+                                    <div class="row">
+                                        <div class="item form-group">
+                                            @Html.Label("Power of attorney Code", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("PowerOfAttorneyCode", new { htmlAttributes = new { @class = "form-control", @placeholder = "Power of attorney code" } })
+                                            </div>
+                                            @Html.Label("Name", htmlAttributes: new { @class = "control-label col-md-1 text-right" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("PowerOfAttorneyName", new { htmlAttributes = new { @class = "form-control", @placeholder = "Power of attorney name" } })
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="item form-group">
+                                            @Html.Label("Mobile", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("Mobile", new { htmlAttributes = new { @class = "form-control", @placeholder = "Mobile No." } })
+                                            </div>
+                                            <div class="col-sm-1"></div>
+                                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                                <button type="button" id="btnSearch" class="btn btn-info">Search</button>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <br />
+                                    <br />
+                                    <div class="row">
+                                        <div class="item form-group">
+                                            @Html.Label("Power of attorney", htmlAttributes: new { @class = "control-label col-md-2 text-right required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("PowerOfAttorney", new { htmlAttributes = new { @class = "form-control", @disabled = "disabled" } })
+                                                @Html.Hidden("PowerOfAttorneyId", new { htmlAttributes = new { @class = "form-control" } })
+                                            </div>
+                                            @Html.Label("Date From", htmlAttributes: new { @class = "control-label col-md-2 text-right required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("DateFrom", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                    <br />
+                                    <br />
+                                    <div class="row">
+
+                                        <div class="item form-group">
+                                            <div class="col-sm-3"></div>
+                                            <div class="col-md-2 col-sm-6 col-xs-12">
+                                                <img id="thumbnil" style="width:100px; height:100px;" alt="" class="img-responsive" />
+                                            </div>
+                                            <div class="col-md-2 col-sm-6 col-xs-12">
+                                                <img id="thumbnil2" style="width:100px; height:100px;" alt="" class="img-responsive" />
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <br />
+
+                                    <div class="row">
+                                        <div class="item form-group">
+                                            <div class="col-sm-4"></div>
+                                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                                <button type="button" id="btnSave" class="btn btn-success">Save</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <br />
+
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

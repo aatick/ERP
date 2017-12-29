@@ -1,0 +1,224 @@
+﻿
+@{
+    ViewBag.Title = "MoneyReceipt";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+<style type="text/css">
+    
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script type="text/javascript">
+
+
+
+
+    function GetMoneyReceiptList() {
+        if ($("#txtCode").val().indexOf('-') > -1 && $("#txtCode").val().indexOf(',') > -1) {
+
+            $.alert.open("error", "At a time ',' and '-' are not allow to use");
+        }
+        else {
+
+           
+            var ReceiptType = $("#ReceiptType").val();
+            var InvestorCode = $("#txtCode").val();
+            var FromDate = $("#FromDate").val();
+            var ToDate = $("#ToDate").val();
+            
+            var dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: '@Url.Action("GetMoneyReceiptList", "AccPayment", "http")',
+                        dataType: "json",
+                        data: { ReceiptType: ReceiptType, InvestorCode: InvestorCode, FromDate: FromDate, ToDate: ToDate}
+                    }
+                },
+                pageSize: 20,
+            });
+
+            $("#grid").kendoGrid({
+                dataSource: dataSource,
+                height: 600,
+                groupable: false,
+                reorderable: true,
+                filterable: true,
+                sortable: true,
+                resizable: true,
+                columnMenu: true,
+                noRecords: {
+                    template: "No data available."
+                },
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 10
+                },
+                columns: [{
+                    field: "Id",
+                    hidden: true,
+                    filterable: false
+                },
+                {//EmployeeName         BranchName BranchName Amount 
+                    field: "RowSL",
+                    title: "SL",
+                    width: "8%"
+                },
+                {
+                    field: "VoucherNo",
+                    title: "Receipt No",
+                    hidden: true
+                },
+                 {
+                     field: "InvestorName",
+                     title: "Investor Name",
+                     width: "25%"
+                 },
+                {
+                    field: "TransactionModeShortName",
+                    title: "Transaction Mode",
+                    width: "10%"
+                },
+                {
+                    field: "Amount",
+                    title: "Amount",
+
+                },
+                {
+                    field: "TransactionDate",
+                    title: "Transaction Date",
+                },
+                 {
+                     field: "ChequeNo",
+                     title: "Cheque No",
+                 },
+                 {
+                     field: "CheckDate",
+                     title: "CheckDate",
+                     hidden: true
+                 },
+                  {
+                      field: "BankName",
+                      title: "Bank Name",
+                     
+                  },
+                   {
+                       field: "BranchName",
+                       title: "Branch Name",
+                       hidden: true
+                   },
+                  {
+                      title: "Action",
+                      template: function (dataItem) {
+                          return '<a href="#" title="Print" onclick="MoneyReceiptPrint(' + dataItem.Id + ')" class="btn btn-primary btn-xs"><i class="fa fa-print"></i></a>';
+                      }
+
+                  },
+                ]
+            });
+
+        }
+    }
+
+    function MoneyReceiptPrint(Id) {
+        window.open('/AccPayment/MoneyReceiptPrint?Id=' + Id + '&ReceiptType=' + $("#ReceiptType").val());
+    }
+
+
+
+    $(document).ready(function () {
+        GetMoneyReceiptList();
+
+        $("#ReceiptType").change(function () {
+            GetMoneyReceiptList();
+        });
+
+
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+            GetMoneyReceiptList();
+        });
+
+        
+        $("#FromDate").on("change", function () {
+            var fromDate = $("#FromDate").val();
+            $("#ToDate").datepicker('option', { minDate: fromDate });
+        });
+        $("#ToDate").on("change", function () {
+            var toDate = $("#ToDate").val();
+            $("#FromDate").datepicker('option', { maxDate: toDate });
+        });
+
+
+    });
+
+</script>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div id="AjaxLoader" class="ajaxLoader"></div>
+        <div class="panel panel-success panel-custom">
+            <div class="panel-heading PageHeader">
+                <h3 class="panel-title">Money Receipt List</h3>
+            </div>
+            <div class="panel-body">               
+                <div class="row">
+                    <div class="col-sm-12 info-container">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="row form-group">
+                                    @Html.Label("Receipt Type", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                                    <div class="col-md-3 col-sm-6 col-xs-12">
+                                        <select class="form-control bordercss" id="ReceiptType">
+                                            <option value="Received" selected>Receive</option>
+                                            <option value="Payment">Payment</option>
+                                        </select>
+                                    </div>
+
+                                    @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                                    <div class="col-md-3 col-sm-6 col-xs-12">
+                                        @Html.Editor("txtCode", new { htmlAttributes = new { @class = "form-control" } })
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    @Html.Label("From Date", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                                    <div class="col-md-3 col-sm-6 col-xs-12">
+                                        @Html.Editor("FromDate", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                                    </div>
+                                    @Html.Label("To Date", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                                    <div class="col-md-3 col-sm-6 col-xs-12">
+                                        @Html.Editor("ToDate", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    <div class="col-sm-3">
+                                       
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <input type="button" class="btn btn-sm btn-info" style="width:60%" id="btnSearch" value="Search" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div id="grid"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+           
+        </div>
+    </div>
+</div>
+

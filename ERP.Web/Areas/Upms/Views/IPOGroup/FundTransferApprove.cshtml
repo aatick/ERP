@@ -1,0 +1,922 @@
+﻿
+@{
+    ViewBag.Title = "FundTransferApprove";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .required::after {
+        content: " *";
+        color: red;
+    }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+
+    tr.group,
+    tr.group:hover {
+        background-color: #97E0D2 !important;
+        padding: 1px !important;
+    }
+
+    #example thead {
+        background-color: #1ABB9C;
+        height: 180px !important;
+    }
+
+    thead .sorting:after {
+        display: none !important;
+    }
+    /*.group {
+        background-color: #97E0D2 !important;
+    }*/
+    /*thead .sorting_asc:after,
+    thead .sorting_desc:after {
+        display: none;
+    }*/
+</style>
+@*<script src="~/Content/js/datatables/js/DataTable.js"></script>*@
+<script src="~/Content/js/datatables/js/jquery.dataTables.min.js"></script>
+<link href="~/Content/css/jquery.dataTables.min.css" rel="stylesheet" />
+@*<script src="~/Content/js/datatables/js/jquery.js"></script>*@
+<script type="text/javascript">
+
+    function GetFundTransferInformationEx(InvestorCode, FromDate, ToDate) {
+
+        table.destroy();
+        $("#AjaxLoader").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetFundTransferInformation", "IPOGroup", "http")',
+            data: { InvestorCode: InvestorCode, FromDate: FromDate, ToDate: ToDate },
+            dataType: 'json',
+            async: true,
+            success: function (InvInfo) {
+                // if (data.Result == "Success") {
+                var dtTable = $('#example');
+                var tableBody = dtTable.find('tbody');
+                tableBody.empty();
+                var TransNo = "";
+                ////TransferNo TransferNoAndDate Id  RowSL  InvestorId  InvestorName Amount TransactionDate Comments SenderReceiver  TransactionDateEx
+                $.each(InvInfo, function (id, e) {
+                    tableBody.append(
+                          '<tr>' +
+                            '<td>' + e.RowSL + '</td>' +
+                            '<td>' + e.InvestorName + '</td>' +
+                           '<td>' + e.Amount + '</td>' +
+                            '<td>' + e.TransactionDate + '</td>' +
+                           '<td>' + e.SenderReceiver + '</td>' +
+                           '<td><input type="checkbox" class="check-boxAll" id="txtCheckId' + e.TransferNo + '"  />           ' + e.TransferNoAndDate + '<input type="number"  style="display:none" class="cslTransferNo" value="' + e.TransferNo + '"  /></td>' +
+                           //'<td><a href="#" title="Delete" onclick="DeleteFundTransfer(' + e.Id + ');" class="btn btn-danger btn-xs"><i class="fa fa-trash"></i></a></td>' +
+                          '</tr>'
+                      );
+                    
+
+
+
+                });
+                table = $('#example').DataTable({
+                    "columnDefs": [
+                        { "visible": false, "targets":5 }
+                    ],
+                    "order": [[5, 'asc']],
+                    "displayLength": 2000,
+                    "drawCallback": function (settings) {
+                        var api = this.api();
+                        var rows = api.rows({ page: 'current' }).nodes();
+                        var last = null;
+
+                        api.column(5, { page: 'current' }).data().each(function (group, i) {
+                            if (last !== group) {
+                                $(rows).eq(i).before(
+                                    '<tr class="group"><td colspan="6">' + group + '</td></tr>'
+                                );
+
+                                last = group;
+                            }
+                        });
+                    },
+                    paging: false,
+                    searching: false,
+                    lengthChange: false,
+                    "targets": 'no-sort', "bSort": false, "order": []
+                });
+
+                $("#AjaxLoader").hide();
+                //}
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    var table = "";
+
+
+
+    function GetFundTransferInformation(InvestorCode, FromDate, ToDate) {
+
+
+        $("#AjaxLoader").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetFundTransferInformation", "IPOGroup", "http")',
+            data: { InvestorCode: InvestorCode, FromDate: FromDate, ToDate: ToDate },
+            dataType: 'json',
+            async: true,
+            success: function (InvInfo) {
+               // if (data.Result == "Success") {
+                var dtTable = $('#example');
+                    var tableBody = dtTable.find('tbody');
+                    tableBody.empty();
+                    $.each(InvInfo, function (id, e) {
+                            tableBody.append(
+                             '<tr>' +
+                               '<td>' + e.RowSL + '</td>' +
+                               '<td>' + e.InvestorName + '</td>' +
+                              '<td>' + e.Amount + '</td>' +
+                               '<td>' + e.TransactionDate + '</td>' +
+                              '<td>' + e.SenderReceiver + '</td>' +
+                              '<td><input type="checkbox" class="check-boxAll" id="txtCheckId' + e.TransferNo + '"  />           ' + e.TransferNoAndDate + '<input type="number"  style="display:none" class="cslTransferNo" value="' + e.TransferNo + '"  /></td>' +
+                              //'<td><a href="#" title="Delete" onclick="DeleteFundTransfer(' + e.Id + ');" class="btn btn-danger btn-xs"><i class="fa fa-trash"></i></a></td>' +
+                             '</tr>'
+                         );
+                    });
+
+                     table = $('#example').DataTable({
+                        "columnDefs": [
+                            { "visible": false, "targets": 5 }
+                        ],
+                        "order": [[5, 'asc']],
+                        "displayLength": 2000,
+                        "drawCallback": function (settings) {
+                            var api = this.api();
+                            var rows = api.rows({ page: 'current' }).nodes();
+                            var last = null;
+
+                            api.column(5, { page: 'current' }).data().each(function (group, i) {
+                                if (last !== group) {
+                                    $(rows).eq(i).before(
+                                        '<tr class="group"><td colspan="6">' + group + '</td></tr>'
+                                    );
+
+                                    last = group;
+                                }
+                            });
+                        },
+                        paging: false,
+                        searching: false,
+                        lengthChange: false,
+                        "targets": 'no-sort', "bSort": false, "order": []
+                        //showing: false
+
+                    });
+
+                    $("#AjaxLoader").hide();
+                //}
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    function DeleteFundTransfer(Id) {
+        $.alert.open('confirm', 'Are you sure you want to DELETE seleted record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("DeleteFundTransfer", "IPOGroup", "http")',
+                    type: "GET",
+                    dataType: "json",
+                    async: true,
+                    data: { Id: Id },
+                    success: function (data) {
+                        $("#AjaxLoader").hide();
+                        if (Result == "Success") {
+                            $.alert.open("success", "Delete successfull. ", function () { GetFundTransferInformationEx(InvestorCode = '', FromDate = '', ToDate = ''); });
+                        }
+                        else {
+                            $.alert.open("Error", data.Message);
+                        }
+                    },
+                    failure: function (Result) {
+                        $("#AjaxLoader").hide();
+                        $.alert.open("error", Result);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+
+
+    function ApproveFundTransfer() {
+
+
+        var AllTransferNos = "";
+        $(".cslTransferNo").each(function () {
+
+            var transNo = $(this).val();
+                //txtCheckId
+
+            if ($("#txtCheckId" + transNo).is(":checked") == true)
+            {
+                if (AllTransferNos != "") {
+                    AllTransferNos = AllTransferNos + "," + transNo;
+                }
+                else {
+                    AllTransferNos = transNo;
+                }
+            }
+            
+        });
+
+        if (AllTransferNos != "") {
+
+            $.alert.open('confirm', 'Are you sure you want to Approve this record?', function (button) {
+                if (button == 'yes') {
+                    $("#AjaxLoader").show();
+                    $.ajax({
+                        type: 'GET',
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("ApproveFundTransfer", "IPOGroup", "http")',
+                        data: { AllTransferNos: AllTransferNos },
+                        dataType: 'json',
+                        async: true,
+                        success: function (Result) {
+                            $("#AjaxLoader").hide();
+                            if (Result == "Ok") {
+                                $.alert.open("success", "Save successfull. ", function () { GetFundTransferInformationEx(InvestorCode = '', FromDate = '', ToDate = ''); });
+                            }
+                            else {
+                                $.alert.open("error", "Fail to save");
+                            }
+                        },
+                        error: function (request, status, error) {
+                            $("#AjaxLoader").hide();
+                            alert(request.statusText + "/" + request.statusText + "/" + error);
+                        }
+                    });
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            });
+        }
+        else {
+            $("#AjaxLoader").hide();
+            $.alert.open("error", "Select at least 1 row from list");
+        }
+
+    }
+
+
+    function RejectFundTransfer() {
+        $.alert.open('confirm', 'Are you sure you want to REJECT selected records?', function (button) {
+            if (button == 'yes') {
+
+                var AllTransferNos = "";
+                $(".cslTransferNo").each(function () {
+
+                    var transNo = $(this).val();
+                    //txtCheckId
+
+                    if ($("#txtCheckId" + transNo).is(":checked") == true) {
+                        if (AllTransferNos != "") {
+                            AllTransferNos = AllTransferNos + "," + transNo;
+                        }
+                        else {
+                            AllTransferNos = transNo;
+                        }
+                    }
+
+                });
+
+                if (AllTransferNos != "") {
+                    $("#AjaxLoader").show();
+                    $.ajax({
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("RejectFundTransfer", "IPOGroup", "http")',
+                        type: "GET",
+                        dataType: 'json',
+                        async: true,
+                        data: { AllTransferNos: AllTransferNos },
+                        success: function (Result) {
+                            $("#AjaxLoader").hide();
+                            if (Result == "Ok") {
+                                $.alert.open("success", "Save successfull. ", function () { GetFundTransferInformationEx(InvestorCode = '', FromDate = '', ToDate = ''); });
+                            }
+                            else {
+                                $.alert.open("error", "Fail to save");
+                            }
+                        },
+                        error: function (error) {
+                            $.alert.open("error", "An error occurred. Please contact to the vendor.");
+                        }
+                    });
+                }
+                else {
+                    $("#AjaxLoader").hide();
+                    $.alert.open("error", "Select at least 1 row from list");
+                }
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+
+
+
+
+
+    $(document).ready(function () {
+
+
+        GetFundTransferInformation(InvestorCode = '', FromDate = '', ToDate = '');
+
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+            var InvestorCode = $("#SearchTransferorCode").val();
+            var FromDate = $("#TrxFromDate").val();
+            var ToDate = $("#TrxToDate").val();
+
+            GetFundTransferInformationEx(InvestorCode, FromDate, ToDate);
+        });
+
+
+        $("#btnCancel").click(function (e) {
+            e.preventDefault();
+            RejectFundTransfer()
+        });
+
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+           
+            ApproveFundTransfer();
+        });
+
+        $('#checkAll').click(function () {
+
+            if ($('#checkAll').is(':checked') == true) {
+                $('.check-boxAll').prop('checked', true);
+            } else {
+                $('.check-boxAll').prop('checked', false);
+            }
+        });
+
+
+
+        //
+
+        ////////////
+
+        //var table = $('#example').DataTable({
+        //    "columnDefs": [
+        //        { "visible": false, "targets": 4 }
+        //    ],
+        //    "order": [[4, 'asc']],
+        //    "displayLength": 25,
+        //    "drawCallback": function (settings) {
+        //        var api = this.api();
+        //        var rows = api.rows({ page: 'current' }).nodes();
+        //        var last = null;
+
+        //        api.column(4, { page: 'current' }).data().each(function (group, i) {
+        //            if (last !== group) {
+        //                $(rows).eq(i).before(
+        //                    '<tr class="group"><td colspan="5">' + group + '</td></tr>'
+        //                );
+
+        //                last = group;
+        //            }
+        //        });
+        //    }
+        //});
+
+        // Order by the grouping
+        //$('#example tbody').on('click', 'tr.group', function () {
+        //    var currentOrder = table.order()[0];
+        //    if (currentOrder[0] === 2 && currentOrder[1] === 'asc') {
+        //        table.order([2, 'desc']).draw();
+        //    }
+        //    else {
+        //        table.order([2, 'asc']).draw();
+        //    }
+        //});
+
+
+
+
+    });
+</script>
+
+@using (Html.BeginForm("fundTransferList", "IPOGroup", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "IPOGroupForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="row">
+        <div class="col-sm-12">
+            <div id="AjaxLoader" class="ajaxLoader"></div>
+            <div class="panel panel-success panel-custom">
+                <div class="page-title">
+                    <div class="title_left PageHeader" style="width:80%;">
+                        <h3 style="color: white;padding:2px">&nbsp;&nbsp;Fund Transfer Approve</h3>
+                    </div>
+                    @*@Html.ActionLink("New Fund Transfer", "Index", "IPOGroup", null, new { @class = "btn btn-primary btn-sm pull-right" })*@
+                </div>
+                <br />
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="row form-group">
+                            @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-1" })
+                            <div class="col-md-2">
+                                @Html.Editor("SearchTransferorCode", new { htmlAttributes = new { @class = "form-control" } })
+                            </div>
+                            @Html.Label("From Date", htmlAttributes: new { @class = "control-label col-md-1" })
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                @Html.Editor("TrxFromDate", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                            </div>
+                            @Html.Label("To Date", htmlAttributes: new { @class = "control-label col-md-1" })
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                @Html.Editor("TrxToDate", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                            </div>
+                            <div class="col-md-1">
+                                <input type="button" name="btnSubmit" id="btnSearch" class="btn btn-sm btn-primary" value="Search" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12 info-container">
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                    @*<div id="grid"> </div>*@
+                                    <table id="example" class="display" cellspacing="0" width="100%">
+                                        <thead>
+                                            <tr>
+                                                <th>SL</th>
+                                                <th>Investor Name</th>
+                                                <th>Amount</th>
+                                                <th>Transaction Date</th>
+                                                <th>Sender/Receiver</th>
+                                                <th>TransferNoAndDate</th>
+                                                @*<th>Action</th>*@
+                                            </tr>
+                                        </thead>
+
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="item form-group">
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                            </div>
+                            <div class="col-md-2 col-sm-6 col-xs-12">
+                                <button type="submit" id="btnCancel" class="btn btn-danger">Reject</button>
+                            </div>
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                <button type="submit" id="btnSave" class="btn btn-success">Approve</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+@*<style>
+    .k-footer-template {
+        height: 20px !important;
+        color: aqua;
+    }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+<script type="text/javascript">
+
+    function GetBankBranchList() {
+        var ddlBankBranch = $("#ddlBankBranchId");
+        var BankId = $("#ddlBankId").val();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetGLBankBranchList", "AccCollection", "http")',
+            data: { BankId: BankId },
+            dataType: 'json',
+            async: true,
+            success: function (BankBrach) {
+                ddlBankBranch.html('');
+                ddlBankBranch.append($('<option></option>').val(" ").html("Please select"));
+                $.each(BankBrach, function (id, option) {
+                    ddlBankBranch.append($('<option></option>').val(option.Id).html(option.BranchName));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    function GetGLAccountList() {
+        var BranchId = $("#ddlBankBranchId").val();
+        var GLAccount = $("#GLAccount");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetGLAccountNo", "AccCollection", "http")',
+            data: { BranchId: BranchId },
+            dataType: 'json',
+            async: true,
+            success: function (emList) {
+                GLAccount.html('');
+                GLAccount.append($('<option></option>').val(" ").html("Please select"));
+                $.each(emList, function (id, option) {
+                    GLAccount.append($('<option></option>').val(option.AccId).html(option.BranchGLAccountNo));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    function GetBankList() {
+        var BankId = $("#ddlBankId");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetGLBank", "AccCollection", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (GLViewModeList) {
+                BankId.html('');
+                BankId.append($('<option></option>').val(" ").html("Please select"));
+                $.each(GLViewModeList, function (id, option) {
+                    BankId.append($('<option></option>').val(option.Id).html(option.BankName));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetFundTransferInfoBeforeApprove(GroupId, FromDate, ToDate) {
+
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetFundTransferInfo_Before_Approve", "IPOGroup", "http")',
+                    dataType: "json",
+                    data: { GroupId: GroupId, FromDate: FromDate, ToDate: ToDate }
+                }
+            },
+            pageSize: 50000,
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 600,
+            groupable: true,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+
+            {
+                field: "RowSl",
+                title: "SL",
+                width: "5%"
+            },
+            {
+                field: "TransferNo",
+                title: "Transfer No",
+                width: "8%"
+
+            },
+             {
+                 field: "Transferor_InvestorName",
+                 title: "Transferor Name",
+             },
+             {
+                 field: "Transferee_InvestorName",
+                 title: "Transferee Name",
+             },
+              {
+                  field: "GroupName",
+                  title: "GroupName",
+                  hidden: true
+              },
+               {
+                   field: "Amount",
+                   title: "Amount",
+                   width: "10%"
+               },
+            {
+                field: "TransactionDate",
+                title: "Transaction Date",
+                width: "12%"
+            },
+             {
+                 field: "BrokerBranchName",
+                 title: "Broker Branch",
+                 hidden: true
+             },
+
+            {
+                field: "Comments",
+                title: "Comments",
+            },
+             {
+                 title: "<input id='checkAll' type='checkbox' style='width:20px;height:20px;' class='check-box' />",
+                 width: "10%",
+                 template: function (dataItem) {
+                     return "<input type='checkbox' style='width:20px;height:20px;' class='check-boxAll' id='txtCheckId" + dataItem.Id + "'  />"
+                 },
+
+             },
+            ],
+        });
+    }
+
+
+
+
+    function ApproveFundTransfer() {
+
+
+        var rowCount = $("#grid").data("kendoGrid").dataSource.data().length;
+        //alert(rowCount);
+        var AllCheckId = new Array();
+        for (i = 0; i < rowCount; i++) {
+            if ($("#grid").data().kendoGrid._data[i] != null && $("#grid").data().kendoGrid._data[i] != undefined && $("#grid").data().kendoGrid._data[i] != "null" && $("#grid").data().kendoGrid._data[i] != "undefined") {
+                var colId = $("#grid").data().kendoGrid._data[i].Id;
+                //var colId = $(".k-grid-content table tr").eq(i).find("td").eq(0).html();
+                var checkResult = $('#txtCheckId' + colId).is(":checked");
+                if (checkResult == true) {
+                    AllCheckId[AllCheckId.length] = colId;
+                }
+            }
+        }
+
+        if (AllCheckId.length != 0) {
+            var allTrx = new Object();
+
+            allTrx.AllCheckIds = AllCheckId;
+
+            var json = JSON.stringify(allTrx);
+
+            $.alert.open('confirm', 'Are you sure you want to Approve this record?', function (button) {
+                if (button == 'yes') {
+                    $("#AjaxLoader").show();
+                    $.ajax({
+                        type: 'POST',
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("ApproveFundTransfer", "IPOGroup", "http")',
+                        data: json,
+                        dataType: 'json',
+                        async: true,
+                        success: function (Result) {
+                            $("#AjaxLoader").hide();
+                            if (Result == "Ok")
+                            {
+                                $.alert.open("info", "Save successfull. ...");
+                                $("#grid").data("kendoGrid").dataSource.read();
+                            }
+                            else
+                            {
+                                $.alert.open("error", "Fail to save");
+                            }
+                        },
+                        error: function (request, status, error) {
+			             $("#AjaxLoader").hide();
+                            alert(request.statusText + "/" + request.statusText + "/" + error);
+                        }
+                    });
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            });
+        }
+        else {
+            $("#AjaxLoader").hide();
+            $.alert.open("error", "Select at least 1 row from list");
+        }
+
+    }
+
+
+    function RejectFundTransfer() {
+        $.alert.open('confirm', 'Are you sure you want to REJECT selected records?', function (button) {
+            if (button == 'yes') {
+
+                var rowCount = $("#grid").data("kendoGrid").dataSource.data().length;
+                var idList = [];
+                for (var i = 0; i < rowCount; i++) {
+                    if ($("#grid").data().kendoGrid._data[i] != null && $("#grid").data().kendoGrid._data[i] != undefined && $("#grid").data().kendoGrid._data[i] != "null" && $("#grid").data().kendoGrid._data[i] != "undefined") {
+                        var colId = $("#grid").data().kendoGrid._data[i].Id;
+                        var checkResult = $('#txtCheckId' + colId).is(":checked");
+                        if (checkResult == true) {
+                            //alert(1);
+                            idList.push(colId);
+                        }
+                    }
+                }
+                var strList = idList.join(",");
+                if (strList.length > 0) {
+                    $("#divLoader").show();
+                    $("body").css("pointer-events", "none");
+
+                   // var json = JSON.stringify({ idList: strList});
+
+                    $.ajax({
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("RejectFundTransfer", "IPOGroup", "http")',
+                        type: "GET",
+                        dataType: 'json',
+                        async: true,
+                        data: { strList: strList },
+                        success: function (Result) {
+                            $("body").css("pointer-events", "");
+                            $("#divLoader").hide();
+                            if (Result == "Ok") {
+                                $.alert.open("info", "Save successfull. ...");
+                                $("#grid").data("kendoGrid").dataSource.read();
+                            }
+                            else {
+                                $.alert.open("error", "Fail to save");
+                            }
+                        },
+                        error: function (error) {
+                            $.alert.open("error", "An error occurred. Please contact to the vendor.");
+                        }
+                    });
+                }
+                else {
+                    $.alert.open("error", "Select at least 1 row from list");
+                }
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+
+    $(document).ready(function () {
+
+        GetFundTransferInfoBeforeApprove(GroupId = 0, FromDate = '', ToDate ='');
+
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+            var GroupId = $("#ddlGroupList").val() == "" ? "0" : $("#ddlGroupList").val();
+            var FromDate = $("#TrxFromDate").val();
+            var ToDate = $("#TrxToDate").val();
+            GetFundTransferInfoBeforeApprove(GroupId, FromDate, ToDate);
+
+        });
+        
+        $("#btnCancel").click(function (e) {
+            e.preventDefault();
+            RejectFundTransfer()
+        });
+
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+
+            ApproveFundTransfer()
+        });
+
+        $('#checkAll').click(function () {
+
+            if ($('#checkAll').is(':checked') == true) {
+                $('.check-boxAll').prop('checked', true);
+            } else {
+                $('.check-boxAll').prop('checked', false);
+            }
+        });
+
+    });
+</script>
+@using (Html.BeginForm("AccCollApprove", "AccCollection", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "EmployeeInfoForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h4 style="color: white;padding:2px">&nbsp;&nbsp;&nbsp; Fund Transfer Approve</h4>
+        </div>
+    </div>
+    <div id="AjaxLoader" class="ajaxLoader"></div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <div class="row form-group"> 
+                      
+                        
+                        @Html.Label("IPO Group", htmlAttributes: new { @class = "control-label col-md-1" })
+                        <div class="col-md-2 col-sm-6 col-xs-12">
+                          @Html.DropDownList("GroupList", new SelectList(ViewBag.GroupList, "Id", "GroupName"), "All", new { @id = "ddlGroupList", @class = "form-control bordercss" })
+                        </div>
+                        @Html.Label("From Date", htmlAttributes: new { @class = "control-label col-md-1" })
+                        <div class="col-md-3 col-sm-6 col-xs-12">
+                            @Html.Editor("TrxFromDate", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                        </div>
+                        @Html.Label("To Date", htmlAttributes: new { @class = "control-label col-md-1" })
+                        <div class="col-md-3 col-sm-6 col-xs-12">
+                            @Html.Editor("TrxToDate", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                        </div>
+                        <div class="col-md-1">
+                            <input type="button" name="btnSubmit" id="btnSearch" class="btn btn-sm btn-info" value="Search" />
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div id="grid"> </div>
+                    </div>
+                    <br />
+                   
+                  
+                    <div class="clearfix"></div>
+                    <div class="row">
+                        <div class="item form-group">
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                            </div>
+                            <div class="col-md-2 col-sm-6 col-xs-12">
+                                <button type="submit" id="btnCancel" class="btn btn-danger">Reject</button>
+                            </div>
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                <button type="submit" id="btnSave" class="btn btn-success">Approve</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+     <div class="loader" id="divLoader" style="display: none;"></div>
+}*@
+
+
+
+
+

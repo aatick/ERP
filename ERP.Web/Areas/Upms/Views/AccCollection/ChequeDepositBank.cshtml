@@ -1,0 +1,535 @@
+﻿
+@{
+    ViewBag.Title = "ChequeDepositBank";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+
+<style>
+    .k-footer-template
+    {
+        height:20px!important;
+        color:aqua;
+    }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script type="text/javascript">
+
+    function GetBankBranchList() {
+        var ddlBankBranch = $("#ddlBankBranchId");
+        var BankId = $("#ddlBankId").val();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetGLBankBranchList", "AccCollection", "http")',
+            data: { BankId: BankId },
+            dataType: 'json',
+            async: true,
+            success: function (BankBrach) {
+                ddlBankBranch.html('');
+                ddlBankBranch.append($('<option></option>').val("0").html("Please select"));
+                $.each(BankBrach, function (id, option) {
+                    ddlBankBranch.append($('<option></option>').val(option.Id).html(option.BranchName));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    function GetGLAccountList() {
+        var BranchId = $("#ddlBankBranchId").val();
+        var IsDlr = $("#hdnIsDlr").val();
+        if (BranchId != "0")
+        {
+            var GLAccount = $("#GLAccount");
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetGLAccountNo", "AccCollection", "http")',
+                data: { BranchId: BranchId, IsDlr: IsDlr },
+                dataType: 'json',
+                async: true,
+                success: function (emList) {
+                    GLAccount.html('');
+                    GLAccount.append($('<option></option>').val(" ").html("Please select"));
+                    $.each(emList, function (id, option) {
+
+                        ///  if(option.BranchGLAccountNo=="101020106"){
+                        GLAccount.append($('<option></option>').val(option.AccId).html(option.AccountNo));
+                        // }
+                    });
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+       
+    }
+
+  
+
+
+    function GetBankList() {
+        var BankId = $("#ddlBankId");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetGLBank", "AccCollection", "http")',
+            data: { },
+            dataType: 'json',
+            async: true,
+            success: function (GLViewModeList) {
+                BankId.html('');
+                BankId.append($('<option></option>').val("0").html("Please select"));
+                $.each(GLViewModeList, function (id, option) {
+		    if(option.Id==11){
+                    	BankId.append($('<option></option>').val(option.Id).html(option.BankName));
+                    }
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetCollectionInfoBeforeApprove() {
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetCollectionInfoToDepositBank", "AccCollection", "http")',
+                    dataType: "json",
+                    data: {}
+                }
+            },
+            pageSize: 500,
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 600,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+            {
+                title: "<input id='checkAll' type='checkbox' style='width:20px;height:20px;' class='check-box' />",
+                template: function (dataItem) {
+                    if (dataItem.InvestorTypeShortName != "DLR")
+                    {
+                        return "<input type='checkbox' style='width:20px;height:20px;' class='check-boxAll clNonDlr' id='txtCheckId" + dataItem.Id + "'  onclick='CheckedCalAmt(" + '"' + dataItem.InvestorTypeShortName + '"' + ")' />"
+                    }
+                    else
+                    {
+                        return "<input type='checkbox' style='width:20px;height:20px;' class='check-boxAll clDlr' id='txtCheckId" + dataItem.Id + "'  onclick='CheckedCalAmt(" + '"' + dataItem.InvestorTypeShortName + '"' + ")' />"
+                    }
+                   
+                },
+                footerTemplate: function () {
+                    return " <label class='control-label'><span id='txtCheckTot'>0<span></label>";
+                }
+            },
+            
+            {
+                field: "InvestorCode",
+                title: "Investor Code",
+                template: function (dataItem) {
+                    if (dataItem.InvestorTypeShortName != "DLR")
+                    {
+                        return '<label>' + dataItem.InvestorCode + '</label>'
+                    }
+                    else
+                    {
+                        return '<label style="color:red">' + dataItem.InvestorCode + '</label>'
+                    }
+                }
+
+            },
+             {
+                 field: "VoucherNo",
+                 title: "Receipt No",
+             },
+             {
+                 field: "TransactionModeName",
+                 title: "Transaction Mode",
+             },
+              {
+                  field: "BankName",
+                  title: "Bank",
+              },
+               {
+                   field: "BankBranchName",
+                   title: "Bank Branch",
+               },
+            {
+                field: "ChequeNo",
+                title: "Cheque No"
+            },
+             {
+                 field: "ChequeDateMsg",
+                 title: "Cheque Date",
+             },
+            {
+                field: "PostDateMsg",
+                title: "Post Date",
+                footerTemplate: function () {
+                  
+                    return " <label class='control-label'> Total -</label>";
+                }
+               
+            },
+            {
+                title: "Amount",
+                template: function (dataItem)
+                {
+                    return '<label type="text" id="txtAmount' + dataItem.Id + '" />' + dataItem.Amount + '</label>'
+                },
+                footerTemplate: function () {
+                    var TotalAmount = InitialCalTotalAmt();
+                    //var CheckedTot = CheckedCalAmt();
+                    return " <label class='control-label'>" + TotalAmount + " <span id='txtCheckTot'> <span></label>";
+                }
+
+            },
+           
+           
+             {
+                 field: "TransactionDateMsg",
+                 title: "Transaction Date",
+                 hidden: true
+             },
+     
+            {
+                field: "DocRefNo",
+                title: "Doc. Ref.No",
+                hidden: true
+            },
+            {
+                field: "BrokerBranchName",
+                title: "Broker Branch",
+                hidden: true
+
+            },
+            {
+                field: "Remarks",
+                title: "Remarks",
+                hidden: true
+            },
+            {
+                field: "ValuedateMsg",
+                title: "Value date",
+                hidden:true
+
+            },
+             {
+                 title: "Action",
+                 template: function (dataItem) {
+                     return  '<a href="#" title="Print" onclick="MoneyReceiptPrint(' + dataItem.Id + ')" class="btn btn-primary btn-xs"><i class="fa fa-print"></i></a>';
+                 }
+
+             },
+             
+            ],
+            //dataBound: function () {
+            //    var rows = this.items();
+            //    $(rows).each(function () {
+            //        var index = $(this).index() + 1;
+            //        var rowLabel = $(this).find(".row-number");
+            //        $(rowLabel).html(index);
+            //    });
+            //}
+        });
+    }
+
+
+    function MoneyReceiptPrint(Id)
+    {
+        window.open('/AccCollection/MoneyReceiptPrint?CollectionId=' + Id);
+    }
+
+
+    function CheckedCalAmt(InvestorTypeShortName) {
+       // alert(InvestorTypeShortName)
+        if (InvestorTypeShortName != "DLR")
+        {
+            $(".clDlr").prop("checked", false);
+            $("#hdnIsDlr").val("0");
+            $("#ddlBankId").val("0");
+            $("#ddlBankBranchId").empty();
+            $("#GLAccount").empty();
+            $("#SlipNo").val("");
+        }
+        else
+        {
+            $(".clNonDlr").prop("checked", false);
+            $("#hdnIsDlr").val("1");
+            $("#ddlBankId").val("0");
+            $("#ddlBankBranchId").empty();
+            $("#GLAccount").empty();
+            $("#SlipNo").val("");
+        }
+        var rowCount = $("#grid").data("kendoGrid").dataSource.data().length;
+       
+        var totCheckedAmtSum = 0;
+        var ckCount = 0;
+        for (i = 0; i < rowCount; i++) {
+
+            if ($("#grid").data().kendoGrid._data[i] != null && $("#grid").data().kendoGrid._data[i] != undefined && $("#grid").data().kendoGrid._data[i] != "null" && $("#grid").data().kendoGrid._data[i] != "undefined") {
+                var colId = $("#grid").data().kendoGrid._data[i].Id;
+
+                var checkResult = $('#txtCheckId' + colId).is(":checked");
+
+                if (checkResult == true) {
+                    ckCount = ckCount + 1;
+                    var payAmtId = parseInt($('#txtAmount' + $("#grid").data().kendoGrid._data[i].Id).html());
+                    totCheckedAmtSum = totCheckedAmtSum + payAmtId;
+                }
+            }
+        }
+       
+        $("#txtCheckTot").html(totCheckedAmtSum);
+
+        if (ckCount != 0)
+        {
+            $("#divAccInfo").show();
+        }
+        else
+        {
+            $("#ddlBankId").val("0");
+            $("#ddlBankBranchId").empty();
+            $("#GLAccount").empty();
+            $("#SlipNo").val("");
+            $("#divAccInfo").hide();
+        }
+
+        //return totCheckedAmtSum;
+    }
+
+
+    function InitialCalTotalAmt() {
+        var rowCount = $("#grid").data("kendoGrid").dataSource.data().length;
+        var totAmtSum = 0;
+        for (i = 0; i < rowCount; i++) {
+            if ($("#grid").data().kendoGrid._data[i] != null && $("#grid").data().kendoGrid._data[i] != undefined && $("#grid").data().kendoGrid._data[i] != "null" && $("#grid").data().kendoGrid._data[i] != "undefined") {
+                var payAmtId = parseInt($('#txtAmount' + $("#grid").data().kendoGrid._data[i].Id).html());
+                totAmtSum = totAmtSum + payAmtId;
+            }
+        }
+        return totAmtSum;
+    }
+
+    function SaveDepositToBank() {
+	$("#AjaxLoader").show();
+       
+        var rowCount = $("#grid").data("kendoGrid").dataSource.data().length;
+        var AllCheckId = new Array();
+       
+        for (i = 0; i < rowCount; i++) {
+            if ($("#grid").data().kendoGrid._data[i] != null && $("#grid").data().kendoGrid._data[i] != undefined && $("#grid").data().kendoGrid._data[i] != "null" && $("#grid").data().kendoGrid._data[i] != "undefined") {
+                var colId = $("#grid").data().kendoGrid._data[i].Id;
+
+                var checkResult = $('#txtCheckId' + colId).is(":checked");
+                if (checkResult == true) {
+
+                    AllCheckId[AllCheckId.length] = colId;
+
+                }
+
+            }
+        }
+        
+        if (AllCheckId.length != 0 && $("#GLAccount").val() != "0" && $("#GLAccount").val() != null && $("#GLAccount").val() != "")
+        {
+           
+            var allTrx = new Object();
+            
+            allTrx.AllCheckIds = AllCheckId;
+            allTrx.BankId = $("#ddlBankId").val();
+            allTrx.BranchId = $("#ddlBankBranchId").val();
+            allTrx.GLAccount = $("#GLAccount").val();
+            //allTrx.GLAccountCode = $("#GLAccount option:selected").text();
+            allTrx.SlipNo = $("#SlipNo").val();
+           
+
+            var json = JSON.stringify(allTrx);
+
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("SaveDepositToBank", "AccCollection", "http")',
+                type: "POST",
+                dataType: 'json',
+                async: true,
+                data: json,
+
+                success: function (result) {
+		    $("#AjaxLoader").hide();
+                    if (result == "1") {
+                        $.alert.open("Success", "Saved Sucessfully.", function () {
+                            location.reload();
+                        });
+                        //$(".success").show(800).fadeToggle(3000);
+                    }
+                    else {
+                        $.alert.open("Error", "Fail to save.");
+                        //$(".failed").show(800).fadeToggle(3000);
+                    }
+
+                },
+                error: function (result) {
+   	            $("#AjaxLoader").hide();
+                    $.alert.open("error", result)
+
+                }
+            });
+        }
+        else
+        {
+            $.alert.open("error","Insert required field and select atleast 1 row from list");
+        }
+       
+    }
+
+
+    $(document).ready(function () {
+        GetBankList();
+        GetCollectionInfoBeforeApprove();
+
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+            SaveDepositToBank();
+        });
+
+       $('#checkAll').click(function () {
+
+           if ($('#checkAll').is(':checked') == true) {
+               $('.clNonDlr').prop('checked', true);
+               $('.clDlr').prop('checked', false);
+               $("#divAccInfo").show();
+               // $('.check-boxAll').prop('checked', true);
+           } else {
+               $('.check-boxAll').prop('checked', false);
+                  
+                $("#ddlBankId").val("0");
+                $("#ddlBankBranchId").empty();
+                $("#GLAccount").empty();
+                $("#SlipNo").val("");
+
+               $("#divAccInfo").hide();
+           }
+       });
+
+       $("#ddlBankId").change(function () { if ($("#ddlBankId").val() != "" && $("#ddlBankId").val() != null) { GetBankBranchList(); } });
+
+       $("#ddlBankBranchId").change(function () {
+           GetGLAccountList();
+       });
+       //$('#Grid input[type=checkbox][id!=checkAll]').click(function () {
+       //    var numChkBoxes = $('#Grid input[type=checkbox][id!=checkAll]').length;
+       //    var numChkBoxesChecked = $('#Grid input[type=checkbox][checked][id!=checkAll]').length;
+       //    if (numChkBoxes == numChkBoxesChecked && numChkBoxes > 0) {
+       //        $('#checkAll').attr('checked', 'checked');
+       //    }
+       //    else {
+       //        $('#checkAll').attr('checked', '');
+       //    }
+       //});
+    });
+</script>
+@using (Html.BeginForm("AccCollApprove", "AccCollection", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "EmployeeInfoForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h4 style="color: white;padding:2px">&nbsp;&nbsp;&nbsp; Deposit To Bank</h4>
+            <input type="hidden" id="hdnIsDlr" value="0"/>
+        </div>
+    </div>
+    <div id="AjaxLoader" class="ajaxLoader"></div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <div class="row">
+                        <div id="grid"> </div>
+                    </div>
+                    <br />
+                    <div id="divAccInfo" style="display:none"> 
+                        <div class="row">
+                            <div class="item form-group">
+                                @Html.Label("Bank", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("Banklist", null, new { @id = "ddlBankId", @class = "form-control bordercss" })
+                                </div>
+                                @Html.Label("Bank Branch", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("BankBranchlist", null, new { @id = "ddlBankBranchId", @class = "form-control bordercss" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="item form-group">
+                                @Html.Label("GL Account", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("GLAccountList", null, new { @id = "GLAccount", @class = "form-control bordercss" })
+                                    @*@Html.Editor("GLAccount", new { htmlAttributes = new { @class = "form-control" } })*@
+                                </div>
+                                @Html.Label("Slip No", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("SlipNo", new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="row">
+                            <div class="item form-group">
+                                <div class="col-md-5 col-sm-6 col-xs-12">
+                                </div>
+                                <div class="col-md-3 col-sm-6 col-xs-12">
+                                    <button type="submit" id="btnSave" class="btn btn-success">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="item form-group">
+                                    <div class="success" role="alert" style="display:none">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <p class="message-content">Saved Sucessfully</p>
+                                    </div>
+                                    <div class="failed" role="alert" style="display:none">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <p class="message-content">Fail to save</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+

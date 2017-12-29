@@ -1,0 +1,118 @@
+﻿@{
+    ViewBag.Title = "TraderInfo";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+     
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var BrokerId = $("#BrokerId").val();
+            if (BrokerId != "")
+            {
+                var url = '/GeneralReport/GenerateTraderInfoReport?BrokerId=' + BrokerId + '&exportType=' + $("#cmbReportType").val();
+                window.open(url);
+            }
+            else
+            {
+                $.alert.open("error","Select broker")
+            }
+
+        });
+
+
+    });
+</script>
+
+
+
+@using (Html.BeginForm("TraderInfo", "GeneralReport", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "TraderInfoForm" }))
+{
+
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:100%;">
+            <h3 style="color: white;padding:2px">Trader Information Report</h3>
+        </div>
+    </div>
+    <div class="x_panel">
+        <div class="x_title">
+            <input type="hidden" id="hdnOccupationId" />
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <br />
+            <div class="row">
+                <div class="col-md-7">
+                    <div class="item form-group">
+                        @Html.Label("Broker", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                        <div class="col-md-8 col-sm-6 col-xs-12">
+                            @Html.DropDownList("BrokerList", new SelectList(ViewBag.BrokerList, "Id", "BrokerName"), "Please select", new { @id = "BrokerId", @class = "form-control bordercss" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+          
+           
+            <div class="row">
+                <div class="col-sm-7">
+                    <div class="item form-group">
+                        @Html.Label("Report Type", new { @class = "control-label col-sm-3" })
+                        <div class="col-sm-8">
+                            <select class="input-sm form-control bordercss" id="cmbReportType">
+                                <option value="Pdf" selected="selected">Pdf</option>
+                                <option value="ExcelBook">Microsoft Excel</option>
+                                <option value="Excel">Microsoft Excel (97-2003)</option>
+                                <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                                <option value="Word">Microsoft Word (97-2003)</option>
+                                <option value="XML">XML</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="ln_solid"></div>
+            <div class="row">
+                <div class="col-md-2"></div>
+                <div class="col-md-4">
+                    <div class="form-group from-action">
+                        <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+
+
+
+
+
+
+
+
+
+

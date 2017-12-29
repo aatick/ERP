@@ -1,0 +1,604 @@
+﻿@using Common.Data.CommonDataModel
+@using Upms.Data.UPMSDataModel
+
+@{
+    ViewBag.Title = "Create";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var branches = (List<BrokerBranch>)ViewBag.Branches;
+    var investorTypes = (List<InvestorType>)ViewBag.InvestorTypes;
+}
+
+
+<style>
+    .ui-autocomplete {
+        cursor: pointer;
+        height: 400px;
+        width: 300px;
+        overflow-y: scroll;
+        background-color: white;
+        color: rgb(0,188,212);
+        /*outline-style:outset;*/
+    }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .required::after {
+        content: " *";
+        color: red;
+    }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+<script type="text/javascript">
+
+    
+
+
+    function GetIPOGroupList(GroupId) {
+        $("#grid2").kendoGrid({
+            dataSource: {
+                // type: "odata",
+                transport: {
+                    read: {
+                        url: '@Url.Action("GetIPOGroupList", "IPOGroup", "http")',
+                        dataType: "json",
+                        data: { GroupId: GroupId }
+                    }
+                },
+               
+                pageSize: 25,
+              
+
+              
+            },
+            sortable: true,
+            scrollable: false,
+            pageable: true,
+            columns: [
+                 {
+                     field: "InvestorCode",
+                     title: "Investor Code",
+
+                 },
+                {
+                    field: "InvestorName",
+                    title: "Investor Name",
+
+                },
+                 {
+                     field: "GroupId",
+                     title: "GroupId",
+                     hidden: true,
+                     template :function(dataItem)
+                     {
+                         $("#IPOGroupName").val(dataItem.GroupName)
+                         $("#InvestorCode").val(dataItem.LeaderInvestorName)
+                         $("#hdnInvestorId").val(dataItem.LeaderId);
+                         //$("#IPOGroupName").attr("readonly",true);
+                         //$("#InvestorCode").attr("readonly", true);
+                           
+                     }
+
+                 },
+                  {
+                      field: "MemberId",
+                      title: "MemberId",
+                      hidden: true
+
+                  },
+
+                 //{
+                 //    field: "GroupName",
+                 //    title: "Group Name",
+                 //    hidden: true,
+                 //    aggregates: ["count"],
+                 //    groupHeaderTemplate: "Total Count: #=count#",
+                 //    //groupFooterTemplate: " Count: #=count#",
+                 //    groupHeaderTemplate: "Group: #= value # ( Members: #= count#)"
+                 //    //Template: function (dataItem) {
+                 //    //    return '<label>' + dataItem.GroupName + '</label>' + '<input type="text"/>'
+                 //    //}
+                 //},
+                {
+                    title: "Action",
+                    width: "10%",
+                    template: function (dataItem) {
+                        return '<a href="#" title="Delete group member" onclick="DeleteGroupMember(' + dataItem.GroupId + ',' + dataItem.MemberId + ')" class="btn btn-danger btn-sm pull-right"><i class="fa fa-trash-o"></i></a>';//<a href="#" title="Delete" onclick="Delete(' + dataItem.Id + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i>
+                    }
+                },
+            ]
+        });
+    }
+
+
+
+
+
+
+
+
+
+    function GetInvestorbyCode()
+    {
+        var code = $('#InvestorCode').val().trim().indexOf("-") > 0 ? $('#InvestorCode').val().trim().split("-")[0].trim() : $('#InvestorCode').val().trim();//$('#InvestorCode').val()
+        var GroupId = $("#ddlIPOGroup").val() == "" ? 0 : $("#ddlIPOGroup").val();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorByCodeForGroupLeader", "IPOGroup", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { InvestorCode: code, GroupId: GroupId },
+            success: function (data) {
+                if (data.Result == "SUCCESS")
+                {
+                    if (data.InvestorList.length == 1) {
+                        $.each(data.InvestorList, function (id, option) {
+                            $("#InvestorCode").val(option.InvestorCode + '- ' + option.InvestorName);
+                            $("#IPOGroupName").val(option.InvestorName);
+                            $("#hdnInvestorId").val(option.Id);
+                        });
+
+                    }
+                }
+                else
+                {
+                    $("#InvestorCode").val("");
+                    $("#hdnInvestorId").val(0);
+                    $.alert.open("Errror",data.Message);
+                }
+               
+                //else {
+                //    $("#InvestorCode").val("");
+                //    $.alert.open("info", "No found");
+                //}
+               
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+
+    @*var AllInvestorList = [];
+
+    function GetInvestorList(QType) {
+
+        $('#InvestorCode').attr("placeholder","Loading . .. ... ....")
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorList", "AccCollection", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { QType: QType },
+            success: function (InvestorList) {
+                $.each(InvestorList, function (id, option) {
+                    var obj2 = new Object();
+                    obj2.key = option.Id;
+                    obj2.value = option.InvestorCode;
+
+                    AllInvestorList[AllInvestorList.length] = obj2;
+                });
+                $('#InvestorCode').removeAttr("placeholder")
+            },
+            failure: function () {
+                $('#InvestorCode').removeAttr("placeholder")
+                $.alert.open("error", "Failed!");
+            }
+        });
+
+        $('#InvestorCode').autocomplete({
+            source: AllInvestorList,
+            select: function (event, ui) {
+
+                $("#InvestorCode").val(ui.item.value); // display the selected text
+                $("#hdnInvestorId").val(ui.item.key);// save selected id to hidden input
+                $("#hdnMode").val("A");
+            }
+        });
+    }*@
+
+
+    function getInvestorInfo() {
+
+
+        if ($("#txtCode").val().indexOf('-') > -1 && $("#txtCode").val().indexOf(',') > -1) {
+
+            $.alert.open("error", "At a time ',' and '-' are not allow to use");
+        }
+        else {
+            var branchId = $("#cmbBranch").val();
+            var investorTypeId = $("#cmbType").val();
+            var Investorcodes = $("#txtCode").val().trim();
+
+            var dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: '@Url.Action("GetInvestorInformation", "IPOGroup", "http")',
+                        dataType: "json",
+                        data: { branchId: branchId, investorTypeId: investorTypeId, Investorcodes: Investorcodes }
+                    }
+                },
+                pageSize: 25,
+            });
+
+            $("#grid").kendoGrid({
+                dataSource: dataSource,
+                height: 400,
+                groupable: false,
+                reorderable: true,
+                filterable: true,
+                sortable: true,
+                resizable: true,
+                columnMenu: true,
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 100
+                },
+                columns: [{
+                    field: "InvestorId",
+                    hidden: true,
+                    filterable: false
+                },
+                {
+                    field: "InvestorCode",
+                    title: "Investor Code",
+                },
+                {
+                    field: "BOID",
+                    title: "BOID",
+                },
+                 {
+                     field: "InvestorName",
+                     title: "Investor Name",
+                     width: "25%"
+                 },
+                {
+                    field: "InvestorType",
+                    title: "Investor Type",
+                    width: "18%"
+                },
+                  {
+                      title: "<input id='chkAll' type='checkbox' style='width:20px;height:20px;' class='check-box' />",
+                      template: function (dataItem) {
+                          if (dataItem.GroupName == "NotInGroup")
+                          {
+                              return "<input type='checkbox' style='width:20px;height:20px;'  class='check-boxAll' id='txtCheckId" + dataItem.InvestorId + "'  /><input type='text' value='" + dataItem.InvestorCode + "' id='txInvestorCode" + dataItem.InvestorId + "'  style='display:none' /><input type='text'   value='" + dataItem.InvestorId + "' class='clInvestor' style='display:none' />"
+                          }
+                          else
+                          {
+                              return "<label>" + dataItem.GroupName + "</label>"
+                          }
+                      },
+                      width: "10%"
+
+                  },
+                ]
+            });
+        }
+    }
+
+    function CheckMemberValidation(InvestorId)
+    {
+        if ($("#ddlIPOGroup").val() != "") {
+
+            var rowCount = $("#grid2").data("kendoGrid").dataSource.data().length;
+            for (i = 0; i < rowCount; i++) {
+                if ($("#grid2").data().kendoGrid._data[i] != null && $("#grid2").data().kendoGrid._data[i] != undefined && $("#grid2").data().kendoGrid._data[i] != "null" && $("#grid2").data().kendoGrid._data[i] != "undefined") {
+                    var MemberId = $("#grid2").data().kendoGrid._data[i].MemberId;
+                    if (InvestorId == MemberId) {
+                        $("#txtCheckId" + InvestorId).prop("checked", false);
+                        $.alert.open("error", "This member is already add");
+                    }
+                }
+            }
+
+            
+        }
+    }
+
+    function SaveIPOGroup() {
+
+        var AllInvestorId = new Array();
+
+        $("#AjaxLoader").show();
+
+        var $allclInvestor = $(".clInvestor");
+        $allclInvestor.each(function () {
+            var value = $(this).val();
+            if ($("#txtCheckId" + value).is(":checked") == true) {
+
+                AllInvestorId[AllInvestorId.length] = value;
+            }
+        });
+
+        var allTrx = new Object();
+
+        allTrx.AllInvestorIds = AllInvestorId;
+        allTrx.GroupLeaderId = $("#hdnInvestorId").val() == "" ? "0" : $("#hdnInvestorId").val();
+        allTrx.IPOGroupName = $("#IPOGroupName").val();
+        allTrx.GroupId = $("#ddlIPOGroup").val() == "" ? 0 : $("#ddlIPOGroup").val();
+
+
+        var json = JSON.stringify(allTrx);
+
+        if ($("#hdnInvestorId").val() != 0 && $("#IPOGroupName").val() != "")
+        {
+            if (AllInvestorId.length != 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveIPOGroup", "IPOGroup", "http")',
+                    type: "POST",
+                    dataType: 'json',
+                    async: true,
+                    data: json,
+                    success: function (data) {
+                        $("#AjaxLoader").hide();
+                        $("#hdnInvestorId").val(0);
+                        $('#chkAll').prop("checked", false);
+                        if (data.Result == "SUCCESS")
+                        {
+                           // $("#ddlIPOGroup").val(data.GroupId);
+                           // GetIPOGroupList(data.GroupId)
+                           
+                            //$("#grid").data('kendoGrid').dataSource.data([]);
+                            $.alert.open("info", "Save successfull .....", function () {
+                                window.location.reload();
+                            });
+                           
+                        }
+                        else
+                        {
+                            $.alert.open("error", data.Message, function () {
+                                window.location.reload();
+                            });
+                            //$.alert.open("error", data.Message);
+                        }
+                       
+                     
+                    },
+                    error: function (Result) {
+                        $("#AjaxLoader").hide();
+                        $.alert.open("error", data.Message, function () {
+                            window.location.reload();
+                        });
+                    }
+                });
+            }
+            else {
+                $("#AjaxLoader").hide();
+                $.alert.open("error", "Select at least 1 row from list");
+            }
+        }
+        else {
+            $("#AjaxLoader").hide();
+            $.alert.open("error", "Insert group name and group leader");
+        }
+
+    }
+
+    function DeleteGroupMember(GroupId, MemberId) {
+
+
+        $.alert.open('confirm', 'Are you sure you want to DELETE this member?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("DeleteIPOGroupMember", "IPOGroup", "http")',
+                    data: { GroupId: GroupId, MemberId: MemberId },
+                    dataType: 'json',
+                    async: true,
+                    success: function (Result) {
+                        var GroupId = $("#ddlIPOGroup").val();
+                        GetIPOGroupList(GroupId)
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+
+
+    $(document).ready(function () {
+
+        //GetInvestorList('0');
+        $("#divGrid2").hide();
+       getInvestorInfo();
+       
+
+        $("#btnSearch").on("click", function () { $("#divGrid1").show(); getInvestorInfo(); });
+
+        $("#hdnInvestorId").val(0);
+
+       //$("#InvestorCode").focus(function () {
+       //    $("#hdnMode").val("B");
+       //});
+
+       $("#InvestorCode").blur(function () {
+           if ($("#InvestorCode").val() != "") //$("#hdnMode").val() != "A" && 
+           {
+               GetInvestorbyCode();
+           }
+       });
+
+       $("#ddlIPOGroup").change(function () {
+           var GroupId = $("#ddlIPOGroup").val();
+           $("#divGrid1").hide();
+           if (GroupId != "") //Edit Mode
+           {
+                //$("#grid").data('kendoGrid').dataSource.data([]);
+               $("#divGrid2").show();
+
+               GetIPOGroupList(GroupId);
+           }
+           else
+           { //Create Mode
+              
+               //$("#IPOGroupName").attr("readonly", false);
+               //$("#InvestorCode").attr("readonly", false);
+
+               $("#IPOGroupName").val("");
+               $("#InvestorCode").val("");
+               $("#hdnInvestorId").val(0);
+               $("#divGrid2").hide();
+           }
+          
+       });
+
+       $("#btnSubmit").click(function (e) {
+           e.preventDefault();
+           SaveIPOGroup();
+       });
+
+     
+       $('#chkAll').click(function () {
+           if ($('#chkAll').is(':checked') == true) {
+               $(".check-boxAll").prop("checked", true);
+           }
+           else {
+               $(".check-boxAll").prop("checked", false);
+           }
+       });
+
+
+    });
+</script>
+
+
+
+@using (Html.BeginForm("Create", "IPOGroup", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "IPOGroupForm" }))
+{
+    @Html.AntiForgeryToken()
+<div class="row">
+    <div class="col-sm-12">
+        <div id="AjaxLoader" class="ajaxLoader"></div>
+        <div class="panel panel-success panel-custom">
+            <div class="page-title">
+                <div class="title_left PageHeader" style="width:90%;">
+                    <h3 style="color: white;padding:2px">&nbsp;&nbsp;IPO Group</h3>
+                </div>
+                @Html.ActionLink("Back to list", "GroupList", "IPOGroup", null, new { @class = "btn btn-primary btn-sm pull-right" })
+            </div>
+            <div class="panel-body">
+                <input type="hidden" id="hdnInvestorId" />
+                <input type="hidden" id="hdnMode" />
+                <div class="row">
+                    <div class="col-sm-12 info-container">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">IPO Group Information</div>
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="row form-group">
+                                        @Html.Label("IPO Group", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                        <div class="col-md-4">
+                                            @Html.DropDownList("IPOGroupList", new SelectList(ViewBag.IPOGroupList, "Id", "GroupCode"), "Add new group", new { @id = "ddlIPOGroup", @class = "form-control bordercss" })
+                                        </div>
+                                    </div>
+                                    <div class="row form-group">
+                                        @Html.Label("IPO Group Name", htmlAttributes: new { @class = "control-label col-md-2" })
+                                        <div class="col-md-6">
+                                            @Html.Editor("IPOGroupName", new { htmlAttributes = new { @class = "form-control", @disabled = "disabled" } })
+                                         </div>
+                                    </div> 
+                                    <div class="row form-group">
+                                        @Html.Label("Group Leader", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                        <div class="col-md-6">
+                                            @Html.Editor("InvestorCode", new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row" id="divGrid2">
+                                    <div class="col-sm-12 info-container">
+                                        <div class="panel panel-default">
+                                            <div class="panel-body">
+                                                <div id="grid2"> </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12 info-container">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">Search Group Member</div>
+                            <div class="panel-body">
+                                <div class="row form-group">
+                                    @Html.Label("Branch", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        <select class="input-sm form-control bordercss" id="cmbBranch">
+                                            <option value="0">Select Branch</option>
+                                            @foreach (var br in branches)
+                                            {
+                                                <option value="@br.Id">@br.BrokerBranchName</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    @Html.Label("Investor Type", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        <select class="input-sm form-control bordercss" id="cmbType">
+                                            <option value="0">Select Type</option>
+                                            @foreach (var type in investorTypes)
+                                            {
+                                                <option value="@type.Id">@type.InvestorTypeShortName</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("txtCode", new { htmlAttributes = new { @class = "form-control" } })
+                                    </div>
+                                    <div class="col-sm-2"></div>
+                                    <div class="col-sm-2">
+                                        <input type="button" class="btn btn-sm btn-info" style="width:60%" id="btnSearch" value="Search" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" id="divGrid1">
+                    <div class="col-sm-12 info-container">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div id="grid"> </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <div class="row">
+                    <div class="col-sm-12 text-center">
+                        <input type="button" name="btnSubmit" id="btnSubmit" class="btn btn-sm btn-success" value="Submit" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}

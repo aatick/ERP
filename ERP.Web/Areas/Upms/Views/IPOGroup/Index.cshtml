@@ -1,0 +1,1252 @@
+﻿@using Upms.Data.UPMSDataModel
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var GroupList = (List<IPOGroupMaster>)ViewBag.IPOGroupList;
+}
+<style>
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+    .bordercss:focus {
+        box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+        border: 2px solid rgba(81, 203, 238, 1);
+    }
+
+    .radio-container label {
+        cursor: pointer;
+        padding: 5px;
+    }
+
+    .radio-container label.active {
+        background: #0e73a9;
+        border-radius: 4px;
+        /*margin-left: 10px;*/
+    }
+
+    .radio-container label.active span.radio-text {
+        color: #FFFFFF;
+    }
+    textarea{
+        color:black;
+    }
+    * {
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .option-input {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        -ms-appearance: none;
+        -o-appearance: none;
+        appearance: none;
+        position: relative;
+        top: 13.33333px;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: 40px;
+        width: 40px;
+        transition: all 0.15s ease-out 0s;
+        background: #cbd1d8;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        display: inline-block;
+        margin-right: 0.5rem;
+        outline: none;
+        position: relative;
+        z-index: 1000;
+    }
+
+        .option-input:hover {
+            background: #9faab7;
+        }
+
+        .option-input:checked {
+            background: #40e0d0;
+        }
+
+            .option-input:checked::before {
+                height: 40px;
+                width: 40px;
+                position: absolute;
+                content: '✔';
+                /*display: inline-block;*/
+                font-size: 26.66667px;
+                text-align: center;
+                line-height: 40px;
+            }
+
+            .option-input:checked::after {
+                /*-webkit-animation: click-wave 0.65s;
+                -moz-animation: click-wave 0.65s;
+                animation: click-wave 0.65s;*/
+                background: #40e0d0;
+                content: '';
+                /*display: block;*/
+                position: relative;
+                /*z-index: 100;*/
+            }
+
+        .option-input.radio {
+            border-radius: 50%;
+        }
+
+            .option-input.radio::after {
+                border-radius: 50%;
+            }
+
+</style>
+
+<script type="text/javascript">
+
+    @*function GetIPOCompanyList() {
+
+        var ddlIPOCompany = $("#ddlIPOCompany");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetIPOCompanyList", "AccCollection", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (ComanyList) {
+                ddlIPOCompany.html('');
+                ddlIPOCompany.append($('<option></option>').val("0").html("Please select"));
+                $.each(ComanyList, function (id, option) {
+                    if (option.Id != 0) {
+                        ddlIPOCompany.append($('<option></option>').val(option.Id).html(option.CompanyName));
+                    }
+                    //else {
+                    //    $.alert.open("error", "IPO not available");
+                    //    return false;
+                    //}
+
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }*@
+
+    function GroupMemberListWithCurrentbalance(IPOGroupId) {
+        var dataSource2 = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GroupMemberListWithCurrentbalance", "IPOGroup", "http")',
+                    dataType: "json",
+                    data: { IPOGroupId: IPOGroupId }
+                }
+            },
+            pageSize: 50000,
+        });
+        $("#grid2").kendoGrid({
+            dataSource: dataSource2,
+            height: 600,
+            groupable: false,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: false,
+            columns: [{
+                field: "IPOGroupId",
+                hidden: true,
+                filterable: false
+            },
+            {
+                field: "RowSl",
+                title: "SL",
+                width: "5%"
+            },
+
+            {
+                field: "GroupCode",
+                title: "GroupCode",
+                hidden: true,
+
+            },
+            {
+                field: "InvestorId",
+                title: "InvestorId",
+                hidden: true
+            },
+            {
+                field: "InvestorCode",
+                title: "InvestorCode",
+            },
+            {
+                field: "InvestorName",
+                title: "Investor Name",
+                width: "22%"
+
+            },
+
+            {
+                field: "CurrentBalance",
+                title: "Current Balance",
+                template: function (dataItem) {
+                    return '<label id="lblbalance' + dataItem.InvestorId + '">' + dataItem.CurrentBalance + '</label>';
+                }
+
+            },
+           
+             {
+                 title: "Amount", 
+                 template: function (dataItem) {//
+                     return '<input type="text"  onkeypress = "return checkNumeric(event);" onKeyup="AddBalance(' + dataItem.InvestorId + ')" class="txtMemberAmount" id="txt' + dataItem.InvestorId + '"  style="width:100px"/><input type="text"   value="' + dataItem.InvestorId + '" class="clInvestor2" style="display:none" />'
+                 }
+
+             },
+              //{
+              //    title: "<input id='chkAll' type='checkbox' style='width:20px;height:20px;' class='check-box' />",
+              //    template: function (dataItem) {
+
+              //        return "<input type='checkbox' style='width:20px;height:20px;' onclick='CheckValidation(" + dataItem.InvestorId + ");' class='check-boxAll' id='txtCheckId" + dataItem.InvestorId + "'  />" +
+              //               //"<input type='text' value='" + dataItem.InvestorCode + "' id='txInvestorCode" + dataItem.InvestorId + "'  style='display:none' />" +
+              //               "<input type='text'   value='" + dataItem.InvestorId + "' class='clInvestor' style='display:none' />"
+              //    },
+              //    width: "10%"
+
+              //},
+            ]
+
+        });
+    }
+
+    
+
+    function AddBalance(InvestorId)
+    {
+        var balance = parseFloat($("#lblbalance" + InvestorId).html());
+
+        var trnxAmount = parseFloat($("#txt" + InvestorId).val());
+
+        var MemAmount = 0;
+        $(".txtMemberAmount").each(function () {
+
+            MemAmount = MemAmount + parseFloat($(this).val() == "" ? 0 : $(this).val());
+
+        });
+
+        if (balance < trnxAmount)
+        {
+            $("#txt" + InvestorId).val(0)
+            $.alert.open("warning!", "Invalid operation");
+        }
+        else
+        {
+            $("#txtAmount").val(MemAmount)
+        }
+    }
+
+
+    function FundTransferSaveMemberToLeader() {
+
+        var AllInvestorId = new Array();
+        var AllAmount = new Array();
+
+        $("#AjaxLoader").show();
+
+        var $allclInvestor = $(".clInvestor2");
+        $allclInvestor.each(function () {
+            var value = $(this).val();
+            //if ($("#txtCheckId" + value).is(":checked") == true) {
+
+                AllInvestorId[AllInvestorId.length] = value;
+
+                AllAmount[AllAmount.length] = $("#txt" + value).val() == "" ? 0 : $("#txt" + value).val();
+           // }
+        });
+
+        var allTrx = new Object();
+
+        allTrx.AllInvestorIds = AllInvestorId;
+        allTrx.Amounts = AllAmount;
+        allTrx.GroupLeaderId = $("#hdnInvestorId").val();
+        allTrx.GroupId = $("#ddlGroupId").val();
+        allTrx.Remarks = $("#txtRemarks").val();
+
+
+        var json = JSON.stringify(allTrx);
+
+        if ($("#hdnInvestorId").val() != 0 && $("#ddlGroupId").val() != "0" && $("#txtRemarks").val() != "") {
+            if (AllInvestorId.length != 0) {
+              
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("FundTransferSaveMemberToLeader", "IPOGroup", "http")',
+                    type: "POST",
+                    dataType: 'json',
+                    async: true,
+                    data: json,
+                    success: function (Result) {
+                      
+                        $("#AjaxLoader").hide();
+                        $("#hdnInvestorId").val(0);
+                        $("#ddlGroupId").val(0);
+                        $("#InvestorCode").val("");
+                        $("#txtReceiveAmount").val(0);
+                        $("#txtAmount").val(0);
+                        $("#txtRemarks").val("");
+                        $("#grid2").data("kendoGrid").dataSource.read();
+
+                        $.alert.open("info", "Save successfull .....");
+                        // GroupIPODistributionList(0, 0, 0)
+                    },
+                    error: function (Result) {
+                        $("#AjaxLoader").hide();
+                        $.alert.open("error", Result);
+                    }
+                });
+            }
+            else {
+                $("#AjaxLoader").hide();
+                $.alert.open("error", "Select at least 1 row from list");
+            }
+        }
+        else {
+            $("#AjaxLoader").hide();
+            $.alert.open("error", "Insert group name, group leader and remarks");
+        }
+
+    }
+    
+    function GroupIPODistributionList(IPOGroupId) {
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GroupIPODistributionList", "IPOGroup", "http")',
+                    dataType: "json",
+                    data: { IPOGroupId: IPOGroupId }
+                }
+            },
+            pageSize: 50000,
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 600,
+            groupable: false,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "IPOGroupId",
+                hidden: true,
+                filterable: false
+            },// //  -- IPOGroupId,GroupCode,GroupName,InvestorId,InvestorCode,InvestorName,CurrentBalance,IsLeader,ReceiveAmount,IPOAmount
+            {
+                field: "RowSl",
+                title: "SL",
+                width: "5%"
+            },
+
+            {
+                field: "GroupCode",
+                title: "GroupCode",
+                hidden: true,
+                
+            },
+            {
+                field: "InvestorId",
+                title: "InvestorId",
+                hidden: true
+            },
+            {
+                field: "InvestorCode",
+                title: "Investor Code",
+                width:"15%"
+            },
+            {
+                field: "InvestorName",
+                title: "Investor Name",
+            },
+             
+            {
+                field: "CurrentBalance",
+                title: "Current Balance",
+                width: "18%"
+
+            },
+           
+             {
+                // field: "RequiredAmountForIPOApp",
+                 title: "Receive Amount",
+                 template: function (dataItem) {
+                     //if (dataItem.CurrentBalance > dataItem.IPOAmount) 
+                     //{
+                     return '<input type="text" onkeypress = "return checkNumeric(event);" onKeyup="CheckValidationTxt(' + dataItem.InvestorId + ')" class="txtAmount" id="' + dataItem.InvestorId + '" value= "0" style="width:100px"/>'
+                             
+                     //}
+                     //else
+                     //{
+                     //    return '<input type="number" onKeyup="CheckValidationTxt(' + dataItem.InvestorId + ')" class="txtAmount" id="' + dataItem.InvestorId + '" value= "' + dataItem.RequiredAmountForIPOApp + '"/>'
+                     //}
+                    
+                 },
+                 width: "20%"
+
+             },
+              {
+                  title: "<input id='chkAll' type='checkbox' onclick='AllCheckValidation();' style='width:20px;height:20px;' class='check-box' />",
+                  template: function (dataItem) {
+
+                      return "<input type='checkbox' style='width:20px;height:20px;' onclick='CheckValidation(" + dataItem.InvestorId + ");' class='check-boxAll' id='txtCheckId" + dataItem.InvestorId + "'  />" +
+                             //"<input type='text' value='" + dataItem.InvestorCode + "' id='txInvestorCode" + dataItem.InvestorId + "'  style='display:none' />" +
+                             "<input type='text'   value='" + dataItem.InvestorId + "' class='clInvestor' style='display:none' />"
+                  },
+                  width: "10%"
+
+              },
+            ]
+           
+        });
+    }
+
+
+    function AllCheckValidation() {
+        var Amount = 0;
+        $(".txtAmount").each(function () {
+            if ($("#chkAll").is(":checked") == true)
+            {
+                Amount = Amount + parseFloat($(this).val() == "" ? 0 : $(this).val());
+                if (parseFloat($("#txtReceiveAmount").val()) < Amount) {
+                    $("#chkAll").prop("checked", false);
+                    $("#check-boxAll").prop("checked", false);
+                    $.alert.open("Error!", "Trasferor has not enough money");
+                }
+                else {
+                    $("#txtTransferAmount").val(Amount);
+                }
+            }
+            else
+            {
+                $("#txtTransferAmount").val(0);
+            }
+            //if ($("#txtCheckId" + $(this).attr("Id")).is(":checked") == true) {
+              
+            //}
+        });
+
+      
+
+    }
+
+
+
+
+    function CheckValidationTxt(InvestorId)
+    {
+        if ($("#txtCheckId" + InvestorId).is(":checked") == true) {
+            var Amount = 0;
+            $(".txtAmount").each(function () {
+                if ($("#txtCheckId" + $(this).attr("Id")).is(":checked") == true) {
+                    Amount = Amount + parseFloat($(this).val() == "" ? 0 : $(this).val());
+                }
+            });
+
+            if (parseFloat($("#txtReceiveAmount").val()) < Amount) {
+                $("#" + InvestorId).val(0);
+                $.alert.open("Error!", "Trasferor has not enough money");
+            }
+            else
+            {
+                $("#txtTransferAmount").val(Amount);
+            }
+        }
+    }
+
+    function CheckValidation(InvestorId)
+    {
+        var Amount = 0;
+        $(".txtAmount").each(function () {
+            if ($("#txtCheckId" + $(this).attr("Id")).is(":checked") == true) {
+                Amount = Amount + parseFloat($(this).val() == "" ? 0 : $(this).val());
+            }
+        });
+
+        if (parseFloat($("#txtReceiveAmount").val()) < Amount)
+        {
+            $("#txtCheckId" + InvestorId).prop("checked",false);
+            $.alert.open("Error!","Trasferor has not enough money");
+        }
+        else {
+            $("#txtTransferAmount").val(Amount);
+        }
+       
+    }
+
+
+    function FundTransferSave() {
+
+        var AllInvestorId = new Array();
+        var AllAmount = new Array();
+
+        $("#AjaxLoader").show();
+
+        var $allclInvestor = $(".clInvestor");
+        $allclInvestor.each(function () {
+            var value = $(this).val();
+            if ($("#txtCheckId" + value).is(":checked") == true) {
+
+                AllInvestorId[AllInvestorId.length] = value;
+                AllAmount[AllAmount.length] = $("#" + value).val() == "" ? 0 : $("#" + value).val();
+               // AllAmount[AllAmount.length] = $("#" + value).val();
+            }
+        });
+
+        var allTrx = new Object();
+
+        allTrx.AllInvestorIds = AllInvestorId;
+        allTrx.Amounts = AllAmount;
+        allTrx.GroupLeaderId = $("#hdnInvestorId").val();
+        allTrx.GroupId = $("#ddlGroupId").val();
+        allTrx.Remarks = $("#txtRemarks").val();//.trim();
+        
+
+
+        var json = JSON.stringify(allTrx);
+
+        if ($("#hdnInvestorId").val() != 0 && $("#ddlGroupId").val() != "0" && $("#txtRemarks").val() != "") {
+            if (AllInvestorId.length != 0) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("FundTransferSave", "IPOGroup", "http")', ///Leader To Member
+                    type: "POST",
+                    dataType: 'json',
+                    async: true,
+                    data: json,
+                    success: function (Result) {
+                        $("#AjaxLoader").hide();
+                        $("#hdnInvestorId").val(0);
+                        $('#chkAll').prop("checked", false);
+                       
+                        $("#ddlGroupId").val(0);
+                        $("#InvestorCode").val("");
+                        $("#txtReceiveAmount").val(0);
+                        $("#txtAmount").val(0);
+                        $("#txtRemarks").val("");
+                        $("#grid").data("kendoGrid").dataSource.read();
+
+                        $.alert.open("info", "Save successfull .....");
+                       // GroupIPODistributionList(0, 0, 0)
+                    },
+                    error: function (Result) {
+                        $("#AjaxLoader").hide();
+                        $.alert.open("error", Result);
+                    }
+                });
+            }
+            else {
+                $("#AjaxLoader").hide();
+                $.alert.open("error", "Select at least 1 row from list");
+            }
+        }
+        else {
+            $("#AjaxLoader").hide();
+            $.alert.open("error", "Insert group name, group leader and remarks");
+        }
+
+    }
+
+
+
+
+    function GetTransferorCode() {
+
+        var InvestorCode = $('#TransferorCode').val().trim().indexOf("-") > 0 ? $('#TransferorCode').val().trim().split("-")[0].trim() : $('#TransferorCode').val().trim();// $('#TransferorCode').val();
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorByCode", "IPOGroup", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { InvestorCode: InvestorCode },
+            success: function (InvInfo) {
+
+                if (InvInfo.length == 1) {
+                    $.each(InvInfo, function (id, option) {
+
+                        // $("#TransfereeCode").val("");
+                        $("#hdnTransfereeId").val(0)
+                        $("#TransferorCode").val(option.InvestorCode);
+                        $("#hdnTransferorId").val(option.Id)
+                        $("#Balance").val(option.CurrentBalance);
+
+                        //if ($("#hdnTransfereeId").val() != option.Id) {
+                        //    $("#TransferorCode").val(option.InvestorCode);
+                        //    $("#hdnTransferorId").val(option.Id)
+                        //    $("#Balance").val(option.CurrentBalance);
+                        //}
+                        //else {
+                        //    //$("#TransferorCode").val("");
+                        //    $("#TransfereeCode").val("");
+                        //    $("#hdnTransfereeId").val(0)
+                        //    //$.alert.open("error", "Invalid operation!");
+                        //}
+
+                    });
+                }
+                else {
+                    $("#TransferorCode").val("");
+                    $.alert.open("info", "Not found!");
+                }
+
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+
+    function GetTransfereeCode() {
+
+        var InvestorCode = $('#TransfereeCode').val().trim().indexOf("-") > 0 ? $('#TransfereeCode').val().trim().split("-")[0].trim() : $('#TransfereeCode').val().trim(); //$('#TransfereeCode').val();
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorByCode", "IPOGroup", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { InvestorCode: InvestorCode },
+            success: function (InvInfo) {
+                if (InvInfo.length == 1) {
+                    $.each(InvInfo, function (id, option) {
+                        if ($("#hdnTransferorId").val() != option.Id) {
+                            $("#TransfereeCode").val(option.InvestorCode);
+                            $("#hdnTransfereeId").val(option.Id)
+                        }
+                        else {
+                            $("#TransfereeCode").val("");
+                            $.alert.open("error", "Invalid operation!");
+                        }
+                    });
+                }
+                else {
+                    $("#TransfereeCode").val("");
+                    $.alert.open("info", "Not found!");
+                }
+
+
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+
+    function FundTransferSaveInvestorToInvestor()
+    {
+        var TransferId = $("#hdnTransfer_Id").val() == null ? "0" : $("#hdnTransfer_Id").val();
+        var TransferorId = $("#hdnTransferorId").val();
+        var TransfereeId = $("#hdnTransfereeId").val();
+        var Amount = parseFloat($("#Amount").val());
+        var Comments = $("#Comments").val();
+
+        if (TransferorId != 0 && TransfereeId != 0 && Amount != "") {
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("SaveFundTransfer", "IPOGroup", "http")',
+                type: "GET",
+                dataType: "json",
+                async: true,
+                data: { TransferId: TransferId, TransferorId: TransferorId, TransfereeId: TransfereeId, Amount: Amount, Comments: Comments },
+                success: function (data) {
+                    $("#hdnTransfer_Id").val(0);
+                    if (data.Result == "1") {
+                        $("#hdnTransferorId").val(0);
+                        $("#hdnTransfereeId").val(0);
+                        $('#TransfereeCode').val("");
+                        $('#TransferorCode').val("")
+                        $("#Balance").val(0);
+                        $("#Amount").val(0);
+                        $("#Comments").val("");
+                        $.alert.open("Success","Save successfull.");
+                        //var InvestorCode = $("#SearchTransferorCode").val();
+                        //var FromDate = $("#TrxFromDate").val();
+                        //var ToDate = $("#TrxToDate").val();
+                        //GetFundTransferInformation(InvestorCode, FromDate, ToDate);
+                        //$(".success").show(800).fadeToggle(3000);
+                    }
+                    else {
+                        $.alert.open("Error", data.Result);
+                    }
+
+                },
+                failure: function (Result) {
+                    $.alert.open("error", Result);
+                }
+            });
+        }
+        else {
+            $.alert.open("error", "Insert required field");
+        }
+
+
+    }
+
+    $(document).ready(function () {
+
+        $("#divGrid2").hide();
+        $("#SpLeMem").attr("style", "color:#1ABB9C");
+        GroupIPODistributionList(IPOGroupId = 0)
+        GroupMemberListWithCurrentbalance(0)
+        $("#hdnInvestorId").val(0);
+        $("#hdnMode").val("B");
+        $("#txtTransferAmount").val(0);
+       
+        //$("input[type=radio][name=Group]:value = 1").checked;
+
+        $("#divtxtAmount").hide(); 
+        $("#divtotmtoLAmount").hide();
+        $("#divInvestorToInvestor").hide();
+
+        $("#hdnTransfer_Id").val(0);
+        $("#hdnTransferorId").val(0);
+        $("#hdnTransfereeId").val(0)
+     
+
+     
+
+
+        //$("input[type=radio]").click(function () {
+
+        //    if ($("input[type=radio][name=Group]:checked").val() == 1) {
+        //        $("#divtxtAmount").hide();
+        //        $("#divtxtReceiveAmount").show();
+        //        $("#divGrid1").show();
+        //        $("#divGrid2").hide();
+        //    }
+        //    else {
+        //        $("#divtxtAmount").show();
+        //        $("#divtxtReceiveAmount").hide();
+        //        $("#divGrid1").hide();
+        //        $("#divGrid2").show();
+        //    }
+        //});
+      
+        $("input[type=radio]").change(function () {
+             
+             $("#txtReceiveAmount").val(0)
+             $("#txtAmount").val(0)
+            $("#ddlGroupId").val(0)
+            $("#hdnInvestorId").val(0);
+            $("#InvestorCode").val("");
+            $("#txtTransferAmount").val(0);
+
+            $("#grid").data('kendoGrid').dataSource.data([]);
+            $("#grid2").data('kendoGrid').dataSource.data([]);
+
+            if ($("input[type=radio][name=Group]:checked").val() == 1) {
+                $("#divInvestorToInvestor").hide();
+                $("#divLeaderMember").show();
+                $("#divtxtAmount").hide();
+                $("#divtotmtoLAmount").hide();
+                $("#divtxtReceiveAmount").show();
+                $("#divGrid1").show();
+                $("#divGrid2").hide();
+                $("#divTransferAmount").show();
+                 
+                $("#SpLeMem").attr("style", "color:#1ABB9C");
+                $("#spmemLea").attr("style", "color:Black");
+                $("#spInvToInv").attr("style", "color:Black");
+            }
+            else if ($("input[type=radio][name=Group]:checked").val() == 2) {
+                $("#divInvestorToInvestor").hide();
+                $("#divLeaderMember").show();
+                $("#divtxtAmount").show();
+                $("#divtotmtoLAmount").show();
+                $("#divtxtReceiveAmount").hide();
+                $("#divGrid1").hide();
+                $("#divGrid2").show();
+                $("#divTransferAmount").hide();
+              
+                $("#SpLeMem").attr("style", "color:Black");
+                $("#spmemLea").attr("style", "color:#1ABB9C");
+                $("#spInvToInv").attr("style", "color:Black");
+            }
+            else
+            {
+                $("#SpLeMem").attr("style", "color:Black");
+                $("#spmemLea").attr("style", "color:Black");
+                $("#spInvToInv").attr("style", "color:#1ABB9C");
+                $("#divLeaderMember").hide();
+                $("#divGrid1").hide();
+                $("#divGrid2").hide();
+                $("#divInvestorToInvestor").show();
+                
+            }
+        });
+
+        $("#InvestorCode").focus(function () {
+            $("#hdnMode").val("B");
+        });
+
+
+        $("#btnSubmit").click(function (e) {
+            e.preventDefault();
+            if ($("input[type=radio][name=Group]:checked").val() == 1) {
+                FundTransferSave();
+            }
+            else if ($("input[type=radio][name=Group]:checked").val() == 2)
+            {
+                FundTransferSaveMemberToLeader();
+            }
+            else
+            {
+                FundTransferSaveInvestorToInvestor();
+            }
+           
+        });
+
+        $("#InvestorCode").change(function () {
+            if ($("#hdnMode").val() != "A" && $("#InvestorCode").val() != "") {
+                GetInvestorbyCode();
+            }
+        });
+
+        //$("#ddlIPOCompany").change(function () {
+        //    if ($("#ddlIPOCompany").val() != "0") {
+        //        var IPOGroupId = $("#ddlGroupId").val();
+        //        var InvestorId =  $("#hdnInvestorId").val();
+        //        var IPODeclarationId = $("#ddlIPOCompany").val();
+        //        GroupIPODistributionList(IPOGroupId, InvestorId, IPODeclarationId)
+        //    }
+
+        //});
+
+        $('#chkAll').click(function () {
+            if ($('#chkAll').is(':checked') == true)
+            {
+                var Amount = 0;
+                $(".txtAmount").each(function () {
+                    Amount = Amount + parseFloat($(this).val() == "" ? 0 : $(this).val());
+                    
+                });
+                //$("#txtPremium").val() == "" ? 0 : parseInt($("#txtPremium").val()
+                if (parseFloat($("#txtReceiveAmount").val()) < Amount) {
+                    $('#chkAll').prop("checked",false);
+                    $(".check-boxAll").prop("checked", false);
+                    $.alert.open("Error!", "Trasferor has not enough money");
+                }
+                else
+                {
+                    $(".check-boxAll").prop("checked", true);
+                }
+
+
+              
+            }
+            else {
+                $(".check-boxAll").prop("checked", false);
+            }
+        });
+
+
+        //$(".check-boxAll").click(function () {
+
+        //    alert(1);  txtAmount
+        //});
+
+        $("#txtSameAmountMtoL").keyup(function () {
+
+            if ($("#txtSameAmountMtoL").val() != "" && $("#txtSameAmountMtoL").val() != 0) {
+                $(".clInvestor2").each(function () {
+                    var Amount = $("#txtSameAmountMtoL").val();
+                  
+
+                    var InvestorId = $(this).val();
+                    var Curbalance = parseFloat($("#lblbalance" + InvestorId).html());
+                    if (Curbalance >= Amount)
+                    {
+                        $("#txt" + InvestorId).val(Amount);
+                       
+                    }
+                    else
+                    {
+                        $("#txt" + InvestorId).val(0);
+                    }
+                });
+
+                var Amountex = 0;
+                $(".txtMemberAmount").each(function () {
+                   
+                    var SameAmt = $(this).val() == "" ? "0" : $(this).val();
+                    Amountex = Amountex + parseFloat(SameAmt);
+                    $("#txtAmount").val(Amountex);
+                });
+            }
+            else {
+                $("#txtAmount").val(0);
+                $(".txtMemberAmount").val(0)
+            }
+
+        });
+
+        $("#chtotBalance").click(function () {
+            $("#txtSameAmountMtoL").val(0)
+            if ($("#chtotBalance").is(":checked") == true) {
+                var totalBalance = 0;
+                $(".clInvestor2").each(function () {
+
+                    var InvestorId = $(this).val();
+                    var balance = $("#lblbalance" + InvestorId).html();
+                    $("#txt" + InvestorId).val(balance);
+                    totalBalance = totalBalance + parseFloat(balance);
+                });
+                $("#txtAmount").val(totalBalance);
+            }
+            else {
+                $("#txtAmount").val(0);
+                $(".txtMemberAmount").val(0);
+            }
+        });
+
+
+
+        $("#txtSameAmountAmount").keyup(function () {
+
+            if($("#txtSameAmountAmount").val() != "" && $("#txtSameAmountAmount").val() != 0)
+            {
+                //$('#chkAll').prop("checked", true);
+                //$(".check-boxAll").prop("checked", true);
+                var SameAmt = parseFloat($("#txtSameAmountAmount").val());
+                var Balance = parseFloat($("#txtReceiveAmount").val());
+                var count = $("#grid").data("kendoGrid").dataSource.total();
+                //alert(Balance / count)
+                //if ((Balance / count) >= SameAmt)
+                //{
+                    $(".txtAmount").val(SameAmt);
+                    //$("#txtTransferAmount").val(count * SameAmt);
+                //}
+                //else
+                //{
+                   // $("#txtTransferAmount").val(0);
+                   // $("#txtSameAmountAmount").val(0)
+                    //$(".txtAmount").val(0);
+                    //$('#chkAll').prop("checked", false);
+                    //$(".check-boxAll").prop("checked", false);
+                    //$.alert.open("Error!", "Trasferor has not enough money");
+                //}
+               
+            }
+            else
+            {
+                $("#txtTransferAmount").val(0);
+                $(".txtAmount").val(0);
+                $('#chkAll').prop("checked", false);
+                $(".check-boxAll").prop("checked", false);
+            }
+
+        });
+
+        $("#ddlGroupId").change(function () {
+            //$("#ddlIPOCompany").val(0)      
+
+            $("#txtSameAmountAmount").val(0);
+            $("#txtTransferAmount").val(0);
+            $("#txtSameAmountMtoL").val(0);
+            $("#txtAmount").val(0);
+            $("#txtReceiveAmount").val(0);
+            $("#chtotBalance").prop("checked",false);
+
+            $("#grid").data('kendoGrid').dataSource.data([]);
+            if ($("#ddlGroupId").val() != 0 )
+            {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("GetIPOGroupLeader", "IPOGroup", "http")',
+                    data: { IPOGroupId: $("#ddlGroupId").val() },
+                    dataType: 'json',
+                    async: true,
+                    success: function (Result) {
+                        if (Result.length != 0)
+                        {
+                            $.each(Result, function (id, option) {
+                                $("#hdnInvestorId").val(option.Id);
+                                $("#InvestorCode").val(option.LeaderName);
+                                $("#txtReceiveAmount").val(option.Balance);
+                            });
+                            var IPOGroupId = $("#ddlGroupId").val();
+                            if ($("input[type=radio][name=Group]:checked").val() == 1) {
+                               
+                                GroupIPODistributionList(IPOGroupId)
+                            }
+                            else {
+                                GroupMemberListWithCurrentbalance(IPOGroupId)
+                            }
+                        }
+                        else
+                        {
+                            $("#hdnInvestorId").val(0);
+                            $("#InvestorCode").val("");
+                            $("#txtReceiveAmount").val(0);
+                           // var IPOGroupId = $("#ddlGroupId").val();
+                            if ($("input[type=radio][name=Group]:checked").val() == 1) {
+
+                                GroupIPODistributionList(IPOGroupId = 0)
+                            }
+                            else {
+                                GroupMemberListWithCurrentbalance(IPOGroupId = 0)
+                            }
+                            $.alert.open("warning", "Group leader's acoount has been closed");
+                        }
+                       
+                        //if (data.Id != "-1")
+                        //{
+                           
+
+                          
+                        //}
+                        //else
+                        //{
+                        //    $("#ddlGroupId").val(0);
+                        //    $.alert.open("warning", data.LeaderName);
+                        //}
+                       
+                        
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+               
+                
+            }
+        });
+       
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+
+           
+            var GroupId = $("#ddlGroupId").val() == null ? 0 : $("#ddlGroupId").val();
+            if (GroupId != 0)
+            {
+                var url = '/IPOGroup/RPTGroupMemberListWithCurrentbalance?GroupId=' + GroupId;
+
+                window.open(url);
+            }
+            else
+            {
+                $.alert.open("Error","Select IPO Group");
+            }
+        });
+
+
+
+        $("#TransferorCode").blur(function () {
+            if ($('#TransferorCode').val() != "") {
+                GetTransferorCode();
+            }
+        });
+
+        $("#TransfereeCode").blur(function () {
+            if ($('#TransfereeCode').val() != "") {
+                GetTransfereeCode();
+            }
+        });
+
+        $("#Amount").keyup(function () {
+
+            if (parseFloat($("#Amount").val()) > parseFloat($("#Balance").val())) {
+                $("#Amount").val(0)
+                $.alert.open("warning", "Invalid operation!");
+            }
+
+        });
+
+
+
+
+
+    });
+</script>
+
+@using (Html.BeginForm("Index", "IPOGroup", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "AccPaymentForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">&nbsp;&nbsp; IPO Group Distribution</h3>
+        </div>
+        @Html.ActionLink("Back to list", "FundTrxList", "IPOGroup", null, new { @class = "btn btn-primary btn-sm pull-right" })
+        <input type="hidden" id="hdnMode" />
+        <input type="hidden" id="hdnInvestorId" />
+        <input type="hidden" id="hdnTransfer_Id" />
+        <input type="hidden" id="hdnTransferorId" />
+        <input type="hidden" id="hdnTransfereeId" />
+        <div id="AjaxLoader" class="ajaxLoader"></div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <div class="row form-group">
+                        <label class="col-sm-2"></label>
+                        <label class="col-sm-3">
+                            <input type="radio" class="option-input radio" name="Group" value="1" checked />&nbsp;&nbsp;<span class="radio-text" id="SpLeMem">Group leader to member</span>
+                        </label>
+                        <label class="col-sm-3">
+                            <input type="radio" class="option-input radio" name="Group" value="2" />&nbsp;&nbsp;<span class="radio-text" id="spmemLea">Group member to leader</span>
+                        </label>
+                        <label class="col-sm-3">
+                            <input type="radio" class="option-input radio" name="Group" value="3" />&nbsp;&nbsp;<span class="radio-text" id="spInvToInv">Investor To Investor</span>
+                        </label>
+                    </div>
+                    <br />
+                    <div id="divLeaderMember"> 
+
+
+                        <div class="row form-group">
+                            @Html.Label("Group", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                <select class="input-sm form-control bordercss" id="ddlGroupId">
+                                    <option value="0">Select Group</option>
+                                    @foreach (var group in GroupList)
+                                    {
+                                        <option value="@group.Id">@group.GroupCode</option>
+                                    }
+                                </select>
+
+                                @*@Html.Editor("GroupCode", new { htmlAttributes = new { @class = "form-control", @Id = "txtGroupCode", @disabled = "false" } })*@
+                            </div>
+                            @Html.Label("Group Leader", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @Html.Editor("InvestorCode", new { htmlAttributes = new { @class = "form-control", @disabled = "disabled" } })
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div id="divtxtReceiveAmount">
+                                @Html.Label("Balance", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("ReceiveAmount", new { htmlAttributes = new { @class = "form-control", @Id = "txtReceiveAmount", @disabled = "disabled" } }) @*Leader To Member*@
+                                </div>
+                            </div>
+                            <div id="divtxtAmount">
+                                @Html.Label("Balance", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("ReceiveAmount", new { htmlAttributes = new { @class = "form-control", @Id = "txtAmount", @readonly = "readonly" } })@*Member To Leader*@
+                                </div>
+                            </div>
+
+                            @Html.Label("Remarks", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @*<textarea id="txtRemarks"></textarea>*@
+                                @Html.Editor("Remarks", new { htmlAttributes = new { @class = "form-control", @Id = "txtRemarks" } })
+
+                            </div>
+
+                        </div>
+                        <div class="row form-group" id="divTransferAmount">
+                            @Html.Label("Transfer Amount", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @Html.Editor("TransferAmount", new { htmlAttributes = new { @class = "form-control", @Id = "txtTransferAmount", @readonly = "readonly" } })@*Member To Leader*@
+                            </div>
+                            @Html.Label("Same Amount", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @Html.Editor("SameAmount", new { htmlAttributes = new { @class = "form-control", @Id = "txtSameAmountAmount" } })
+                            </div>
+                        </div>
+                        <div class="row form-group" id="divtotmtoLAmount">
+                            @Html.Label("Same Amount", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @Html.Editor("SameAmountMtoL", new { htmlAttributes = new { @class = "form-control", @Id = "txtSameAmountMtoL" } })@*Member To Leader*@
+                            </div>
+                            @Html.Label("Get Total balance", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                <input type="checkbox" id="chtotBalance" style="width:20px;height:20px" />
+                                @* @Html.Editor("SameAmount", new { htmlAttributes = new { @class = "form-control", @Id = "txtSameAmountAmount" } })*@
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-8 col-sm-6 col-xs-12"> </div>
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                <input type="button" name="btnSubmit" id="btnView" class="btn btn-sm btn-primary" value="Print" />
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row" id="divGrid1">
+                            <div id="grid"> </div>
+                        </div>
+                        <div class="row" id="divGrid2">
+                            <div id="grid2"> </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="divInvestorToInvestor"> 
+                    <div class="row">
+                        <div class="row form-group">
+                            @Html.Label("Transferor Code", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                            <div class="col-md-4">
+                                @Html.Editor("TransferorCode", new { htmlAttributes = new { @class = "form-control", @autofocus = "autofocus" } })
+                            </div>
+
+                            @Html.Label("Balance", htmlAttributes: new { @class = "control-label col-md-1" })
+                            <div class="col-md-4">
+                                @Html.Editor("Balance", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="row form-group">
+                            @Html.Label("Transferee Code", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                            <div class="col-md-4">
+                                @Html.Editor("TransfereeCode", new { htmlAttributes = new { @class = "form-control" } })
+                            </div>
+
+                            @Html.Label("Amount", htmlAttributes: new { @class = "control-label col-md-1 required" })
+                            <div class="col-md-4">
+                                @Html.Editor("Amount", new { htmlAttributes = new { @class = "form-control", @type = "number", @required = "required" } })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="row form-group">
+                            @Html.Label("Transaction Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4">
+                                @Html.Editor("TransactionDate", new { htmlAttributes = new { @class = "form-control DateInput check-date", @Value = @ViewData["BusinessDate"], @readonly = "readonly" } })
+                            </div>
+
+                            @Html.Label("Comments", htmlAttributes: new { @class = "control-label col-md-1" })
+                            <div class="col-md-4">
+                                @Html.Editor("Comments", new { htmlAttributes = new { @class = "form-control" } })
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                    @*<div class="row">
+                        <div class="col-sm-11 text-center">
+                            <input type="button" name="btnSubmit" id="btnSubmit" class="btn btn-sm btn-success" value="Submit" />
+                        </div>
+                    </div>*@
+                </div>
+                <div class="panel-footer">
+                    <div class="row">
+                        <div class="col-sm-12 text-center">
+                            <input type="button" name="btnSubmit" id="btnSubmit" class="btn btn-sm btn-success" value="Submit" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+

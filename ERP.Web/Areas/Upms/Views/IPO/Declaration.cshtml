@@ -1,0 +1,604 @@
+﻿@using Upms.Data.UPMSDataModel
+@model List<IPODeclaration>
+    @{
+        ViewBag.Title = "IPO Declaration";
+        Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+        var companies = (List<CompanyInformation>)ViewBag.Companies;
+        var currencies = (List<LookupCurrency>)ViewBag.Currencies;
+        var issueMethods = (List<IPOIssueMethod>)ViewBag.IssueMethods;
+        var MarketInformation = (List<MarketInformation>)ViewBag.MarketInformation;
+    }
+    <style type="text/css">
+        .panel-custom > .panel-heading {
+            color: #FFFFFF !important;
+        }
+
+        .panel-custom .panel-body .row:not(:last-child) {
+            margin-bottom: 10px;
+        }
+
+        .panel-custom .panel-body .radio {
+            margin-top: 0px;
+        }
+
+        .panel-custom .panel-body .radio-text, .panel-custom .panel-body input[type=text] {
+            color: #73879C;
+        }
+
+        .panel-custom .label-container {
+            text-align: right;
+        }
+
+        input[type=text]:read-only {
+            background: #FFFFFF;
+            cursor: default;
+        }
+
+        input[type=text] {
+            color: black;
+        }
+
+        #error > .panel {
+            margin-bottom: 20px;
+        }
+
+            #error > .panel > .panel-heading {
+                padding: 0px 5px 0px 15px;
+            }
+
+        .radio-container label {
+            cursor: pointer;
+            padding: 5px;
+        }
+
+            .radio-container label.active {
+                background: #0e73a9;
+                border-radius: 4px;
+                /*margin-left: 10px;*/
+            }
+
+                .radio-container label.active span.radio-text {
+                    color: #FFFFFF;
+                }
+
+        #divSlabContainer #tblSlab td {
+            padding: 5px;
+        }
+
+        #lblInvestorName .well-sm {
+            padding: 5px;
+            display: inline-block;
+            margin-bottom: 0px;
+        }
+
+        .market {
+            width: 70px;
+        }
+
+        .account-type {
+            width: 170px;
+        }
+
+        .bordercss {
+            border: 3px double #CCCCCC;
+            color: black;
+        }
+
+            .bordercss:focus {
+                box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+                border: 2px solid rgba(81, 203, 238, 1);
+            }
+    </style>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-success panel-custom">
+                <div class="panel-heading PageHeader">
+                    <h3 class="panel-title">IPO Declaration</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-sm-2 label-container">
+                            @Html.Label("Instrument :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-3">
+                            <select class="input-sm form-control bordercss" id="cmbCompany">
+                                <option value="0">Select Instrument</option>
+                                @foreach (var company in companies)
+                                {
+                                    <option value="@company.Id">@(company.CompanyName)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-sm-3 label-container text-right">
+                            @Html.Label("Issue Method :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-3">
+                            <select class="input-sm form-control bordercss" id="cmbIssueMethod">
+                                <option value="0">Select Issue Method</option>
+                                @foreach (var method in issueMethods)
+                                {
+                                    <option value="@method.Id">@method.IssueMethodName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2 label-container text-right">
+                            @Html.Label("Premium :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-3">
+                            @*<input type="radio" class="radio radio-inline" value="1" name="premiumDiscount" /> <span class="radio-text">Premium</span>
+                                <input type="radio" class="radio radio-inline" value="0" name="premiumDiscount" /> <span class="radio-text">Discount</span>*@
+                            <input type="number" style="display: inline-block;" class="form-control" id="txtPremium" value="" />
+                            @*<label>Discount</label>
+                                <input type="number" style="display: inline-block; width: 40%;" id="txtDiscount" value="" />*@
+                        </div>
+                        <div class="col-sm-3 label-container text-right">
+                            @Html.Label("Discount :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="number" class="form-control" style="display: inline-block;" id="txtDiscount" value="" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-2 label-container text-right">
+                            @Html.Label("IPO/RPO :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="radio" class="radio radio-inline" value="1" name="ipoType" /> <span class="radio-text">IPO</span>
+                            <input type="radio" class="radio radio-inline" value="0" name="ipoType" /> <span class="radio-text">RPO</span>
+                        </div>
+                        <div class="col-sm-3 label-container text-right">
+                            @Html.Label("Lot :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="number" class="input-sm form-control" id="txtLot" value="" />
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2 label-container">
+                            @Html.Label("Face Value :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="number" class="input-sm form-control" id="txtFaceValue" value="" />
+                        </div>
+                        <div class="col-sm-3 label-container text-right">
+                            @Html.Label("Application Start Date :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" data-hid="hidAppStartDate" class="input-sm form-control DateInput check-date" id="txtApplicationStartDate" value="" />
+                            <input type="hidden" id="hidAppStartDate" value="" />
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2 label-container">
+                            @Html.Label("Application Last Date :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" data-hid="hidAppEndDate" class="input-sm form-control DateInput check-date" id="txtApplicationEndDate" value="" />
+                            <input type="hidden" id="hidAppEndDate" value="" />
+                        </div>
+                        <div class="col-sm-3 label-container text-right">
+                            @Html.Label("NRB Application Last Date :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" data-hid="hidNrbEndDate" class="input-sm form-control DateInput check-date" id="txtNRBApplicationLastDate" value="" disabled="disabled" />
+                            <input type="hidden" id="hidNrbEndDate" value="" />
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2 label-container text-right">
+                            @Html.Label("Elegible Free Share (%):", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="number" class="form-control" style="display: inline-block;" id="txtFreeShare" value="50" disabled="disabled" />
+                        </div>
+                        <div class="col-sm-3 label-container text-right">
+                            @Html.Label("Lock Upto 3 Month(%) :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="number" class="form-control" id="txtLockThreeMonth" style="display: inline-block;" value="25" disabled="disabled" />
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2 label-container text-right">
+                            @Html.Label("Lock Upto 6 Month(%) :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="number" class="form-control" id="txtLockSixMonth" style="display: inline-block;" value="25" disabled="disabled" />
+                        </div>
+                        <div class="col-sm-3 label-container text-right">
+                            @Html.Label("Prospectus Issue Date :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" data-hid="hidProsIssueDate" class="input-sm form-control DateInput check-date" id="txtProspectusIssueDate" value="" />
+                            <input type="hidden" id="hidProsIssueDate" value="" />
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2 label-container">
+                            @Html.Label("Data Upload Last Date :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" data-hid="hidUploadLastDate" class="input-sm form-control DateInput check-date" id="txtDataUploadlastDate" value="" />
+                            <input type="hidden" id="hidUploadLastDate" value="" />
+                        </div>
+                        <div class="col-sm-3 label-container text-right">
+                            @Html.Label("Result Download Date :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" data-hid="hidDownloadDate" class="input-sm form-control DateInput check-date" id="txtResultDownloadDate" value="" />
+                            <input type="hidden" id="hidDownloadDate" value="" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2 label-container">
+                            @Html.Label("Bank Last Date :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" data-hid="hidBankLastDate" class="input-sm form-control DateInput check-date" id="txtBankLastDate" value="" />
+                            <input type="hidden" id="hidBankLastDate" value="" />
+                        </div>
+                        <div class="col-sm-3 label-container text-right">
+                            @Html.Label("Market :", new { @class = "control-label" })
+                            <input type="hidden" value="@ViewData["IsDSEPrimary"]" id="hdndseprimary" />
+                        </div>
+                        <div class="col-sm-3">
+                            <select class="input-sm form-control bordercss" id="cmbMarketId" disabled="disabled">
+                                <option value="0">Select Market</option>
+                                @foreach (var Market in MarketInformation)
+                                {
+                                    <option value="@Market.Id">@Market.MarketShortName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+
+                        <div class="col-sm-2 label-container text-right">
+                            @Html.Label("Per Lot Price :", new { @class = "control-label" })
+                        </div>
+                        <div class="col-sm-10">
+                            @foreach (var currency in currencies)
+                            {
+                                <div class="col-sm-1 label-container text-right">
+                                    @Html.Label(currency.CurrencyShortName + " :", new { @class = "control-label" })
+                                </div>
+                                <div class="col-sm-2">
+                                    <input type="number" class="input-sm form-control text-currency" data-currencyid="@currency.Id" @(currency.CurrencyShortName.ToUpper() == "BDT" ? "disabled=disabled value=100" : "") />
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" id="hidDeclarationId" value="" />
+                <div class="panel-footer">
+                    <div class="row">
+                        <div class="col-sm-12 text-center">
+                            <input type="button" name="btnSubmit" id="btnSubmit" class="btn btn-sm btn-success" value="Submit" />
+                            <input type="button" name="btnReset" id="btnReset" class="btn btn-sm btn-success" value="Reset" />
+                        </div>
+                    </div>
+                    <table class="table table-bordered table-responsive" id="tblCharges" style="background: #FFF;">
+                        <thead>
+                            <tr>
+                                <th class="text-center">Sl.</th>
+                                <th>Instrument Name</th>
+                                <th class="text-center">IPO/RPO</th>
+                                <th>Issue Method</th>
+                                <th class="text-center">Lot</th>
+                                <th class="text-right">Face Value</th>
+                                <th class="text-right">Premium</th>
+                                <th class="text-right">Discount</th>
+                                <th class="text-center">Application Last Date</th>
+                                <th>Status</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < Model.Count; i++)
+                            {
+                                <tr>
+                                    <td class="text-center">@(i + 1)</td>
+                                    <td>@Model[i].CompanyName</td>
+                                    <td class="text-center">@(Model[i].IsIPORPO ? "RPO" : "IPO")</td>
+                                    <td>@Model[i].IssueMethod</td>
+                                    <td class="text-center">@Model[i].Lot</td>
+                                    <td class="text-right">@Model[i].FaceValue</td>
+                                    <td class="text-right">@Model[i].Premium</td>
+                                    <td class="text-right">@Model[i].Discount</td>
+                                    <td class="text-center">@Model[i].ApplicationEndDate.ToString("dd MMM yyyy")</td>
+                                    <td>@(Model[i].Status)</td>
+                                    <td class="text-center">
+                                        <input type="button" data-declarationid="@Model[i].Id" class="btn btn-sm btn-success btn-edit" value="Edit" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="~/Scripts/jquery.maskedinput-1.3.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $("#hdndseprimary").val() == "Yes" ? $("#cmbMarketId").val(1) : $("#cmbMarketId").val(2);
+
+
+            //$("#txtApplicationEndDate").blur(function () {
+            //    $("#txtNRBApplicationLastDate").val($("#txtApplicationEndDate").val());
+
+            //});
+            $("#txtApplicationEndDate").change(function () {
+                $("#txtNRBApplicationLastDate").val($("#txtApplicationEndDate").val());
+                var dt = $("#txtNRBApplicationLastDate").val().trim().split("/");
+                $("#hidNrbEndDate").val($.datepicker.formatDate("dd-M-yy", new Date(dt[2], parseInt(dt[1]) - 1, dt[0])));
+            });
+
+            $("#txtApplicationEndDate").datepicker(
+             {
+                 dateFormat: "dd/mm/yy",
+                 showAnim: "scale",
+                 changeMonth: true,
+                 changeYear: true,
+                 maxDate: "+10Y"
+             });
+
+
+
+
+            $("#btnReset").on("click", function () {
+                $("input:not(:input[type=radio],input[type=button])").val("");
+                $("select").val("0").prop("disabled", false);
+                $("input[type=radio]").prop("checked", false);
+                $("#txtFreeShare").val("50");
+                $("#txtLockThreeMonth,#txtLockSixMonth").val("25");
+                $(".DateInput").val("");
+            });
+            $(".btn-edit").on("click", function () {
+                var declarationId = $(this).attr("data-declarationid");
+                $("#hidDeclarationId").val(declarationId);
+                var jsonData = { declarationId: declarationId };
+                $.ajax({
+                    type: "Post",
+                    url: '@Url.Action("GetDeclarationDetails", "IPO")',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(jsonData),
+                    dataType: "json",
+                    success: function (dt) {
+                        var data = dt.Declaration;
+                        $("#cmbCompany").val(data.CompanyId).prop("disabled", true);
+                        $("#cmbIssueMethod").val(data.IssueMethodId).prop("disabled", true);
+                        $("#txtPremium").val(data.Premium);
+                        $("#txtDiscount").val(data.Discount);
+                        $("[name=ipoType][value=" + (data.IsIPORPO == 0 ? 1 : 0) + "]").prop("checked", "checked");
+                        $("#txtLot").val(data.Lot);
+                        $("#txtFaceValue").val(data.FaceValue);
+                        $("#cmbMarketId").val(data.MarketId);
+                        var appStartDate = "";
+                        var appEndDate = "";
+                        var nrbAppEnddate = "";
+                        var prosIssueDate = "";
+                        var dataUploadLastDate = "";
+                        var resDownDate = "";
+                        var bankDate = "";
+                        if (data.ApplicationStartDate != null) {
+                            appStartDate = $.datepicker.formatDate("dd/mm/yy", new Date(parseInt(data.ApplicationStartDate.toString().substring(6))));
+                            $("#hidAppStartDate").val($.datepicker.formatDate("dd-M-yy", new Date(parseInt(data.ApplicationStartDate.toString().substring(6)))));
+                        }
+                        if (data.ApplicationEndDate != null) {
+                            appEndDate = $.datepicker.formatDate("dd/mm/yy", new Date(parseInt(data.ApplicationEndDate.toString().substr(6))));
+                            $("#hidAppEndDate").val($.datepicker.formatDate("dd-M-yy", new Date(parseInt(data.ApplicationEndDate.toString().substring(6)))));
+                        }
+                        if (data.NRBApplicationLastDate != null) {
+                            nrbAppEnddate = $.datepicker.formatDate("dd/mm/yy", new Date(parseInt(data.NRBApplicationLastDate.toString().substr(6))));
+                            $("#hidNrbEndDate").val($.datepicker.formatDate("dd-M-yy", new Date(parseInt(data.NRBApplicationLastDate.toString().substring(6)))));
+                        }
+                        if (data.ProspectusIssueDate != null) {
+                            prosIssueDate = $.datepicker.formatDate("dd/mm/yy", new Date(parseInt(data.ProspectusIssueDate.toString().substr(6))));
+                            $("#hidProsIssueDate").val($.datepicker.formatDate("dd-M-yy", new Date(parseInt(data.ProspectusIssueDate.toString().substring(6)))));
+                        }
+                        if (data.DataUploadLastDate != null) {
+                            dataUploadLastDate = $.datepicker.formatDate("dd/mm/yy", new Date(parseInt(data.DataUploadLastDate.toString().substr(6))));
+                            $("#hidUploadLastDate").val($.datepicker.formatDate("dd-M-yy", new Date(parseInt(data.DataUploadLastDate.toString().substring(6)))));
+                        }
+                        if (data.ResultDownloadDate != null) {
+                            resDownDate = $.datepicker.formatDate("dd/mm/yy", new Date(parseInt(data.ResultDownloadDate.toString().substr(6))));
+                            $("#hidDownloadDate").val($.datepicker.formatDate("dd-M-yy", new Date(parseInt(data.ResultDownloadDate.toString().substring(6)))));
+                        }
+                        if (data.BankLastDate != null) {
+                            bankDate = $.datepicker.formatDate("dd/mm/yy", new Date(parseInt(data.BankLastDate.toString().substr(6))));
+                            $("#hidBankLastDate").val($.datepicker.formatDate("dd-M-yy", new Date(parseInt(data.BankLastDate.toString().substring(6)))));
+                        }
+                        //console.log(data.BankLastDate);
+                        $("#txtApplicationStartDate").val(appStartDate);
+                        $("#txtApplicationEndDate").val(appEndDate);
+                        $("#txtNRBApplicationLastDate").val(nrbAppEnddate);
+                        $("#txtFreeShare").val(data.FreeShare);
+                        $("#txtLockThreeMonth").val(data.LockUptoThreeMonth);
+                        $("#txtLockSixMonth").val(data.LockUptoSixMonth);
+                        $("#txtProspectusIssueDate").val(prosIssueDate);
+                        $("#txtDataUploadlastDate").val(dataUploadLastDate);
+                        $("#txtResultDownloadDate").val(resDownDate);
+                        $("#txtBankLastDate").val(bankDate);
+                        $("#cmbMarketId").val(data.MarketId);
+                        var currency = dt.Currency;
+                        $.each(currency, function (i, d) {
+                            $("[data-currencyid=" + d.CurrencyId + "]").val(d.LotAmount);
+                        });
+                    },
+                });
+            });
+
+            $("#btnSubmit").on("click", function () {
+                var companyId = $("#cmbCompany").val();
+                if (companyId == "0") {
+                    $.alert.open("Warning!", "Please select a company.");
+                    return;
+                }
+                var issueMethod = $("#cmbIssueMethod").val();
+                if (issueMethod == "0") {
+                    $.alert.open("Warning!", "Please select an issue method.");
+                    return;
+                }
+
+                var premium = 0;
+                var discount = 0;
+                premium = $("#txtPremium").val() == "" ? 0 : parseInt($("#txtPremium").val());
+                discount = $("#txtDiscount").val() == "" ? 0 : parseInt($("#txtDiscount").val());
+
+                if (issueMethod == 2 && premium == 0) {
+                    $.alert.open("Warning!", "you must enter premium amount.");
+                    return;
+                }
+                var isIPORPO = -1;
+                if ($("[name=ipoType]:checked").length > 0)
+                    isIPORPO = $("[name=ipoType]:checked").val() == "1" ? 0 : 1;
+
+                if (isIPORPO == -1) {
+                    $.alert.open("Warning!", "Please select IPO/RPO.");
+                    return;
+                }
+                var lot = $("#txtLot").val() == "" ? 0 : parseInt($("#txtLot").val());
+                if (lot == 0) {
+                    $.alert.open("Warning!", "Please enter lot quantity.");
+                    return;
+                }
+                var faceValue = $("#txtFaceValue").val() == "" ? 0 : parseFloat($("#txtFaceValue").val());
+                if (faceValue == 0) {
+                    $.alert.open("Warning!", "Please enter face value.");
+                    return;
+                }
+                var appStartDate = $("#hidAppStartDate").val().trim();
+                if (appStartDate == "") {
+                    $.alert.open("Warning!", "Please enter application start date.");
+                    return;
+                }
+                //appStartDate = appStartDate.split("/")[1] + "/" + appStartDate.split("/")[0] + "/" + appStartDate.split("/")[2];
+                //appStartDate = appStartDate.split("/")[0] + " Oct " + appStartDate.split("/")[2];
+                console.log(appStartDate);
+                var appEndDate = $("#hidAppEndDate").val().trim();
+                if (appEndDate == "") {
+                    $.alert.open("Warning!", "Please enter application end date.");
+                    return;
+                }
+                //appEndDate = appEndDate.split("/")[1] + "/" + appEndDate.split("/")[0] + "/" + appEndDate.split("/")[2];
+                var nrbAppEnddate = $("#hidNrbEndDate").val().trim();
+                if (nrbAppEnddate == "") {
+                    $.alert.open("Warning!", "Please enter NRB application end date.");
+                    return;
+                }
+                //nrbAppEnddate = nrbAppEnddate.split("/")[1] + "/" + nrbAppEnddate.split("/")[0] + "/" + nrbAppEnddate.split("/")[2];
+                var prosIssueDate = $("#hidProsIssueDate").val().trim();
+                if (prosIssueDate == "") {
+                    $.alert.open("Warning!", "Please enter prospectus issue date.");
+                    return;
+                }
+                //prosIssueDate = prosIssueDate.split("/")[1] + "/" + prosIssueDate.split("/")[0] + "/" + prosIssueDate.split("/")[2];
+                var dataUploadLastDate = $("#hidUploadLastDate").val().trim();
+                if (dataUploadLastDate == "") {
+                    $.alert.open("Warning!", "Please enter data upload last date.");
+                    return;
+                }
+                //dataUploadLastDate = dataUploadLastDate.split("/")[1] + "/" + dataUploadLastDate.split("/")[0] + "/" + dataUploadLastDate.split("/")[2];
+                var resDownDate = $("#hidDownloadDate").val().trim();
+                if (resDownDate == "") {
+                    $.alert.open("Warning!", "Please enter result download date.");
+                    return;
+                }
+                //resDownDate = resDownDate.split("/")[1] + "/" + resDownDate.split("/")[0] + "/" + resDownDate.split("/")[2];
+                var bankDate = $("#hidBankLastDate").val().trim();
+                if (bankDate == "") {
+                    $.alert.open("Warning!", "Please enter bank last date.");
+                    return;
+                }
+                //bankDate = bankDate.split("/")[1] + "/" + bankDate.split("/")[0] + "/" + bankDate.split("/")[2];
+                var freeShare = $("#txtFreeShare").val().trim() == "" ? 0 : parseFloat($("#txtFreeShare").val().trim());
+                if (freeShare == 0) {
+                    $.alert.open("Warning!", "Please enter free share percentage.");
+                    return;
+                }
+                var lockThreeMonth = $("#txtLockThreeMonth").val().trim() == "" ? 0 : parseFloat($("#txtLockThreeMonth").val().trim());
+                if (lockThreeMonth == 0) {
+                    $.alert.open("Warning!", "Please enter 3 month lock share percentage.");
+                    return;
+                }
+                var lockSixMonth = $("#txtLockSixMonth").val().trim() == "" ? 0 : parseFloat($("#txtLockSixMonth").val().trim());
+                if (lockSixMonth == 0) {
+                    $.alert.open("Warning!", "Please enter 6 month lock share percentage.");
+                    return;
+                }
+                var marketId = $("#cmbMarketId").val().trim() == "" ? 0 : parseInt($("#cmbMarketId").val().trim());
+                if (marketId == 0) {
+                    $.alert.open("Warning!", "Please select a market.");
+                    return;
+                }
+                var lotAmount = (lot * faceValue) + premium - discount;
+                var currency = [];
+                $(".text-currency").each(function (i, d) {
+                    var curId = $(this).attr("data-currencyid");
+                    var conversionRate = $(this).val().trim() == "" ? 0 : parseFloat($(this).val().trim());
+                    if (conversionRate == 0) {
+                        currency = [];
+                        return false;
+                    }
+                    currency.push({ CurrencyId: curId, CurrencyConversionRate: 0, LotAmount: conversionRate });
+                    return true;
+                });
+                if (currency.length == 0) {
+                    $.alert.open("Warning!", "Please enter all currency conversion rate.");
+                    return;
+                }
+
+                var id = $("#hidDeclarationId").val().trim() == "" ? 0 : parseInt($("#hidDeclarationId").val().trim());
+
+
+                var declaration = {
+                    Id: id,
+                    CompanyId: companyId,
+                    IssueMethodId: issueMethod,
+                    IsIPORPO: isIPORPO,
+                    Lot: lot,
+                    FaceValue: faceValue,
+                    Premium: premium,
+                    Discount: discount,
+                    ApplicationStartDate: appStartDate,
+                    ApplicationEndDate: appEndDate,
+                    NRBApplicationLastDate: nrbAppEnddate,
+                    DataUploadLastDate: dataUploadLastDate,
+                    ProspectusIssueDate: prosIssueDate,
+                    ResultDownloadDate: resDownDate,
+                    BankLastDate: bankDate,
+                    FreeShare: freeShare,
+                    LockUptoThreeMonth: lockThreeMonth,
+                    LockUptoSixMonth: lockSixMonth,
+                    MarketId: marketId
+                };
+                var jsonData = { declaration: declaration, currency: currency };
+                $.ajax({
+                    type: "Post",
+                    url: '@Url.Action("IPODeclaration", "IPO")',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(jsonData),
+                    dataType: "json",
+                    success: function (dt) {
+                        if (dt.Status == true) {
+                            $.alert.open("Success!", dt.Message, function () {
+                                location.reload();
+                            });
+                        } else {
+                            $.alert.open("Error!", dt.Message);
+                        }
+                    },
+                });
+            });
+        });
+    </script>

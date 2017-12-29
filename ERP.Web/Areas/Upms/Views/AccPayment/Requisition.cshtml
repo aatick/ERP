@@ -1,0 +1,392 @@
+﻿
+@{
+    ViewBag.Title = "Requisition";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+<style>
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+<script type="text/javascript">
+
+
+    function LoadEditData(Id, ShortName, GroupName, Description) {
+        $("#marketGroupId").val(Id);
+        $("#ShortName").val(ShortName);
+        $("#GroupName").val(GroupName);
+        $("#Description").val(Description);
+
+    }
+
+    @*function CheckShortNameUnique() {
+        var marketGroupId = $("#marketGroupId").val();
+        var GroupName = $('#GroupName').val();
+        var ShortName = $("#ShortName").val();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("CheckShortNameUnique", "MarketGroup", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { marketGroupId: marketGroupId, GroupName: GroupName, ShortName: ShortName },
+            success: function (result) {
+                if (result == "1") {
+                    SaveMarketGroup()
+                }
+                else {
+                    $.alert.open("error", "Short Name must be unique");
+                }
+            },
+            failure: function () {
+                $(".failed").show(800).fadeToggle(3000);
+            }
+        });
+    }*@
+    function renderNumber(data) {
+        return ++rowNumber;
+    }
+    var record = 0;
+    function RequisitionInfo() {
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("RequisitionInfo", "AccPayment", "http")',
+                    dataType: "json",
+                    data: {}
+                }
+            },
+            pageSize: 25,
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 600,
+            groupable: true,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+            {
+                template: "#= ++record #",
+                title: "SL",
+                width: 90
+            },
+
+            {
+                field: "RequisitionNo",
+                title: "Requisition No",//
+                groupable: false
+            },
+            {
+                field: "InvestorName",
+                title: "Investor Name"
+
+            },
+             {
+                 field: "Amount",
+                 title: "Amount"
+             },
+              {
+                  field: "RequisitionDate",
+                  title: "Requisition Date"
+              },
+               {
+                   field: "Remarks",
+                   title: "Remarks"
+               },
+             {
+                 title: "Action",
+                 width: "10%",
+                 template: function (dataItem) {
+                     return '<a href="#" title="Edit" onclick="EditRequisition(' + dataItem.Id + ',' + dataItem.InvestorId + ',' + "'" + dataItem.InvestorName + "'" + ',' + dataItem.Amount + ',' + "'" + dataItem.RequisitionDate + "'" + ',' + "'" + dataItem.Remarks + "'" + ')" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a>' +
+                            '<a href="#" title="Cancel" onclick="DeleteRequisition(' + dataItem.Id + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i>'
+                 }
+             },
+            ],
+            dataBinding: function () {
+                record = (this.dataSource.page() - 1) * this.dataSource.pageSize();
+            }
+        });
+    }
+
+
+    function DeleteRequisition(Id) {
+        $.alert.open('confirm', 'Are you sure you want to CANCEL this requisition?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("DeleteRequisition", "AccPayment", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        $("#grid").data("kendoGrid").dataSource.read();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+
+
+
+    function EditRequisition(Id, InvestorId, InvestorName, Amount, RequisitionDate, Remarks)
+    {
+        $("#hdnInvestorId").val(InvestorId);
+        $("#hdnRequisitionId").val(Id)
+        $("#InvestorCode").val(InvestorName);
+        $('#Amount').val(Amount);
+        $("#RequisitionDate").val(RequisitionDate);
+        $("#txtRemarks").val(Remarks);
+        $("#thumbnil").attr("src", "/AccPayment/RetrieveImage/" + InvestorId + "");
+        $("#thumbnil2").attr("src", "/AccPayment/RetrieveSign/" + InvestorId + "");
+       
+        var code = InvestorName.split('-')[0]
+       $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetCurrentBalance", "AccPayment", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { InvestorCode: code },
+            success: function (CurrentBalance) {
+
+                $("#CurrentBalance").val(CurrentBalance);
+              
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+
+
+    function GetInvestorbyCode() {
+        var code = $('#InvestorCode').val().trim().indexOf("-") > 0 ? $('#InvestorCode').val().trim().split("-")[0].trim() : $('#InvestorCode').val().trim();
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorByCode", "AccPayment", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { InvestorCode: code },
+            success: function (data) {
+                if (data.Result == "Success") {
+                    $.each(data.InvestorList, function (id, option) {
+                        $("#InvestorCode").val(option.InvestorCode + '- ' + option.InvestorName);
+                        $("#hdnInvestorId").val(option.Id);
+                        $("#CurrentBalance").val(option.CurrentBalance);
+                        $("#thumbnil").attr("src", "/AccPayment/RetrieveImage/" + option.Id + "");
+                        $("#thumbnil2").attr("src", "/AccPayment/RetrieveSign/" + option.Id + "");
+                    });
+                }
+                else
+                {
+                    $.alert.open("Error",data.Message)
+                }
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+
+
+    function SavePaymentRequisition() {
+
+        var RequisitionId = $("#hdnRequisitionId").val()
+        var InvestorId = $("#hdnInvestorId").val();
+        var Amount = $("#Amount").val() == "" ? 0 : $("#Amount").val();
+        var RequisitionDate = $("#RequisitionDate").val();
+        var Remarks = $("#txtRemarks").val();
+        if (InvestorId != 0 && Amount != 0) {
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("SavePaymentRequisition", "AccPayment", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { RequisitionId: RequisitionId, InvestorId: InvestorId, Amount: Amount, RequisitionDate: RequisitionDate, Remarks: Remarks },
+                success: function (result) {
+                    if (result == 1) {
+
+                        $("#hdnInvestorId").val(0);
+                        $("#hdnRequisitionId").val(0);
+                        $("#InvestorCode").val("");
+                        $('#Amount').val(0);
+                        $("#txtRemarks").val("");
+                        $("#CurrentBalance").val(0);
+                        RequisitionInfo();
+                        $(".success").show(800).fadeToggle(3000);
+
+                    }
+                    else {
+                        $(".failed").show(800).fadeToggle(3000);
+
+                    }
+
+                },
+                error: function () {
+                    $(".failed").show(800).fadeToggle(3000);
+                }
+            });
+        }
+        else {
+            $.alert.open("error", "Insert required field");
+        }
+
+    }
+
+    $(document).ready(function () {
+
+        $("#hdnInvestorId").val(0);
+        $("#hdnRequisitionId").val(0);
+        RequisitionInfo();
+
+        $("#InvestorCode").blur(function () {
+            if ($("#InvestorCode").val().trim() != "") {
+                GetInvestorbyCode();
+            }
+        });
+
+
+        $("#btnSave").click(function (e) {
+
+            e.preventDefault();
+
+            SavePaymentRequisition();
+
+        });
+
+
+        $("#btnClear").click(function () {
+            $("#hdnInvestorId").val(0);
+            $("#hdnRequisitionId").val(0);
+            $("#InvestorCode").val("");
+            $('#Amount').val(0);
+            $("#txtRemarks").val("");
+            $("#CurrentBalance").val(0);
+            $("#thumbnil").attr("src", "~/Images/blank-headshot.jpg");
+            $("#thumbnil2").attr("src", "~/Images/signature.png");
+        });
+
+    });
+
+</script>
+
+@using (Html.BeginForm("Requisition", "AccPayment", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "frmRequisition" }))
+{
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:100%;">
+            <h3 style="color: white;padding:2px">&nbsp;&nbsp;Fund Requisition</h3>
+        </div>
+    </div>
+    <div class="x_panel">
+        <div class="x_content">
+            <br />
+        
+            <input type="hidden" id="hdnInvestorId" />
+            <input type="hidden" id="hdnRequisitionId" />
+                <div style="float:left" class="col-sm-6">
+                    <div class="item form-group">
+                        @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-4 required" })
+                        <div class="col-md-8 col-sm-6 col-xs-12">
+                            @Html.Editor("InvestorCode", new { htmlAttributes = new { @class = "form-control", @autofocus = "autofocus" } })
+                        </div>
+                    </div>
+                    <div class="item form-group">
+                        @Html.Label("Current Balance", htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-md-8 col-sm-6 col-xs-12">
+                            @Html.Editor("CurrentBalance", new { htmlAttributes = new { @class = "form-control", @disabled = "disabled" } })
+                        </div>
+                    </div>
+                    <div class="item form-group">
+                        @Html.Label("Amount", htmlAttributes: new { @class = "control-label col-md-4 required" })
+                        <div class="col-md-8 col-sm-6 col-xs-12">
+                            @Html.Editor("Amount", new { htmlAttributes = new { @class = "form-control", @type = "number" } })
+                        </div>
+                    </div>
+                    <div class="item form-group">
+                        @Html.Label("Requisition Date", htmlAttributes: new { @class = "control-label col-md-4 required" })
+                        <div class="col-md-8 col-sm-6 col-xs-12">
+                            @Html.Editor("RequisitionDate", new { htmlAttributes = new { @class = "form-control DateInput check-date", @Value = @ViewData["BusinessDate"], @disabled = "disabled" } })
+                        </div>
+                    </div>
+                    <div class="item form-group">
+                        @Html.Label("Remarks", htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-md-8 col-sm-6 col-xs-12">
+                            @Html.Editor("txtRemarks", new { htmlAttributes = new { @class = "form-control"} })
+                        </div>
+                    </div>
+                   
+                    <div class="item form-group">
+                        <div class="row">
+                            <div class="col-md-4 col-sm-6">
+                            </div>
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+                                <button type="button" id="btnSave" class="btn btn-success">Save</button>
+
+                            </div>
+                            <div class="col-md-3 col-sm-6 col-xs-12">
+
+                                <button type="button" id="btnClear" class="btn btn-primary">New</button>
+                            </div>
+                        </div>
+                      
+                       
+                    </div>
+                </div>
+               
+                <div style="float:left" class="col-sm-4">
+                    <div class="col-md-10 col-sm-6 col-xs-12">
+                        <img id="thumbnil" style="width:100px; height:100px;float:left" alt="Image" class="img-responsive" />
+                        <img id="thumbnil2" style="width: 100px; height: 100px; float: left;padding-left:4px" alt="Signature" class="img-responsive" />
+                    </div>
+                </div>
+                <br />
+               
+                <div class="item form-group">
+                    <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                        <div class="success" role="alert" style="display:none">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <p class="message-content">Saved Sucessfully</p>
+                        </div>
+                        <div class="failed" role="alert" style="display:none">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <p class="message-content">Fail to save</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="block_content">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div id="grid"></div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+
+}
+

@@ -1,0 +1,360 @@
+﻿@model ERP.Web.ViewModels.CompanyInfoViewModel
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+
+    var CountryList = Model == null ? null : Model.CountryList;
+    var MarketSectorList = Model == null ? null : Model.MarketSectorList;
+    var MarketTypeList = Model == null ? null : Model.MarketInstrumentTypeList;
+    var MarketGroupList = Model == null ? null : Model.MarketGroupList;
+    var CompanyDepositoryList = Model == null ? null : Model.CompanyDepositoryList;
+}
+
+
+<style>
+    .required::after {
+        content: " *";
+        color: red;
+    }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script type="text/javascript">
+    function Validation() {
+        if ($("#CompanyName").val() != "" && $("#FaceValue").val() != "" && $("#MarketLot").val() != "" && $("#TradeIdDSE").val().trim() != "" && $("#ddlGroup").val() != "" && $("#ddlSector").val() != "")//
+        {
+            return true;
+
+        }
+        else {
+            return false;
+        }
+    }
+    $(document).ready(function () {
+
+        $("#Email").blur(function () {
+            if ($("#Email").val() != "") {
+                var filter = /^[\w\-\.\+]+\@@[a-zA-Z0-9\.\-]+\.[a-zA-z0-9]{2,4}$/;
+                if (filter.test($("#Email").val())) {
+                    return true;
+                }
+                else {
+                    $("#Email").val("");
+                    $.alert.open("error", "Insert right email formate");
+                    return false;
+                }
+            }
+        });
+
+        $("#ddlStatus").change(function () {
+
+            $("#Status").val($("#ddlStatus").val());
+        });
+
+
+        $('#btnSave').click(function (e) {
+
+            e.preventDefault();
+            //if (!validator.checkAll($('form'))) {
+            //    return false;
+            //}
+            //else {
+            if (Validation() == true) {
+                $.ajax({
+                    type: "Post",
+                    url: '@Url.Action("Edit", "CompanyInfo")',
+                    data: $('#CompanyInfoForm').serialize(),
+                    dataType: "json",
+                    success: function (data) {
+                        $('#AjaxLoader').hide();
+                        $.alert.open(data.Result, data.Message, function () {
+                            if (data.Result == "SUCCESS") {
+                                window.location = "@Url.Action("Index","CompanyInfo")";
+                            }
+                        });
+                    },
+                    error: function () {
+                        $("#dialog-message").html('<p>Error, Fail to Save.</p>');
+                        $("#dialog-message").dialog({
+                            modal: true,
+                            buttons: {
+                                Ok: function () {
+                                    $(this).dialog("close");
+                                }
+                            }
+                        });
+                    }
+                });
+                //$('#CompanyInfoForm').ajaxSubmit({
+                //    type: "POST",
+                //    target: '#thumbnil',
+                //    data: {},
+                //    dataType: 'json',
+                //    resetForm: true,
+                //    success: function (data) {
+                //        if (data.data.Id > 0) {
+                //            //$('img').attr('src', 'src="~/Images/blank-headshot.jpg" alt="Image"'); // Clear the src
+                //            //$(".success").show(800).fadeToggle(3000);
+                //            // $.alert.open("error","Save successfull")
+                //            $.alert.open('info', 'Save successfull', function (button) {
+                //                window.location.href = '/CompanyInfo/Index';
+                //            });
+
+
+                //        }
+                //        else {
+                //            $(".failed").show(800).fadeToggle(3000);
+                //        }
+                //    },
+                //    error: function () {
+                //        $("#dialog-message").html('<p>Error, Fail to Save.</p>');
+                //        $("#dialog-message").dialog({
+                //            modal: true,
+                //            buttons: {
+                //                Ok: function () {
+                //                    $(this).dialog("close");
+                //                }
+                //            }
+                //        });
+                //    }
+                //});
+            }
+            else {
+                $.alert.open("error", "Insert required field");
+            }
+            // }
+        });
+
+
+        $("#IsMarginLoan").attr("disabled", "disabled");
+
+
+        @*$("#MarketPriceDate").datepicker(
+       {
+           dateFormat: "dd/mm/yy",
+           showAnim: "scale",
+           changeMonth: true,
+           changeYear: true,
+           yearRange: "1920:@DateTime.Now.Year"
+       });*@
+        //$("#MarketPriceDate").on("change", function () {
+        //    if ($("#MarketPriceDate").val().trim() == "")
+        //        $("#hidMarketPriceDate").val("");
+        //    else {
+        //        var fromDate = $("#MarketPriceDate").val().trim();
+        //        var arr = fromDate.split("/");
+        //        if (parseInt(arr[0]) > 31 || parseInt(arr[1]) > 12) {
+        //            $.alert.open("ERROR", "Invalid Date Format.", function () {
+        //                $("#hidMarketPriceDate").val("");
+        //            });
+        //        } else {
+        //            $("#hidMarketPriceDate").val($.datepicker.formatDate("dd-M-yy", new Date(arr[2], parseInt(arr[1]) - 1, arr[0])));
+        //        }
+        //    }
+        //});
+    });
+
+</script>
+
+
+@Html.ActionLink("Back To List", "Index", null, new { @class = "btn btn-primary btn-sm pull-right" })
+
+@using (Html.BeginForm("Edit", "CompanyInfo", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "CompanyInfoForm" }))
+{
+    @*@Html.AntiForgeryToken()*@
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">Securities Information Edit</h3>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <br />
+
+                    <br />
+
+                    <div class="row form-group">
+                        @Html.Label("Securities Name", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.CompanyName, new { htmlAttributes = new { @class = "form-control", @required = "required" } })
+                            @Html.HiddenFor(model => model.Id)
+                        </div>
+                        @Html.Label("Short Name", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.CompanyShortName, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Country", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.DropDownListFor(model => model.CountryId, CountryList, new { @ID = "ddlCountry", @class = "form-control bordercss" })
+                        </div>
+                        @Html.Label("Instrument Type", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.DropDownListFor(model => model.InstrumentTypeId, MarketTypeList, new { @ID = "ddlMarketType", @class = "form-control bordercss" })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Sector", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.DropDownListFor(model => model.SectorId, MarketSectorList, new { @ID = "ddlSector", @class = "form-control bordercss" })
+                        </div>
+                        @Html.Label("Depository", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.DropDownListFor(model => model.CompanyDepositoryId, CompanyDepositoryList, new { @ID = "ddlCompanyDepository", @class = "form-control bordercss" })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Group", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.DropDownListFor(model => model.GroupId, MarketGroupList, new { @ID = "ddlGroup", @class = "form-control bordercss" })
+                            @*@Html.EditorFor(model => model.GroupId, new { htmlAttributes = new { @class = "form-control", @required = "required" } })*@
+                        </div>
+                        @Html.Label("Address", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+
+                        @Html.Label("Email", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                        @Html.Label("Phone", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.Phone, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+
+                        @Html.Label("Fax", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.Fax, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                        @Html.Label("Web Address", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.WebAddress, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+
+                        @Html.Label("TradeId DSE", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.TradeIdDSE, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                        @Html.Label("TradeId CSE", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.TradeIdCSE, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+
+                        @Html.Label("Status", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <select class="form-control bordercss" id="ddlStatus">
+                                <option value="1">Active</option>
+                                <option value="0">Inactive</option>
+                                <option value="2">Suspend</option>
+                            </select>
+                            @Html.HiddenFor(model => model.Status, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                        @Html.Label("EPS", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.EPS, new { htmlAttributes = new { @class = "form-control", @onkeypress = "return checkNumeric(event);" } })
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+
+                        @Html.Label("NAV", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.NAV, new { htmlAttributes = new { @class = "form-control", @onkeypress = "return checkNumeric(event);" } })
+                        </div>
+                        @Html.Label("ISINNo", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.ISINNo, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+
+                        @Html.Label("Authorize Capital", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.AuthorizeCapital, new { htmlAttributes = new { @class = "form-control", @onkeypress = "return checkNumeric(event);" } })
+                        </div>
+                        @Html.Label("Paid Up Capital", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.PaidUpCapital, new { htmlAttributes = new { @class = "form-control", @onkeypress = "return checkNumeric(event);" } })
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+
+                        @Html.Label("Market Price", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.MarketPrice, new { htmlAttributes = new { @class = "form-control", @disabled = "false", @onkeypress = "return checkNumeric(event);" } })
+                        </div>
+                        @Html.Label("Market Price Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <input type="datetime" class="form-control DateInput check-date" data-hid="hidMarketPriceDate" id="MarketPriceDate" name="txtMarketPriceDate" value="@(Model.MarketPriceDate.HasValue ? Model.MarketPriceDate.Value.ToString("dd/MM/yyyy") : "")" />
+                            <input type="hidden" id="hidMarketPriceDate" name="MarketPriceDate" value="@(Model.MarketPriceDate.HasValue?Model.MarketPriceDate.Value.ToString("dd-MMM-yyyy"):"")" />
+                        </div>
+                    </div>
+
+                    <div class="row form-group">
+
+                        @Html.Label("Face Value", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.FaceValue, new { htmlAttributes = new { @class = "form-control", @required = "required", @onkeypress = "return checkNumeric(event);" } })
+                        </div>
+                        @Html.Label("Market Lot", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.MarketLot, new { htmlAttributes = new { @class = "form-control", @required = "required", @onkeypress = "return checkNumeric(event);" } })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Premium", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.EditorFor(model => model.Premium, new { htmlAttributes = new { @class = "form-control", @onkeypress = "return checkNumeric(event);" } })
+                        </div>
+                        <div class="col-md-2 col-sm-6 col-xs-12">
+                        </div>
+                        <div>
+                            @Html.CheckBoxFor(model => model.IsForeign)  <span>Is Foreign</span>
+                            @Html.CheckBoxFor(model => model.IsMarginLoan) <span>MarginLoan</span>
+                        </div>
+                    </div>
+                    <div class="ln_solid"></div>
+                    <div class="form-group">
+                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            <button type="submit" id="btnSave" class="btn btn-success">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+

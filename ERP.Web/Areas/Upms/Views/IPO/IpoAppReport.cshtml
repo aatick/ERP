@@ -1,0 +1,174 @@
+﻿@using Common.Data.CommonDataModel
+@using Upms.Data.UPMSDataModel
+@{
+    ViewBag.Title = "IPO Report";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    //var companies = (List<ERP.Web.IPOController.IpoCompanyModel>)ViewBag.Companies;
+    var companies = (List<IPODeclaration>)ViewBag.Companies;
+    var branches = (List<BrokerBranch>)ViewBag.Branches;
+    var investorTypes = (List<InvestorType>)ViewBag.InvestorTypes;
+    var GroupList = (List<IPOGroupMaster>)ViewBag.IPOGroupList;
+    //var declarations = (List<IPODeclaration>)ViewBag.Declarations;
+}
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#divGroup").hide();
+
+        $("#cmbReportType").change(function () {
+
+            if( $("#cmbReportType").val() == 1)
+            {
+                $(".divinre").show();
+                $("#divGroup").hide();
+            }
+            else
+            {
+                $(".divinre").hide();
+                $("#divGroup").show();
+            }
+        });
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+
+            var IpoDeclarationId = $("#cmbCompany").val();
+            var InvestorCode = $("#txtCode").val();
+            var InvestorTypeType = $("#InvestorTypeType").val();
+            var BranchId = $("#cmbBranch").val();
+            var ReportType = $("#cmbReportType").val();
+            var GroupId = $("#ddlGroupId").val();
+
+            if (IpoDeclarationId != 0) {
+                //if (ReportType == 2 && GroupId == 0)
+                //{
+                //    $.alert.open("error", "Select IPO Group");
+                //}
+                //else
+                //{
+                    var url = '/IPO/Rpt_Ipo_ApplicationForm?reportNo=1&IpoDeclarationId=' + IpoDeclarationId + '&InvestorTypeType=' + InvestorTypeType + '&BranchId=' + BranchId + '&InvestorCode=' + InvestorCode + '&ReportType=' + ReportType + '&GroupId=' + GroupId;
+                    window.open(url);
+                //}
+               
+            }
+            else {
+                $.alert.open("error", "Select IPO Company");
+            }
+
+
+        });
+
+
+    });
+</script>
+@using (Html.BeginForm("IpoApp", "IPO", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "ApoForm" }))
+{
+    @Html.AntiForgeryToken()
+
+
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px"> IPO Order Form</h3>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div id="AjaxLoader" class="ajaxLoader"></div>
+                <div class="x_title">
+
+                </div>
+                <div class="x_content">
+                    <br />
+                    <div class="row form-group">
+                        @Html.Label("Report Type", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <select class="input-sm form-control bordercss" id="cmbReportType">
+                                <option value="1">Investor wise</option>
+                                <option value="2">Group wise</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("IPO Company", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <select class="input-sm form-control bordercss" id="cmbCompany">
+                                <option value="0">Select Company</option>
+                                @foreach (var company in companies)
+                                {
+                                    <option value="@company.Id">@(company.CompanyName + " (" + company.TradingCode + ")")</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="divinre">
+                            @Html.Label("Branch", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                <select class="input-sm form-control bordercss" id="cmbBranch">
+                                    <option value="0">Select Branch</option>
+                                    @foreach (var br in branches)
+                                    {
+                                        <option value="@br.Id">@br.BrokerBranchName</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div id="divGroup">
+                            @Html.Label("IPO Group", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                <select class="input-sm form-control bordercss" id="ddlGroupId">
+                                    <option value="0">All Group</option>
+                                    @foreach (var group in GroupList)
+                                    {
+                                        <option value="@group.Id">@group.GroupCode</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group  divinre">
+                        @Html.Label("Investor Type", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <select class="input-sm form-control bordercss" id="InvestorTypeType">
+                                <option value="0">Select Type</option>
+                                @foreach (var type in investorTypes)
+                                {
+                                    <option value="@type.Id">@type.InvestorTypeShortName</option>
+                                }
+                            </select>
+                        </div>
+                        @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            <input type="text" class="input-sm form-control" id="txtCode" />
+                        </div>
+                    </div>
+                    <div class="ln_solid"></div>
+                    <div class="row form-group">
+                        <div class="col-md-4">
+
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" id="btnSearch" class="btn btn-primary">View</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+

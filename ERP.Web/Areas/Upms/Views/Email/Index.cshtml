@@ -1,0 +1,397 @@
+﻿
+@{
+    ViewBag.Title = "Upload";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+<style type="text/css">
+    .panel-custom > .panel-heading {
+        /*background: #26B99A !important;*/
+        color: #FFFFFF !important;
+    }
+
+    .panel-custom .panel-body .row:not(:last-child) {
+        margin-bottom: 10px;
+    }
+
+    .panel-custom .panel-body .radio {
+        margin-top: 0px;
+    }
+
+    .panel-custom .panel-body .radio-text, .panel-custom .panel-body input[type=text] {
+        color: #73879C;
+    }
+
+    .panel-custom .label-container {
+        text-align: right;
+    }
+
+    input[type=text]:read-only {
+        background: #FFFFFF;
+        cursor: default;
+    }
+
+    #error > .panel {
+        margin-bottom: 20px;
+    }
+
+        #error > .panel > .panel-heading {
+            padding: 0px 5px 0px 15px;
+        }
+
+    .radio-container label {
+        cursor: pointer;
+        padding: 5px;
+    }
+
+        .radio-container label.active {
+            background: #0e73a9;
+            border-radius: 4px;
+            /*margin-left: 10px;*/
+        }
+
+            .radio-container label.active span.radio-text {
+                color: #FFFFFF;
+            }
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+
+<script type="text/javascript">
+
+
+
+    function GetTradeConfirmationInvestor() {
+
+        var EmailSMSTypeId = $("input[type=radio][name=fileType]:checked").val();
+
+            var dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: '@Url.Action("GetTradeConfirmationInvestor", "Email", "http")',
+                        dataType: "json",
+                        data: { EmailSMSTypeId: EmailSMSTypeId }
+                    }
+                },
+                pageSize: 25,
+            });
+
+            $("#grid").kendoGrid({
+                dataSource: dataSource,
+                height: 600,
+                groupable: false,
+                reorderable: true,
+                filterable: true,
+                sortable: true,
+                resizable: true,
+                columnMenu: true,
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 100
+                },
+                columns: [{
+                    field: "InvestorId",
+                    hidden: true,
+                    filterable: false
+                },
+
+                {//RowSL,A.InvestorId,A.InvestorCode,A.InvestorName,A.SystemEmail,A.TransactionDate
+                    field: "RowSL",
+                    title: "SL",
+                    width: "8%"
+                },
+                {
+                    field: "InvestorCode",
+                    title: "Investor Code",
+                    width: "15%"
+                },
+                {
+                    field: "InvestorName",
+                    title: "Name",
+                },
+                 {
+                     field: "SystemEmail",
+                     title: "Email",
+                     width: "30%"
+                 },
+                 {
+                     title: "<input id='checkAll' type='checkbox' style='width:20px;height:20px;' class='check-box' />",
+                     template: function (dataItem) {
+                         if (dataItem.SystemEmail != "")
+                         {
+                             return "<input type='checkbox' style='width:20px;height:20px;' class='check-boxAll' id='" + dataItem.InvestorId + "' value='" + dataItem.InvestorCode + "' /><input type='text' style='display:none' value='" + dataItem.InvestorId + "' class='clEmail' id='" + dataItem.SystemEmail + "' />"
+                         }
+                         else
+                         {
+                             return "<label></label>"
+                         }
+                     },
+                     width: "8%",
+                 },
+                ]
+            });
+           
+        }
+
+
+    function SendMailOfTradeConfirmationReport() {
+        var AllInvestorId ='';
+        var EmailSMSTypeId = $("input[type=radio][name=fileType]:checked").val();
+        $("#AjaxLoader").show();
+
+        var idList = [];
+        var $allInvestorId = $(".check-boxAll");
+        $allInvestorId.each(function () {
+
+            if ($(this).is(":checked") == true)
+            {
+                var colId = $(this).attr("Id");
+                idList.push(colId);
+             }
+        });
+        var AllInvestorId = idList.join(",");
+        if (AllInvestorId != "")
+        {
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("SendMailOfTradeConfirmationReport", "Email", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { AllInvestorId: AllInvestorId, EmailSMSTypeId: EmailSMSTypeId },
+                success: function (Result) {
+                    $("#AjaxLoader").hide();
+                    $.alert.open("info", "Mail send successfull");
+                },
+                error: function (Result) {
+                    $("#AjaxLoader").hide();
+                    $.alert.open("error", Result);
+                }
+            });
+        }
+        else
+        {
+            $("#AjaxLoader").hide();
+            $.alert.open("Warning", "At least 1 investor select");
+        }
+    }
+
+
+    function SaveTradeConfirmationReport()
+    {
+        var EmailSMSTypeId = $("input[type=radio][name=fileType]:checked").val();
+        var InvestorGroup = $("#ddlInvestorGroup").val();
+        $("#AjaxLoader").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SaveTradeConfirmationReport", "Email", "http")',
+            data: { EmailSMSTypeId: EmailSMSTypeId, InvestorGroup: InvestorGroup },
+            dataType: 'json',
+            async: true,
+            success: function (Result) {
+                if (Result != "No Trade Found.")
+                {
+                    $("#AjaxLoader").hide();
+                    $("#btnSendEmail").attr("disabled", false);
+                    $.alert.open("info", "Reports generate successfull");
+                    GetTradeConfirmationInvestor();
+                }
+                else
+                {
+                    $("#AjaxLoader").hide();
+                    $.alert.open("info", Result);
+                }
+              
+            },
+            error: function (request, status, error) {
+                $("#AjaxLoader").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function FileCount() {
+        var EmailSMSTypeId = $("input[type=radio][name=fileType]:checked").val();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("FileCount", "Email", "http")',
+            data: { EmailSMSTypeId: EmailSMSTypeId },
+            dataType: 'json',
+            async: true,
+            success: function (Count) {
+              
+                if (Count >= 1)
+                {
+                    $("#btnSendEmail").attr("disabled",false);
+                }
+                else
+                {
+                    $("#btnSendEmail").attr("disabled", true);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+    $(document).ready(function () {
+        var Mode = 0;
+        $("#divddlInvestorGroup").hide();
+        FileCount();
+       
+        GetTradeConfirmationInvestor();
+       
+        $("#DownloadLocation").val("D://UPMS Generated Data/Trade Confirmation/");
+
+        $("input[type=radio][name=fileType]").on("change", function () {
+            $(".radio-container label").removeClass("active");
+            $("input[type=radio][name=fileType]:checked").parents("label").addClass("active");
+           
+            GetTradeConfirmationInvestor();
+           
+            
+            if ($("input[type=radio][name=fileType]:checked").val() == 1) {
+                FileCount();
+                $("#divddlInvestorGroup").hide();
+                $("#divDownlocation").show();
+                $("#btnGenerateFile").show();
+                $("#DownloadLocation").val("D://Generated Data/Trade Confirmation/");
+            }
+            else if ($("input[type=radio][name=fileType]:checked").val() == 2) {
+                FileCount();
+                $("#divddlInvestorGroup").show();
+                $("#divDownlocation").show();
+                $("#btnGenerateFile").show();
+                $("#DownloadLocation").val("D://Generated Data/InvestorPortfolio/");
+            }
+            else
+            {
+                $("#btnSendEmail").attr("disabled", false);
+                $("#divddlInvestorGroup").hide();
+                $("#divDownlocation").hide();
+                $("#btnGenerateFile").hide();
+            }
+        });
+
+        $("#btnSendEmail").click(function (e) {
+            e.preventDefault();
+           // if ($("input[type=radio][name=fileType]:checked").val() == 1) {
+            SendMailOfTradeConfirmationReport();
+            //}
+            //else {
+            //    alert("under construction");
+            //}
+        });
+
+      
+        $("#btnGenerateFile").click(function (e) {
+            e.preventDefault();
+            SaveTradeConfirmationReport();
+        });
+
+        $('#checkAll').on("click", function () {
+            if ($('#checkAll').is(':checked') == true) {
+                $('.check-boxAll').prop('checked', true);
+
+            } else {
+                $('.check-boxAll').prop('checked', false);
+            }
+        });
+    });
+
+    //
+</script>
+
+
+
+
+
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="panel panel-success panel-custom">
+            <div class="panel-heading PageHeader">
+                <h3 class="panel-title">Sending Email</h3>
+            </div>
+            <div id="AjaxLoader" class="ajaxLoader"></div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Transaction Date  :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="text" id="txtTransactionDate" class="input-sm form-control DateInput check-date" required="required" disabled="disabled" value="@ViewData["BusinessDate"]" />
+                    </div>
+                   
+                </div>
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Report Name :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-10 radio-container">
+                        <div class="row">
+                             <label class="col-sm-4 active">
+                                    <input type="radio" class="radio radio-inline" checked name="fileType" value="1" /> <span class="radio-text"> Trade confirmation report</span>
+                              </label>
+                            <label class="col-sm-4">
+                                <input type="radio" class="radio radio-inline" name="fileType" value="2" /> <span class="radio-text"> Portfolio confirmation report</span>
+                            </label>
+                            <label class="col-sm-4">
+                                <input type="radio" class="radio radio-inline" name="fileType" value="3" /> <span class="radio-text"> Account confirmation report</span>
+                            </label>
+                            @*<label class="col-sm-4">
+                                    <input type="radio" class="radio radio-inline" name="fileType" value="2" /> <span class="radio-text">Trade Confirmation Report</span>
+                                </label>*@
+                        </div>
+                    </div>
+                </div>
+                <div class="row" id="divddlInvestorGroup">
+                    @Html.Label("Select Investor Group :", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                    <div class="col-sm-4">
+                      
+                        <select class="form-control bordercss" id="ddlInvestorGroup">
+                            <option value="0">All Active Investor</option>
+                            <option value="1">Investor has transaction</option>
+                        </select>
+                    </div>
+                  
+                </div>
+                <div class="row" id="divDownlocation">
+                    <div class="row form-group">
+                        @Html.Label("Download Location :", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                        <div class="col-md-6">
+                            @Html.Editor("DownloadLocation", new { htmlAttributes = new { @class = "form-control", @disabled = "disabled" } })
+                        </div>
+                    </div>
+                </div>      
+            </div>
+            <div class="panel-footer">
+                <div class="row">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <input type="button" id="btnGenerateFile" class="btn btn-sm btn-success" value="Trade Report Generate" />
+                        <input  type="button" id="btnSendEmail" class="btn btn-sm btn-success" value="Send Email" />
+                        
+                    </div>
+                </div>
+               <br />
+                    <div class="row">
+                       
+                        <div id="grid"> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@*<script type="text/javascript" src="~/Scripts/jquery.maskedinput-1.3.min.js"></script>*@

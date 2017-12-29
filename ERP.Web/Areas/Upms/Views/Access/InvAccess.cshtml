@@ -1,0 +1,374 @@
+﻿
+
+@{
+    ViewBag.Title = "InvAccess";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var roleList = Model == null ? null : Model.RoleList;
+}
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+
+    .k-grid tbody .k-button, .k-ie8 .k-grid tbody button.k-button {
+        min-width: 0;
+    }
+
+    a.k-button.k-button-icontext.k-grid-Edit {
+        min-width: 0;
+    }
+
+    #grid a.k-button.k-button-icontext.k-grid-Edit {
+        min-width: 0;
+    }
+
+
+    /*.k-grid tbody .k-button, .k-ie8 .k-grid tbody button.k-button {
+        min-width: 0;
+    }*/
+    a.k-button.k-button-icontext.k-i-close {
+        min-width: 0;
+    }
+
+    #grid a.k-button.k-button-icontext.k-i-close {
+        min-width: 0;
+    }
+
+    table td .k-button {
+        padding: 0px;
+    }
+
+        table td .k-button span {
+            padding: 9px 14px;
+        }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+
+<script type="text/javascript">
+
+
+
+
+    function GetInvestorbyCode() {
+        var code = $('#InvestorCode').val().trim().indexOf("-") > 0 ? $('#InvestorCode').val().trim().split("-")[0].trim() : $('#InvestorCode').val().trim();
+        if (code != "")
+        {
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetInvestorByCode", "AccCollection", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { InvestorCode: code },
+            success: function (InvestorList) {
+                if (InvestorList.length == 1) {
+                    $.each(InvestorList, function (id, option) {// 
+                        $("#InvestorCode").val(option.InvestorCode);
+                        $("#InvestorName").val(option.InvestorName);
+                        $("#hdnInvestorId").val(option.Id);
+                        $("#InvestorBranch").val(option.InvestorBranchName);
+                    });
+                    $("#divGrid").show();
+                    SpecialInvestorPermissionList();
+                }
+                else {
+                    // $("#InvestorCode").val("");
+                    $("#divGrid").hide();
+                    $("#InvestorName").val("");
+                    $("#hdnInvestorId").val(0);
+                    $("#InvestorBranch").val("");
+                    $.alert.open("info", "No found");
+                }
+
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+    }
+    }
+
+
+
+
+
+
+
+
+
+    function Securirty(AspNetSecurityModuleId)
+    {
+        var securityValue = $("#SecurityId" + AspNetSecurityModuleId + " option:selected").val();
+        $("#txtSecurityId" + AspNetSecurityModuleId).val(securityValue);
+    }
+
+    function checkedValue(AspNetSecurityModuleId) {
+        var chkResult = $('#txtCheckId' + AspNetSecurityModuleId).is(":checked");
+        if (chkResult == true) {
+            $("#txtId" + AspNetSecurityModuleId).val('1');
+        }
+        else {
+            $("#txtId" + AspNetSecurityModuleId).val('0');
+        }
+    }
+
+    function SaveSpecialInvestorPermission() {
+
+      
+     
+        var InvestorCode = $('#InvestorCode').val().trim().indexOf("-") > 0 ? $('#InvestorCode').val().trim().split("-")[0].trim() : $('#InvestorCode').val().trim();
+
+        if (InvestorCode != "")
+        {
+            $("#AjaxLoader").show();
+      
+        var allChecks = new Array();
+        var allUsers = new Array();
+        var allPermissionId = new Array();
+
+
+        $(".clUsers").each(function () {
+            allUsers[allUsers.length] = $(this).val();
+        });
+
+
+        $(".clCheck").each(function () {
+            var IsCheck = 0;
+            var Permiss_Id = 0;
+            if($(this).is(":checked")==true)
+            {
+                IsCheck = 1;
+                
+            }
+            else
+            {
+                IsCheck = 0;
+            }
+
+            allChecks[allChecks.length] = IsCheck;
+            allPermissionId[allPermissionId.length] = $(this).attr("Id");
+        });
+
+
+
+       
+
+
+        var allTrx = new Object();
+        allTrx.InvestorCode = InvestorCode;
+        allTrx.allUsers = allUsers;
+        allTrx.allCheck = allChecks;
+        allTrx.allPermissionId = allPermissionId;
+
+        var json = JSON.stringify(allTrx);
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SaveSpecialInvestorPermission", "Access", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+
+            success: function (data) {
+                $('#AjaxLoader').hide();
+
+                if (data.Result == "Success") {
+                    $('#AjaxLoader').hide();
+                    $(".success").show(800).fadeToggle(3000);
+                }
+                else {
+                    //$(".failed").show(800).fadeToggle(3000);
+                    $.alert.open("Error", Result.Message);
+                }
+            },
+            error: function () {
+                $("#dialog-message").html('<p>Error, Fail to Save.</p>');
+                $("#dialog-message").dialog({
+                    modal: true,
+                    buttons: {
+                        Ok: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            }
+
+        });
+        }
+        else
+        {
+            $.alert.open("Error","Insert Investor");
+        }
+    }
+
+    function SpecialInvestorPermissionList()
+    {
+        var InvestorCode = $('#InvestorCode').val().trim().indexOf("-") > 0 ? $('#InvestorCode').val().trim().split("-")[0].trim() : $('#InvestorCode').val().trim();
+        if (InvestorCode != "") {
+         
+            var dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: '@Url.Action("GetSpecialInvestorUserPermission", "Access", "http")',
+                        dataType: "json",
+                        data: { InvestorCode: InvestorCode }
+                    }
+                },
+                // group: { field: "ParentName" }
+            });
+
+            $("#grid").kendoGrid({
+                dataSource: dataSource,
+                height: 550,
+                groupable: false,
+                reorderable: true,
+                filterable: true,
+                sortable: true,
+                columnMenu: true,
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 5
+                },
+                columns: [
+
+                {
+                    field: "UserId",
+                    title: "User Id",
+                    hidden: true,
+                    filterable: false,
+                    template: function (dataItem) {
+                       return "<input type='text' style='display:none' class='clUsers' value='" + dataItem.UserId + "' />"
+                    }
+                },
+                 {
+                     field: "RowSl",
+                     title: "SL",
+                     width:"10%"
+                 },
+                {
+                    field: "emp_office_code",
+                    title: "User Code",
+                    width: "15%",
+                },
+                {
+                    field: "UserName",
+                    title: "User Name",
+                },
+               {
+                   title: "Select",
+                   width:"15%",
+                   template: function (dataItem) {
+                       if (dataItem.InvestorId == '0') {
+                           return "<input type='checkbox' style='width:20px;height:20px;' class='clCheck' id='" + dataItem.PermissionId + "' />"
+                       }
+                       else {
+                           return "<input type='checkbox' style='width:20px;height:20px;' class='clCheck' checked id='" + dataItem.PermissionId + "'/>"
+                       }
+                   }
+               },
+                ]
+            }).data("kendoGrid");
+
+        }
+    }
+
+    $(document).ready(function () {
+
+        $("#InvestorCode").blur(function () {  GetInvestorbyCode();});
+
+            $('#btnSave').click(function (e) {
+                SaveSpecialInvestorPermission();
+            });
+    });
+
+</script>
+
+<div class="x_panel">
+
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:3px">Special Investor User Permission</h3>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <br />
+    <div class="x_content">
+            <div class="row form-group">
+                @Html.Label("Investor Code", htmlAttributes: new { @class = "control-label col-md-2 required text-right" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.Editor("InvestorCode", new { htmlAttributes = new { @class = "form-control", @required = "required", @autofocus = "autofocus" } })
+                </div>
+            </div>
+            <div class="row form-group">
+                @Html.Label("Investor Name", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.Editor("InvestorName", new { htmlAttributes = new { @class = "form-control",@disabled="true" } })
+                    <input type="hidden" id="hdnInvestorId" />
+                </div>
+                @Html.Label("Branch", htmlAttributes: new { @class = "control-label col-md-1 text-right" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.Editor("InvestorBranch", new { htmlAttributes = new { @class = "form-control", @disabled = "true" } })
+                </div>
+            </div>
+        <br />
+        <div class="row form-group">
+            <div class="col-md-2"> </div>
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <button type="submit" id="btnSave" class="btn btn-success">Submit</button>
+            </div>
+        </div>
+           
+        <div class="row">
+            <div class="col-md-2">
+            </div>
+            <div class="col-md-6">
+                <div class="success" role="alert" style="display:none">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <p class="message-content">Saved Sucessfully</p>
+                </div>
+                <div class="failed" role="alert" style="display: none">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <p class="message-content">Fail to save</p>
+                </div>
+            </div>
+
+        </div>
+        <br />
+        <br />
+        <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left">
+            <div class="row">
+                <div class="col-sm-12" id="divGrid">
+                    <div id="grid"></div>
+                </div>
+            </div>
+            @*<div>
+                    <select style="height:30px;width:200px"></select>
+                </div>*@
+        </form>
+        <script>
+        </script>
+    </div>
+</div>
+<div id="AjaxLoader" class="ajaxLoader"></div>
+
+

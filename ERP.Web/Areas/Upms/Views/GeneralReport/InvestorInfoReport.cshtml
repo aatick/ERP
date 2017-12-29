@@ -1,0 +1,156 @@
+﻿@{
+    ViewBag.Title = "InvestorInfoReport";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+<style type="text/css">
+    .x_content .row {
+        margin-bottom: 10px;
+    }
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<div class="page-title">
+    <div class="title_left">
+        <h4 style="color: rgb(26, 187, 156)">Investor Info Report</h4>
+    </div>
+</div>
+<div class="x_panel">
+    <div class="x_title">
+        <input type="hidden" id="hdnOccupationId" />
+        <ul class="nav navbar-right panel_toolbox">
+            <li style="float:right;">
+                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+            </li>
+        </ul>
+        <div class="clearfix"></div>
+    </div>
+    <div class="x_content">
+        <br />
+        <div class="row">
+            <div class="col-sm-7">
+                <div class="item form-group">
+                    @Html.Label("Group By", new { @class = "control-label col-sm-3 text-right" })
+                    <div class="col-sm-8">
+                        <select class="input-sm form-control bordercss" id="cmbGroupBy">
+                            <option value="0">Select Group</option>
+                            <option value="1">Status</option>
+                            <option value="2">Broker Branch</option>
+                            <option value="3">Depository Participant</option>
+                            <option value="4">BO Type</option>
+                            <option value="5">Investor Type</option>
+                            <option value="6">Account Type</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-7">
+                <div class="item form-group">
+                    @Html.Label("Search By", new { @class = "control-label col-sm-3 text-right" })
+                    <div class="col-sm-8">
+                        <select class="input-sm form-control bordercss" id="cmbSearchBy">
+                            <option value="0">Select Search By</option>
+                            <option value="1">Status</option>
+                            <option value="2">Broker Branch</option>
+                            <option value="3">Depository Participant</option>
+                            <option value="4">BO Type</option>
+                            <option value="5">Investor Type</option>
+                            <option value="6">Account Type</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" id="divSearchItem" style="display: none;">
+            <div class="col-md-7">
+                <div class="item form-group">
+                    <label class="control-label col-sm-3 text-right" id="lblSearchItem"></label>
+                    <div class="col-sm-8">
+                        <select class="input-sm form-control bordercss" id="cmbSearchItem"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-7">
+                <div class="item form-group">
+                    @Html.Label("Order By", new { @class = "control-label col-sm-3 text-right" })
+                    <div class="col-md-8 col-sm-6 col-xs-12">
+                        <select class="form-control bordercss" id="cmbOrderBy">
+                            <option value="1">Investor</option>
+                            <option value="2">Investor Code</option>
+                            <option value="3">BOID</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-7">
+                <div class="item form-group">
+                    @Html.Label("Report Type", new { @class = "control-label col-sm-3 text-right" })
+                    <div class="col-sm-8">
+                        <select class="input-sm form-control bordercss" id="cmbReportType">
+                            <option value="Pdf" selected="selected">Pdf</option>
+                            <option value="ExcelBook">Microsoft Excel</option>
+                            <option value="Excel">Microsoft Excel (97-2003)</option>
+                            <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                            <option value="Word">Microsoft Word (97-2003)</option>
+                            <option value="XML">XML</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ln_solid"></div>
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="col-md-4">
+                <div class="form-group from-action">
+                    <input type="button" value="View" class="btn btn-sm btn-primary" id="btnShow" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $("#cmbSearchBy").on("change", function () {
+        var searchId = $(this).val();
+        if (searchId == 0) {
+            $("#divSearchItem").hide();
+            $("#cmbSearchItem").html("");
+            $("#lblSearchItem").html("");
+            return false;
+        }
+        var text = $("#cmbSearchBy option:selected").text();
+        $.ajax({
+            type: "Post",
+            url: '@Url.Action("GetSearchItem", "GeneralReport")',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({ searchId: searchId }),
+            dataType: "json",
+            success: function (data) {
+                $("#cmbSearchItem").html("");
+                $("#cmbSearchItem").append("<option value='0'>Select All</option>");
+                $.each(data, function (i, d) {
+                    $("#cmbSearchItem").append("<option value='" + d.Id + "'>" + d.Text + "</option>");
+                });
+                $("#lblSearchItem").html(text);
+                $("#divSearchItem").show();
+            }
+        });
+        return true;
+    });
+    $("#btnShow").on("click", function () {
+        window.open("/GeneralReport/GenerateInvestorInfoReport?reportNo=1&groupById=" + $("#cmbGroupBy").val() + "&searchById=" + $("#cmbSearchBy").val() + "&searchItemId=" + ($("#cmbSearchItem").val() == "" || $("#cmbSearchItem").val() == null ? 0 : $("#cmbSearchItem").val()) + "&orderById=" + $("#cmbOrderBy").val() + "&exportType=" + $("#cmbReportType").val());
+    });
+</script>

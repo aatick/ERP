@@ -1,0 +1,285 @@
+﻿
+@{
+    ViewBag.Title = "FundTransferEdit";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<script type="text/javascript">
+
+
+
+
+    function GetFundTransferInfoForEdit() {
+        var TransferNo = @ViewData["TransferNo"];
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetFundTransferInfoForEdit", "IPOGroup", "http")',
+                type: "GET",
+                dataType: 'json',
+                async: true,
+                data: { TransferNo: TransferNo },
+                success: function (Result) {
+                    var index = 1;
+                    var dtTable = $("#gridTable");
+                    var tableBody = dtTable.find('tbody');
+                    tableBody.empty();
+                    $.each(Result, function (Index, E) {
+
+                        if (E.TransferType == "LeaderToMember" || E.TransferType == "InvestorToInvestor")
+                        {
+                            $("#lblAmount").html("Receive Amount");
+                            if (E.SenderReceiver == "Sender") {
+
+                                $("#InvestorName").val(E.InvestorCode + " - " + E.InvestorName);
+                                $("#txtAmount").val(E.Amount)
+                                $("#txtBalance").val(E.CurrentBalanceWithoutThisTransfer);
+                                $("#TransactionDate").val(E.TransactionDate);
+                                $("#HdnDeialsId").val(E.Id);
+                            }
+                            else
+                            {
+                                tableBody.append('<tr id="tr' + index + '">' +
+                                                                  '<td width="10%" >' + index + '</td>' +
+                                                                  '<td width="15%" >' + E.InvestorCode + '<input type="text" style="display:none;" value="' + E.Id + '" class="clsTrnxDetailId" id="txtTrnx' + E.Id + '" /></td>' +
+                                                                  '<td width="40%" >' + E.InvestorName + '</td>' +
+                                                                  '<td width="10%" >' + E.CurrentBalanceWithoutThisTransfer + '</td>' +
+                                                                  '<td width="25%" ><input type="number" value="' + E.Amount + '" class="clsTranferAmt" id="txtAmount' + E.Id + '" onkeyup=CalcAmount(' + E.Id + ',1); /><input type="text" style="display:none" value="' + E.Amount + '" class="clshdnAmount" id="txthdnAmount' + E.Id + '" /></td>' +
+                                                                  '</tr>'
+                                                                  )
+                                index = index + 1;
+                            }
+                          
+
+                        }
+                        else //if (E.TransferType = "Member To Leader")
+                        {
+                            $("#lblAmount").html("Send Amount");
+
+                            if (E.SenderReceiver == "Receiver") {
+
+                                $("#InvestorName").val(E.InvestorCode + " - " + E.InvestorName);
+                                $("#txtAmount").val(E.Amount)
+                                $("#txtBalance").val(E.CurrentBalanceWithoutThisTransfer);
+                                $("#TransactionDate").val(E.TransactionDate);
+                                $("#HdnDeialsId").val(E.Id);
+                            }
+                            else {
+                                tableBody.append('<tr id="tr' + index + '">' +
+                                                                  '<td width="10%" >' + index + '</td>' +
+                                                                  '<td width="15%" >' + E.InvestorCode + '<input type="text" style="display:none;" value="' + E.Id + '" class="clsTrnxDetailId" id="txtTrnx' + E.Id + '" /></td>' +
+                                                                  '<td width="40%" >' + E.InvestorName + '</td>' +
+                                                                  '<td width="10%" >' + E.CurrentBalanceWithoutThisTransfer + '<input type="text" style="display:none;" value="' + E.CurrentBalanceWithoutThisTransfer + '" id="txtCurrentBalance' + E.Id + '" /></td>' +
+                                                                  '<td width="25%" ><input type="number" value="' + E.Amount + '" class="clsTranferAmt" id="txtAmount' + E.Id + '" onkeyup=CalcAmount(' + E.Id + ',2); /><input type="text" style="display:none" value="' + E.Amount + '" class="clshdnAmount" id="txthdnAmount' + E.Id + '" /></td>' +
+                                                                  '</tr>'
+                                                                  )
+                                index = index + 1;
+                            }
+
+                        }
+                       
+                    });
+
+                },
+                error: function () {
+                    alert("Fail to load");
+                }
+            });
+        
+    }
+
+    function CalcAmount(Id, trx)
+    {
+        var totAmt = 0;
+
+        $(".clsTranferAmt").each(function () {
+            totAmt = parseFloat(totAmt) + parseFloat($(this).val()==""?"0":$(this).val());
+        });
+
+        if (trx == 1) //Leader To Member
+        {
+           
+            var balance = $("#txtBalance").val()== ""?"0":$("#txtBalance").val();
+
+            if (balance >= totAmt) {
+                $("#txtAmount").val(totAmt);
+            }
+            else {
+                totAmt = 0;
+                $("#txtAmount" + Id).val(0);
+                $(".clsTranferAmt").each(function () {
+                    totAmt = parseFloat(totAmt) + parseFloat($(this).val()==""?"0":$(this).val());
+                });
+                $("#txtAmount").val(totAmt);
+                $.alert.open("error", "Invalid Operation");
+                return false;
+            }
+        }
+        else
+        {
+            var currtbala = parseFloat($("#txtCurrentBalance" + Id).val() == ""?"0": $("#txtCurrentBalance" + Id).val());
+            var CurrAmt = parseFloat($("#txtAmount" + Id).val()==""?"0":$("#txtAmount" + Id).val());
+            if (CurrAmt > currtbala)
+            {
+                $("#txtAmount" + Id).val(0);
+                $("#txtAmount").val(totAmt-CurrAmt);
+                $.alert.open("error", "Invalid Operation");
+                return false;
+            }
+            else
+            {
+                $("#txtAmount").val(totAmt);
+            }
+        }
+       
+       
+    }
+
+    $(document).ready(function () {
+
+        GetFundTransferInfoForEdit();
+
+
+
+        $("#btnSubmit").click(function (e) {
+            e.preventDefault();
+
+            var DetailsId = "";
+            var TrxAmt = "";
+
+            $(".clsTrnxDetailId").each(function () {
+                if (DetailsId != "")
+                {
+                    DetailsId = DetailsId +","+ $(this).val();
+                }
+                else
+                {
+                    DetailsId = $(this).val();
+                }
+               
+            });
+
+            $(".clsTranferAmt").each(function () {
+                if (TrxAmt != "")
+                {
+                    TrxAmt =TrxAmt +","+ $(this).val();
+                }
+                else
+                {
+                    TrxAmt = $(this).val();
+                }
+               
+            });
+
+            var HdnDeialsId = $("#HdnDeialsId").val();
+
+
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("EditFundTransfer", "IPOGroup", "http")',
+                data: { DetailsId: DetailsId, TrxAmt: TrxAmt, HdnDeialsId: HdnDeialsId },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    if (data.Result == "Success")
+                    {
+                        $.alert.open("Success","Save successfull",function(){
+                            window.location.href = '@Url.Action("fundTrxList", "IPOGroup")';
+                        });
+                    }
+                    else
+                    {
+                        $.alert.open("Error", data.Result);
+                    }
+                },
+                error: function (request, status, error) {
+
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+
+
+
+        });
+
+    });
+
+
+</script>
+
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">&nbsp;&nbsp; Fund Transfer</h3>
+        </div>
+        @Html.ActionLink("Back to list", "FundTrxList", "IPOGroup", null, new { @class = "btn btn-primary btn-sm pull-right" })
+        <div id="AjaxLoader" class="ajaxLoader"></div>
+        <input type="hidden" id="HdnDeialsId" />
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                   
+                    <br />
+                    <div class="row form-group" id="divTransferAmount">
+                        @Html.Label("Transferor Name", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("InvestorName", new { htmlAttributes = new { @class = "form-control",  @readonly = "readonly" } })
+                        </div>
+                        @Html.Label("Amount", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("txtAmount", new { htmlAttributes = new { @class = "form-control", @Id = "txtAmount", @readonly = "readonly" } })
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        @Html.Label("Balance", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("txtBalance", new { htmlAttributes = new { @class = "form-control", @Id = "txtBalance", @readonly = "readonly" } })
+                        </div>
+                        @Html.Label("Transaction Date", htmlAttributes: new { @class = "control-label col-md-2 text-right" })
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                            @Html.Editor("TransactionDate", new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div id="example">
+                            <table id="gridTable">
+                                <thead>
+                                    <tr>
+                                        <th width="10%" >SL</th>
+                                        <th width="15%">Investor Code</th>
+                                        <th width="40%">Name</th>
+                                        <th width="10%">Balance</th>
+                                        <th width="25%"><label id="lblAmount" style="color:red"></label></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                   
+                                </tbody>
+                            </table>
+
+                            <script>
+                                $(document).ready(function () {
+                                    $("#gridTable").kendoGrid({
+                                        height: 300,
+                                        sortable: true
+                                    });
+                                });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="row">
+                        <div class="col-sm-12 text-center">
+                            <input type="button" name="btnSubmit" id="btnSubmit" class="btn btn-sm btn-success" value="Submit" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
