@@ -1,0 +1,209 @@
+﻿
+@{
+    ViewBag.Title = "ManualAtnVSApprove";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+
+<style>
+    .ui-autocomplete {
+        cursor: pointer;
+        height: 400px;
+        width: 300px;
+        overflow-y: scroll;
+        background-color: white;
+        color: rgb(0,188,212);
+        /*outline-style:outset;*/
+    }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+<script type="text/javascript">
+
+
+    function GetManualAttendance() {
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetManualAttendanceForApprove", "Attendance", "http")',
+                    dataType: "json",
+                    data: {}
+                }
+            },
+            pageSize: 20
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 600,
+            groupable: false,
+            reorderable: true,
+            resizable: true,
+            filterable: true,
+            sortable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+            {
+                EMP_ID: "EMP_ID",
+                hidden: true,
+                filterable: false
+            },
+             {
+                 field: "emp_name",
+                 title: "Employee Name",
+                 width: "20%"
+             },
+
+              {
+                  field: "atten_type",
+                  title: "Attendance Type",
+                  hidden: true,
+              },
+               {
+                   field: "atten_date",
+                   title: "Attendance Date",
+               },
+                {
+                    field: "purpose",
+                    title: "Purpose",
+                },
+                //{
+                //    field: "approval_statusMsg",
+                //    title: "Approval Status",
+                //},
+                //{
+                //    field: "Approver",
+                //    title: "Approver",
+                //},
+            {
+                title: "Action",
+                width: "10%",
+                template: function (dataItem) {
+
+                    return '<a href="#"  onclick="ApproveOSDAttendance(' + dataItem.Id + ')"  title="Approve" class="btn btn-info btn-xs"><i class="fa fa-caret-square-o-down"></i></a>' +
+                           '<a href="#"  onclick="RejectOSDAttendance(' + dataItem.Id + ')"  title="Reject" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></a>'
+                }
+            }
+            ],
+        });
+    }
+
+    function RejectOSDAttendance(Id) {
+        $.alert.open('confirm', 'Are you sure you want to REJECT this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("RejectOSDAttendance", "Attendance", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        if (data.Result == "Success") {
+                            GetManualAttendance();
+                            $.alert.open("success", data.Message);
+                        }
+                        else {
+                            $.alert.open("Error", data.Message);
+                        }
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+    function ApproveOSDAttendance(Id)
+    {
+        $.alert.open('confirm', 'Are you sure you want to APPROVE this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("ApproveOSDAttendance", "Attendance", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        if (data.Result == "Success") {
+                            GetManualAttendance();
+                            $.alert.open("success", data.Message);
+                        }
+                        else {
+                            $.alert.open("Error", data.Message);
+                        }
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        GetManualAttendance();
+    });
+</script>
+
+@using (Html.BeginForm("Attendance", "ManualAtnApprove", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "ManualAtnForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div role="main">
+        <div class="">
+            <div id="AjaxLoader" class="ajaxLoader"></div>
+            <div class="page-title">
+                <div class="title_left PageHeader" style="width:90%;">
+                    <h3 style="color: white;padding:2px">&nbsp;  Attendance OSD Approve</h3>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-6 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                            <br />
+                            <div class="row form-group">
+                                <div id="grid">
+
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+
+

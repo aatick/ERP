@@ -1,0 +1,570 @@
+﻿@{
+    ViewBag.Title = "frmReliever";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+
+
+
+<style>
+    .imgContainer {
+        position: relative;
+        float: left;
+        width: 100px;
+        padding: 5px;
+    }
+
+        .imgContainer a, .big-images a {
+            display: inline-block;
+        }
+
+            .imgContainer a.selected {
+                border: 1px solid red;
+            }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    /*.k-grouping-header {
+        background-color: #1ABB9C;
+    }*/
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    /* Modal Content/Box */
+    .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto; /* 15% from the top and centered */
+        padding: 5px;
+        border: 1px solid #888;
+        width: 100%; /* Could be more or less, depending on screen size */
+    }
+
+    /* The Close Button */
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+    .modal-backdrop {
+        z-index: 1040 !important;
+    }
+
+    .modal-dialog {
+        margin: 2px auto;
+        z-index: 1100 !important;
+    }
+</style>
+
+<script type="text/javascript">
+    function EmployeeLeaveBalance(EmployeeId, EmployeeCode) {
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("EmployeeLeaveBalance", "Leave", "http")',
+            data: { EmployeeId: EmployeeId, EmployeeCode: EmployeeCode },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+
+                if (data.Result == "Success") {
+                    $.each(data.List_EmployeeInfo, function (id, e) {
+
+                        $("#CL_bal" + e.emp_id + "").html(e.CL_BALANCE);
+                        $("#CL_ava" + e.emp_id + "").html(e.CL_AVAILED);
+
+                        $("#PL_bal" + e.emp_id + "").html(e.PL_BALANCE);
+                        $("#PL_ava" + e.emp_id + "").html(e.PL_AVAILED);
+
+                        $("#ML_bal" + e.emp_id + "").html(e.ML_BALANCE);
+                        $("#ML_ava" + e.emp_id + "").html(e.ML_AVAILED);
+
+                        $("#SL_bal" + e.emp_id + "").html(e.SL_BALANCE);
+                        $("#SL_ava" + e.emp_id + "").html(e.SL_AVAILED);
+
+                        $("#LWP_bal" + e.emp_id + "").html(e.LWP_BALANCE);
+                        $("#LWP_ava" + e.emp_id + "").html(e.LWP_AVAILED);
+
+                        $("#LWP_CTS_bal" + e.emp_id + "").html(e.LWP_CTS_BALANCE);
+                        $("#LWP_CTS_ava" + e.emp_id + "").html(e.LWP_CTS_AVAILED);
+
+                    });
+                }
+                else {
+                    $.alert.open("error", data.Message);
+                }
+
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    function GetEmployeeLeaveInfoForProcess(LeaveAppId) {
+
+        $("#AjaxLoader").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("Get_Employee_Leave_Info_By_LeaveId", "Leave", "http")',
+            data: { LeaveAppId: LeaveAppId },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                //if (data.Result == "Success") {
+                $("#divleaveInfo").empty();
+                $.each(data.EmpAccInfoList, function (id, e) {
+                    //employee_id
+
+                    $("#divleaveInfo").append(
+                         //'<button class="accordion"><img src="/Employee/RetrieveImage/' + e.employee_id + '"  alt="No Image" height=30 width=30 class="img-circle" /> &nbsp;&nbsp; <b style="color:white">' + e.emp_office_code + '-' + e.emp_name + '</button>' +
+                          '<div class="panel">' +
+                          '<br />' +
+                          '<div class="row form-group">' +
+                          '<div class="col-md-2"></div>' +
+                           '<div class="col-md-10 col-sm-6 col-xs-12">' +
+                          '<table border="1" style="width:100%;text-align:center"><thead><tr><th style="text-align:center">Leave Type</th><th style="text-align:center">Annual Leave</th><th style="text-align:center">Sick Leave</th><th style="text-align:center">ML </th><th style="text-align:center">LWP</th></tr></thead><tbody><tr style="background-color:lightgreen"><td>Balance</td><td><label id="PL_bal' + e.employee_id + '"></label></td><td><label id="SL_bal' + e.employee_id + '"></label></td><td><label id="ML_bal' + e.employee_id + '"></label></td><td><label id="LWP_bal' + e.employee_id + '"></label></td></tr><tr style="background-color:lightblue"><td>Availed</td><td><label id="PL_ava' + e.employee_id + '"></label></td><td><label id="SL_ava' + e.employee_id + '"></label></td><td><label id="ML_ava' + e.employee_id + '"></label></td><td><label id="LWP_ava' + e.employee_id + '"></label></td></tr></tbody></table>' +
+                           '</div>' +
+                          '</div>' +
+                          '<div class="row form-group">' +
+                          '<label class="control-label col-md-2 text-right">Name </label>' +
+                          '<div class="col-md-4 col-sm-6 col-xs-12">' +
+                           '<input type="text" value="'  + e.emp_office_code + '-' + e.emp_name +  '" class="form-control" disabled="disabled"/>' +
+                           '</div>' +
+                        '</div>' +
+                          '<div class="row form-group">' +
+                          '<label class="control-label col-md-2 text-right">Branch</label>' +
+                          '<div class="col-md-4 col-sm-6 col-xs-12">' +
+                           '<input type="text" value="' + e.branch_name + '" class="form-control" disabled="disabled"/>' +
+                           '</div>' +
+                            '<label class="control-label col-md-2 text-right">Department</label>' +
+                          '  <div class="col-md-4 col-sm-6 col-xs-12">' +
+                           '<input type="text" value="' + e.dept_name + '" class="form-control" disabled="disabled"/>' +
+                         '</div>' +
+                        '</div>' +
+                         '<div class="row form-group">' +
+                          '<label class="control-label col-md-2 text-right">Designation</label>' +
+                          '  <div class="col-md-4 col-sm-6 col-xs-12">' +
+                           '<input type="text" value="' + e.desg_name + '" class="form-control" disabled="disabled"/>' +
+                          '</div>' +
+                            '<label class="control-label col-md-2 text-right">Joining Date</label>' +
+                          '  <div class="col-md-4 col-sm-6 col-xs-12">' +
+                           '<input type="text" value="' + e.emp_joining_datetime + '" class="form-control" disabled="disabled"/>' +
+                           '</div>' +
+                        '</div>' +
+
+                          '<div class="row form-group">' +
+                          '<label class="control-label col-md-2 text-right">Leave Type</label>' +
+                          '  <div class="col-md-4 col-sm-6 col-xs-12">' +
+                           '<input type="text" value="' + e.leave_type_name + '" class="form-control" disabled="disabled"/>' +
+                          '</div>' +
+                            '<label class="control-label col-md-2 text-right">Applied Date</label>' +
+                          '  <div class="col-md-4 col-sm-6 col-xs-12">' +
+                           '<input type="text" value="' + e.applied_date + '" class="form-control" disabled="disabled"/>' +
+                           '</div>' +
+                        '</div>' +
+
+                         '<div class="row form-group">' +
+                          '<label class="control-label col-md-2 text-right">Leave From</label>' +
+                          '  <div class="col-md-4 col-sm-6 col-xs-12">' +
+                           '<input type="text" id="LeaveStartDate' + e.emp_leave_application_id + '" value="' + e.recommend_start_date + '" class="form-control" disabled="disabled" />' +
+                          '</div>' +
+                            '<label class="control-label col-md-2 text-right">Leave To</label>' +
+                          '  <div class="col-md-4 col-sm-6 col-xs-12">' +
+                           '<input type="text" id="LeaveEndDate' + e.emp_leave_application_id + '" value="' + e.recommend_end_date + '" class="form-control" disabled="disabled"/>' +
+                           '</div>' +
+                        '</div>' +
+                        '<div class="row form-group">' +
+                          '<label class="control-label col-md-2 text-right">Puepose Of Leave</label>' +
+                          '  <div class="col-md-4 col-sm-6 col-xs-12">' +
+                           '<input type="text" value="' + e.purpose_of_leave + '" class="form-control" disabled="disabled"/>' +
+                          '</div>' +
+                            '<label class="control-label col-md-2 text-right">Address During Leave</label>' +
+                          '  <div class="col-md-4 col-sm-6 col-xs-12">' +
+                           '<input type="text" value="' + e.address_during_leave + '" class="form-control" disabled="disabled"/>' +
+                           '</div>' +
+                        '</div>' +////recommend_start_date recommend_end_date
+                        '<div class="row form-group">' +
+                          '<label class="control-label col-md-2 text-right">Contact</label>' +
+                          '  <div class="col-md-4 col-sm-6 col-xs-12">' +
+                           '<input type="text" value="' + e.contact_no + '" class="form-control" disabled="disabled"/>' +
+                          '</div>' +
+                            '<label class="control-label col-md-2 text-right">Recommander</label>' +
+                          '  <div class="col-md-4 col-sm-6 col-xs-12">' +
+                           '<input type="text" value="' + e.RecommandName + '" class="form-control" disabled="disabled"/>' +
+                          '</div>' +
+                        '</div>' +
+                         '<div class="row form-group">' +
+                            '<label class="control-label col-md-2 text-right">Reliever Name</label>' +
+                          '  <div class="col-md-4 col-sm-6 col-xs-12">' +
+                           '<input type="text" value="' + e.RelieverName + '" class="form-control" disabled="disabled"/>' +
+                           '</div>' +
+                            '<label class="control-label col-md-2 text-right">Remarks</label>' +
+                          '<div class="col-md-4 col-sm-6 col-xs-12">' +
+                           '<input type="text"  class="form-control" id="txtRemarks' + e.emp_leave_application_id + '" disabled="disabled"/>' +
+                           '</div>' +
+                        '</div>' +
+                        '<br />' +
+                        '</div>'
+                        );
+                    EmployeeLeaveBalance(e.employee_id, e.emp_office_code);
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+   //////////////////////     ----------------
+    function Get_Leave_Info_For_Process() {
+
+        $("#AjaxLoader").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("Get_Employee_Leave_Info_For_Approve", "Leave", "http")',
+            data: { },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                if (data.Result == "Success") {
+                    var dtTable = $('#gridtable');
+                    var tableBody = dtTable.find('tbody');
+                    tableBody.empty();
+                    $.each(data.EmpAccInfoList, function (id, e) {
+                        if (data.EmpAccInfoList.length == 0)
+                        {
+                            $("#checkAll").prop("checked",false);
+                        }
+                        tableBody.append('<tr>' +
+                            '<td> <input type="checkbox" class="ckleave" id="' + e.emp_leave_application_id + '" checked  style="width:20px;height:20px"/></td>' +
+                             '<td style="width:12px">' + e.RowSl + '<input type="text" value="' + e.emp_leave_application_id + '" style="display:none;" class="clLeaveId"  /></td>' +
+                            '<td>' + e.emp_name + '</td>' +
+                            '<td>' + e.leave_type_name + '</td>' +
+                            '<td>' + e.purpose_of_leave + '</td>' +
+                            '<td><input type="text" style="width:80px;" value="' + e.recommend_start_date + '"  class="clStartDate" id="txtStartDate' + e.emp_leave_application_id + '" /></td>' +
+                            '<td><input type="text" style="width:80px;" value="' + e.recommend_end_date + '" class="clEndDate" id="txtEndDate' + e.emp_leave_application_id + '" /></td>' +
+                            '<td><button type="button" onclick="GetEmployeeLeaveInfoForProcess(' + e.emp_leave_application_id + ');" class="btn btn-primary btn-xs" data-toggle="modal" data-target="#myModal"><i class="fa fa-list" aria-hidden="true"></i></button></td>' +
+                            '</tr>');
+                    });
+
+                    $(".clStartDate").datepicker(
+                        {
+                            dateFormat: "dd/mm/yy",
+                            showAnim: "scale",
+                            changeMonth: true,
+                            changeYear: true,
+                            maxDate: "+50Y",
+                            yearRange: "1950:2040",
+                        });
+                    $(".clEndDate").datepicker(
+                        {
+                            dateFormat: "dd/mm/yy",
+                            showAnim: "scale",
+                            changeMonth: true,
+                            changeYear: true,
+                            maxDate: "+50Y",
+                            yearRange: "1950:2040",
+                        });
+
+                    $("#AjaxLoader").hide();
+                }
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function Approveleave()
+    {
+        var AllLeaveId = new Array();
+        var AllStartDate = new Array();
+        var AllEndDate = new Array();
+        var AllRemarks = new Array();
+
+        $("#AjaxLoader").show();
+
+        var $ckleave = $(".ckleave");
+        $ckleave.each(function () {
+            if($(this).is(":checked") == true)
+            {
+                var Leave_Id = $(this).attr("id");
+                AllLeaveId[AllLeaveId.length] = Leave_Id;///txtStartDate  txtEndDate
+                AllStartDate[AllStartDate.length] = $("#txtStartDate" + Leave_Id).val();
+                AllEndDate[AllEndDate.length] = $("#txtEndDate" + Leave_Id).val();
+                AllRemarks[AllRemarks.length] = "";
+            }
+
+        });
+
+
+
+        var allTrx = new Object();
+
+        allTrx.LeaveAppId = AllLeaveId;
+        allTrx.LeaveStartDate = AllStartDate;
+        allTrx.LeaveEndDate = AllEndDate;
+        allTrx.Remarks = AllRemarks;
+
+        var json = JSON.stringify(allTrx);
+
+        if (AllLeaveId.length >= 1) {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("Leave_Final_ApproveEx", "Leave", "http")',
+                    type: "POST",
+                    dataType: 'json',
+                    async: true,
+                    data: json,
+                    success: function (data) {
+                        $("#AjaxLoader").hide();
+                        Get_Leave_Info_For_Process();
+                        if (data.Result == "Success")
+                        {
+                           
+                            $.alert.open("info", "Save successfull .....");
+                        }
+                        else
+                        {
+                            $.alert.open("error", data.Message);
+                        }
+                    },
+                    error: function (Result) {
+                        $("#AjaxLoader").hide();
+                        $.alert.open("error", Result);
+                    }
+                });
+
+        }
+        else {
+            $("#AjaxLoader").hide();
+            $.alert.open("error", "Select leave");
+        }
+
+    }
+
+
+
+    function CancelLeave() {
+        var AllLeaveId = new Array();
+
+        $("#AjaxLoader").show();
+
+        var $ckleave = $(".ckleave");
+        $ckleave.each(function () {
+            if ($(this).is(":checked") == true) {
+                var Leave_Id = $(this).attr("id");
+                AllLeaveId[AllLeaveId.length] = Leave_Id;
+            }
+        });
+
+
+
+        var allTrx = new Object();
+
+        allTrx.LeaveAppId = AllLeaveId;
+
+        var json = JSON.stringify(allTrx);
+
+        if (AllLeaveId.length > 1) {
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("Leave_Cancel_By_Approver", "Leave", "http")',
+                type: "POST",
+                dataType: 'json',
+                async: true,
+                data: json,
+                success: function (data) {
+                    $("#AjaxLoader").hide();
+                    if (data.Result == "Success") {
+                        Get_Leave_Info_For_Process();
+                        $.alert.open("info", "Cancel successfull .....");
+                    }
+                    else {
+                        $.alert.open("error", data.Message);
+                    }
+                },
+                error: function (Result) {
+                    $("#AjaxLoader").hide();
+                    $.alert.open("error", Result);
+                }
+            });
+
+        }
+        else {
+            $("#AjaxLoader").hide();
+            $.alert.open("error", "Select leave");
+        }
+
+    }
+
+
+    $(document).ready(function () {
+
+        Get_Leave_Info_For_Process();
+
+       // GetEmployeeLeaveInfoForProcess();
+
+        $("#btnCancel").click(function (e) {
+            e.preventDefault();
+            $.alert.open('confirm', 'Are you sure you want to CANCEL this leave?', function (button) {
+                if (button == 'yes') {
+                    CancelLeave();
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            });
+
+        });
+
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+            $.alert.open('confirm', 'Are you sure you want to APPROVE these leave?', function (button) {
+                if (button == 'yes') {
+                    Approveleave();
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            });
+
+        });
+
+        $("#checkAll").click(function () {
+            if($("#checkAll").is(":checked") == true)
+            {
+                $(".ckleave").prop("checked",true);
+            }
+            else
+            {
+                $(".ckleave").prop("checked", false);
+            }
+        });
+
+});
+
+</script>
+
+
+<div class="x_panel">
+    <div class="x_title">
+        <div class="page-title">
+            <div class="title_left PageHeader" style="width:90%;">
+                <h3 style="color: white;padding:2px">&nbsp;&nbsp; Leave Approval</h3>
+            </div>
+            @Html.ActionLink("Add New", "Create", "Employee", new { EmployeeId = 0 }, new { @class = "btn btn-primary btn-sm pull-right" })
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="x_content">
+        <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left">
+            <br />
+            <div class="row">
+                <div id="example">
+                    <table id="gridtable">
+
+                        <thead>
+                            @*RowSl Name leave_type_name purpose_of_leave recommend_start_date  recommend_end_date*@
+                            <tr>
+                                <th data-field="ck"><input type="checkbox" checked id="checkAll" style="width:20px;height:20px"/> Select</th>
+                                <th data-field="Sl" style="width:12px">Sl</th>
+                                <th data-field="Name">Name</th>
+                                <th data-field="LeaveType">Leave Type</th>
+                                <th data-field="purposeofleave">Purpose of Leave</th>
+                                <th data-field="StartDate">Start Date</th>
+                                <th data-field="EndDate">End Date</th>
+                                <th data-field="Details">Details</th>
+                                    @*<th data-field="Debit">Debit</th>
+                                    <th data-field="Delete">Action</th>*@
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+
+                    </table>
+
+                    <script>
+                        $(document).ready(function () {
+                            $("#gridtable").kendoGrid({
+                                height: 500,
+                                //sortable: true
+                            });
+                        });
+                    </script>
+                </div>
+            </div>
+            <br />
+            <div class="row form-group">
+                <div class="col-md-4"></div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-success"  id="btnSave">Approve</button>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-danger"  id="btnCancel">Cancel</button>
+                </div>
+                
+            </div>
+            
+    </div>
+   
+</div>
+
+<div>
+    <div class="modal fade" id="myModal" role="dialog">
+        <div class="modal-dialog" style="width:70%!important">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="x_content">
+                        <h3 style="color:black" id="nodatafound"></h3>
+                        <div id="divleaveInfo">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="dismissModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

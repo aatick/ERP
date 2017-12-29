@@ -1,0 +1,350 @@
+﻿
+@{
+    ViewBag.Title = "leaveRecoApp";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+    /*ul {
+        list-style: none;
+    }
+    ol {
+        list-style: none;
+        counter-reset: li;
+    }
+    li::before {
+        content: counter(li);
+        color: green;
+        display: inline-block;
+        width: 1em;
+        margin-left: -1em;
+    }
+    li {
+        counter-increment: li;
+    }*/
+
+
+    .fa-times-circle {
+        color: red;
+    }
+
+
+</style>
+<script type="text/javascript">
+
+    function GetDepartmentwiseLeaveRecommenderAndApprover()
+    {
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetDepartmentwiseLeaveRecommenderAndApprover", "Leave", "http")',
+                    dataType: "json",
+                    data: {  }
+                }
+            },
+            pageSize: 30,
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 1000,
+            groupable: false,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "dept_id",
+                hidden: true,
+                filterable: false
+            },
+           
+            {
+                field: "RowSl",
+                title: "SL",
+                width: "6%",
+                },
+             {
+                 field: "dept_name",
+                 title: "Department",
+                 width: "20%",
+             },
+            {
+                field: "dept_short_name",
+                title: "Short Name",
+                width: "15%",
+                hidden: true,
+            },
+             {
+                 field: "Recommender",
+                 title: "Recommender",
+                 //width: "25%",
+                 template : function(dataItem)
+                 {
+                     if (dataItem.Recommender != "")
+                     {
+                         var Rec = dataItem.Recommender.split(",");
+                         var AllRe = "";
+                         for (i = 0; i < Rec.length; i++) {
+                             AllRe = AllRe + '<li>  ' + Rec[i] + '  <a href="#"  title="Cancel" onclick="CancelRecommender(' + dataItem.dept_id + ',' + "'" + Rec[i] + "'" + ');"><i class="fa fa-times-circle"></i></a></li>'
+                         }
+                         return "<ul>" + AllRe + '</ul>';
+                     }
+                     else
+                     {
+                         return "";
+                     }
+                 }
+             },
+            {
+                field: "Approver",
+                title: "Approver",
+                template: function (dataItem) {
+                    if (dataItem.Approver != "")
+                    {
+                        var Appv = dataItem.Approver.split(",");
+                        var AllApp = "";
+                        for (i = 0; i < Appv.length; i++) {
+                            AllApp = AllApp + '<li>  ' + Appv[i] + ' <a href="#"   title="Cancel" onclick="CancelApprover(' + dataItem.dept_id + ',' + "'" + Appv[i] + "'" + ');"><i class="fa fa-times-circle"></i></a></li>'
+                        }
+                        return "<ul>" + AllApp + '</ul>';
+                    }
+                    else
+                    {
+                        return '';
+                    }
+                  
+                }
+            },
+                       // {
+            //    title: "Action",
+            //    width:"10%",
+            //    template: function (dataItem) {
+            //        return '<a href="#"  onclick="GetEditDataById(' + dataItem.dept_id + ',' + dataItem.PERMISSION_id_rec + ',' + dataItem.EMP_Id_Rec + ',' + dataItem.PERMISSION_id_App + ',' + dataItem.EMP_Id_App + ')"  title="Edit" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a>'
+            //        //<a href='#' data-toggle='tooltip' class='k-button k-button-icontext k-grid-Edit' title='Delete' onclick='DeleteEmployeeInfoById(" + dataItem.Id + ")'><i class='fa fa-trash-o fa'></i></a>  <a href='#' data-toggle='tooltip'class='k-button k-button-icontext k-grid-Edit' title='Print' onclick='GetPrintDataById(" + dataItem.Id + ")'><i class='fa fa-print'></i></a>"
+            //    }
+            //}
+            ]
+        });
+    }
+
+    
+
+    function CancelApprover(DeptId, Approver)
+    {
+        var ApproverCode = Approver.split("-")[0].trim();
+        $.alert.open('confirm', 'Are you sure you want to CANCEL this APPROVER?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("Leave_CancelApprover", "Leave", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { DeptId: DeptId, ApproverCode: ApproverCode, PermissionType: 2 },
+                    success: function (data) {
+                        GetDepartmentwiseLeaveRecommenderAndApprover();
+                        $("#AjaxLoader").hide();
+                        if (data.Result == "Success") {
+                            $.alert.open("info", "Cancel successfull .....");
+                        }
+                        else {
+                            $.alert.open("error", data.Message);
+                        }
+                    },
+                    error: function (Result) {
+                        $("#AjaxLoader").hide();
+                        $.alert.open("error", Result);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+    function CancelRecommender(DeptId,Recommender) {
+        var RecoCode = Recommender.split("-")[0].trim();
+        $.alert.open('confirm', 'Are you sure you want to CANCEL this RECOMMENDER?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("Leave_CancelApprover", "Leave", "http")',
+                    type: "GET",
+                    dataType: 'json',
+                    async: true,
+                    data: { DeptId: DeptId, ApproverCode: RecoCode, PermissionType: 1 },
+                    success: function (data) {
+                        GetDepartmentwiseLeaveRecommenderAndApprover();
+                        $("#AjaxLoader").hide();
+                        if (data.Result == "Success") {
+                            $.alert.open("info", "Cancel successfull .....");
+                        }
+                        else {
+                            $.alert.open("error", data.Message);
+                        }
+                    },
+                    error: function (Result) {
+                        $("#AjaxLoader").hide();
+                        $.alert.open("error", Result);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+
+    }
+    
+    function GetEditDataById(dept_id, PERMISSION_id_rec, EMP_Id_Rec, PERMISSION_id_App, EMP_Id_App)
+    {
+        $("#DepartmentList").val(dept_id);
+        if (EMP_Id_Rec == "0")
+            EMP_Id_Rec = "";
+        $("#ddlRecommender").val(EMP_Id_Rec);
+        if (EMP_Id_App == "0")
+            EMP_Id_App = "";
+        $("#ddlApprover").val(EMP_Id_App);
+        $("#DepartmentList").attr("disabled", true);
+        $("#hdnPERMISSION_id_rec").val(PERMISSION_id_rec);
+        $("#hdnPERMISSION_id_App").val(PERMISSION_id_App);
+        //    
+    }
+   
+    function SaveLeavePermissionAuth() {
+
+        // //DepartmentList ddlRecommender  ddlApprover
+        var DepartmentId = $("#DepartmentList").val() == "" ? "0" : $("#DepartmentList").val();
+        var RecommenderId = $("#ddlRecommender").val() == "" ? "0" : $("#ddlRecommender").val();
+        var ApproverId = $("#ddlApprover").val() == "" ? "0" : $("#ddlApprover").val();
+        var Permission_Id_rec = $("#hdnPERMISSION_id_rec").val();
+        var Permission_Id_App = $("#hdnPERMISSION_id_App").val();
+
+        if (DepartmentId != "0") {
+            if (RecommenderId == "0" && ApproverId == "0")
+            {
+                $.alert.open("error", "Select recommender or approver or both");
+            }
+            else
+            {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveLeavePermissionAuth", "Leave", "http")',
+                    data: { DepartmentId: DepartmentId, RecommenderId: RecommenderId, ApproverId: ApproverId, Permission_Id_rec: Permission_Id_rec, Permission_Id_App: Permission_Id_App },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        Clear();
+                        if (data.Result == "Success") {
+                                                      
+                            GetDepartmentwiseLeaveRecommenderAndApprover();
+                            $.alert.open("Success",data.Message);
+                        }
+                        else
+                        {
+                            $.alert.open("Error", data.Message);
+                        }
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+        }
+        else
+        {
+            $.alert.open("error","Select department");
+
+        }
+    }
+
+    function Clear()
+    {
+        $("#DepartmentList").val("");
+        $("#ddlRecommender").val("");
+        $("#ddlApprover").val("");
+        $("#DepartmentList").attr("disabled", false);
+        $("#hdnPERMISSION_id_rec").val(0);
+        $("#hdnPERMISSION_id_App").val(0);
+    }
+    $(document).ready(function () {
+
+        GetDepartmentwiseLeaveRecommenderAndApprover();
+
+        $("#btnSave").click(function (e) { e.preventDefault(); SaveLeavePermissionAuth(); });
+        $("#btnNew").click(function (e) { e.preventDefault(); Clear();});
+       
+});
+</script>
+
+
+<div class="x_panel">
+    <div class="x_title">
+        <div class="page-title">
+            <div class="title_left PageHeader" style="width:90%;">
+                <h3 style="color: white;padding:2px">&nbsp;&nbsp; Leave Recommender and Approver</h3>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="x_content">
+        <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left">
+            <div class="row form-group">
+                @Html.Label("Department", htmlAttributes: new { @class = "control-label col-md-2" })  
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                   @Html.DropDownList("DepartmentList", new SelectList(ViewBag.DepartmentList, "Id", "DepartmentName"), "Please select", new { @class = "form-control bordercss" })
+                    <input type="hidden" id="hdnPERMISSION_id_rec" value="0" />  
+                    <input type="hidden" id="hdnPERMISSION_id_App" value="0" />
+                  </div>
+               
+            </div>
+            <div class="row form-group">
+                @Html.Label("Recommender ", htmlAttributes: new { @class = "control-label col-md-2" }) 
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.DropDownList("EmployeeList", new SelectList(ViewBag.EmployeeList, "emp_id", "EmployeeName"), "Please select", new { @class = "form-control bordercss",@Id="ddlRecommender" })
+                </div>
+                @Html.Label("Approver ", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    @Html.DropDownList("EmployeeList", new SelectList(ViewBag.EmployeeList, "emp_id", "EmployeeName"), "Please select", new { @class = "form-control bordercss",@Id="ddlApprover" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-4"></div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-success" id="btnSave">Save</button>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-info" id="btnNew">New</button>
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-sm-12">
+                    <div id="grid"></div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+
+

@@ -1,0 +1,37 @@
+﻿
+@{
+    ViewBag.Title = "EmpListBloodGroup";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<script type="text/javascript">
+
+
+    $(document).ready(function () {
+
+    $("#btnView").click(function (e) {
+            e.preventDefault();
+            var url;
+                                                                                    
+            url = '/Report/EmpListBloodGroupwise?PEFFECTIVE_date=' +""+ '&PDECLARATION_date=' +""+ '&PBRANCH_ID=0 &PDEPT_ID=-1 &PDESK_ID=0 &PDESG_ID_FROM=-1 &PDESG_ID_TO=-1 &PBLOOD_GROUP_ID=-1 &PEMP_ACTIVE_STATUS=0';
+            window.open(url);
+           
+             });
+    });
+</script>
+<h2 class="page-title">Blood Group wise Employee List</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <h2 class="page-title"></h2>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group from-action">
+                <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+            </div>
+        </div>
+    </div>
+
+}
+

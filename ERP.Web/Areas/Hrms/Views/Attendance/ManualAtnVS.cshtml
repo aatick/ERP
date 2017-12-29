@@ -1,0 +1,468 @@
+﻿
+@{
+    ViewBag.Title = "ManualAtnVS";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+
+<style>
+    .ui-autocomplete {
+        cursor: pointer;
+        height: 400px;
+        width: 300px;
+        overflow-y: scroll;
+        background-color: white;
+        color: rgb(0,188,212);
+        /*outline-style:outset;*/
+    }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+<script type="text/javascript">
+
+    var ActionMode = "";
+    var BankBranchId = 0;
+
+    function GetEmployeeSalaryAccountInfo() {
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetEmployeeInfo", "Attendance", "http")',
+            data: { },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                Clear();
+                if (data.Result == "Success") {
+                    $.each(data.EmpAccInfoList, function (id, option) {
+                        $("#EmployeeCode").val(option.empcode);
+                        $("#hdnEmployeeId").val(option.emp_id);
+                        $("#EmployeeName").val(option.empname);
+                        $("#EmpDesignation").val(option.desgname);
+                        $("#EmpDepartment").val(option.deptname);
+                        $("#HdneEp_dept_id").val(option.emp_dept_id);
+                        $("#EmpBranchName").val(option.branchname);
+                        $("#empJoiningDate").val(option.JoiningDate);
+                        $("#empDateOfBirth").val(option.DateOfBirth);
+
+                        $("#ddlBankId").val(option.bank_id);
+                        $("#salAccountNo").val(option.emp_salary_acc_no);
+
+                    });
+                    GetApproverList()
+                    //if ($("#ddlBankId").val() != 0)
+                    //{
+                    //    alert(BankBranchId);
+                    //    $("#ddlBankBranchId").val(BankBranchId);
+                    //}
+
+                }
+                else {
+                    $.alert.open("error", data.Message);
+                }
+
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+    function Clear() {
+
+       // $("#hdnEmployeeId").val(0);
+        $("#hdnAttendanceId").val(0);
+       // $("#EmployeeCode").val("");
+       // $("#EmployeeName").val("");
+       // $("#EmpDesignation").val("");
+       // $("#EmpDepartment").val("");
+       // $("#EmpBranchName").val("");
+        //$("#MnlAttenTypeList").val("");
+        //$("#AttendanceDate").val("");
+        $("#Remarks").val("");
+       // $("#AttendanceDateTo").val("");
+        //$("#ddlApproverList").val("0");
+
+    }
+
+
+    function GetManualAttendance() {
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetManualAttendance", "Attendance", "http")',
+                    dataType: "json",
+                    data: {trans_type:"VS",approval_status:-1,Approver:0,AddDate:"",EmployeeId : ""}
+                }
+            },
+            pageSize: 20
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 500,
+            groupable: false,
+            reorderable: true,
+            resizable: true,
+            filterable: true,
+            sortable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+            {
+                EMP_ID: "EMP_ID",
+                hidden: true,
+                filterable: false
+            },
+             {
+                 field: "emp_name",
+                 title: "Employee Name",
+                 width: "20%"
+             },
+
+              {
+                  field: "atten_type",
+                  title: "Attendance Type",
+                  hidden: true,
+              },
+               {
+                   field: "atten_date",
+                   title: "Attendance Date",
+               },
+                {
+                    field: "purpose",
+                    title: "Purpose",
+                },
+                {
+                    field: "approval_statusMsg",
+                    title: "Approval Status",
+                },
+                {
+                    field: "Approver",
+                    title: "Approver",
+                },
+            {
+                title: "Action",
+                width: "20%",
+                template: function (dataItem) {
+                    if (dataItem.approval_statusMsg != "Approved")
+                    {
+                        return '<a href="#"  onclick="GetEditDataById(' + dataItem.Id + ',' + dataItem.approv_emp_id + ', ' + "'" + dataItem.atten_date + "'" + ', ' + "'" + dataItem.purpose + "'" + ')"  title="Edit" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a><a href="#"  onclick="DeleteDataById(' + dataItem.Id + ')"  title="Delete" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></a>'
+                    }
+                    else
+                    {
+                        return "";
+                    }
+                }
+            }
+            ],
+        });
+    }
+
+    function GetEditDataById(Id,approv_emp_id,atten_date,purpose)
+    {
+        //hdnAttendanceId  Remarks ddlApproverList
+        $("#hdnAttendanceId").val(Id);
+        $("#AttendanceDate").val(atten_date);
+
+        $("#Remarks").val(purpose);
+        $("#ddlApproverList").val(approv_emp_id);
+    }
+
+
+    function DeleteDataById(Id)
+    {
+            $.alert.open('confirm', 'Are you sure you want to DELETE this record?', function (button) {
+                if (button == 'yes') {
+                    $.ajax({
+                        type: 'GET',
+                        contentType: "application/json; charset=utf-8",
+                        url: '@Url.Action("DeleteManualAttendanceVS", "Attendance", "http")',
+                        data: { Id: Id},
+                        dataType: 'json',
+                        async: true,
+                        success: function (data) {
+                            if (data.Result == "Success") {
+
+                                // GetEmployeeLeaveInfoForProcess();
+                                $.alert.open("success", data.Message, function () {
+                                    window.location.reload();
+                                });
+                            }
+                            else {
+                                $.alert.open("Error", data.Message);
+                            }
+                        },
+                        error: function (request, status, error) {
+                            alert(request.statusText + "/" + request.statusText + "/" + error);
+                        }
+                    });
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            });
+    }
+
+
+    function GetApproverList() {
+
+        var DeptId = $("#HdneEp_dept_id").val();
+        var ddlApproverList = $("#ddlApproverList");
+
+        if (DeptId != "" && DeptId != null) {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetApproverList", "Leave", "http")',
+                data: { DeptId: DeptId,PermissionType : 2 },
+                dataType: 'json',
+                async: true,
+                success: function (EmpAccInfoList) {
+                    ddlApproverList.html('');
+                  ///  ddlApproverList.append($('<option></option>').val("0").html("Please select"));
+                    $.each(EmpAccInfoList, function (id, option) {
+                        ddlApproverList.append($('<option></option>').val(option.EMP_ID).html(option.emp_name));
+                    });
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+    }
+
+
+
+    $(document).ready(function () {
+        GetManualAttendance();
+        GetEmployeeSalaryAccountInfo();
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+
+            //// MnlAttenTypeList AttendanceDate Remarks
+            var MnlAttenTypeList = $("#MnlAttenTypeList").val();
+            var AttendanceDate = $("#AttendanceDate").val();
+            var AttendanceDateTo = $("#AttendanceDate").val();//$("#AttendanceDateTo").val();
+            var Remarks = $("#Remarks").val();
+            var EmployeeId = $("#hdnEmployeeId").val();
+            var ApproverId = $("#ddlApproverList").val();
+
+            if (EmployeeId == 0)
+            {
+                $.alert.open("error","Insert employee");
+            }
+            else if ($("#EmployeeCode").val() == "")
+            {
+                $.alert.open("error", "Insert employee");
+            }
+            else if (MnlAttenTypeList == "") {
+                $.alert.open("error", "Select attendance type.");
+            }
+            else if (AttendanceDate == "")
+            {
+                $.alert.open("error", "Insert date.");
+            }
+            else if (AttendanceDateTo == "") {
+                $.alert.open("error", "Insert to date.");
+            }
+            else if (Remarks == "")
+            {
+                $.alert.open("error", "Insert purpose.");
+            }
+            else if (ApproverId == "0" || ApproverId == "" || ApproverId == null)
+            {
+                $.alert.open("error", "Select approver.");
+            }
+            else
+            {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveManualAttendanceVS", "Attendance", "http")',
+                    data: { AttendanceId : $("#hdnAttendanceId").val(), EmployeeId: EmployeeId, MnlAttenTypeList: MnlAttenTypeList, TRANS_TYPE: "VS", AttendanceDateFrom: AttendanceDate, AttendanceDateTo: AttendanceDateTo, Remarks: Remarks,Approval_status:0, ApproverId: ApproverId },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        Clear();
+                        GetEmployeeSalaryAccountInfo();
+                        GetManualAttendance();
+                        $.alert.open(data.Result,  data.Message );
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+
+
+        });
+
+        //$("#EmployeeCode").blur(function () {
+
+        //    if ($("#EmployeeCode").val() != "") {
+        //        GetEmployeeSalaryAccountInfo();
+        //    }
+        //});
+
+        $("#btnNew").click(function (e) { e.preventDefault(); Clear(); });
+    });
+</script>
+
+@using (Html.BeginForm("Attendance", "ManualAtn", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "ManualAtnForm" }))
+{
+    @Html.AntiForgeryToken()
+    <div role="main">
+        <div class="">
+            <div id="AjaxLoader" class="ajaxLoader"></div>
+            <div class="page-title">
+                <div class="title_left PageHeader" style="width:90%;">
+                    <h3 style="color: white;padding:2px">&nbsp; Manual Attendance OSD</h3>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-6 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                        <ul class="list-unstyled timeline">
+                            <li>
+                                <div class="block">
+                                    <div class="tags">
+                                        <a href="" class="tag">
+                                            <span>Basic Info</span>
+                                        </a>
+                                    </div>
+                                    <div class="block_content">
+                                        <div class="row form-group">
+                                            @Html.Label("Employee Code", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("EmployeeCode", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                                <input type="hidden" id="hdnEmployeeId" value="0" />
+                                                <input type="hidden" id="hdnAttendanceId" value="0" />
+                                            </div>
+                                            @Html.Label("Name", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("EmployeeName", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                            </div>
+                                        </div>
+
+                                        <div class="row form-group">
+                                            @Html.Label("Designation ", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("EmpDesignation", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                            </div>
+                                            @Html.Label("Department", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("EmpDepartment", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                                <input type="hidden" id="HdneEp_dept_id" />
+                                             </div>
+                                        </div>
+
+                                        <div class="row form-group">
+                                            @Html.Label("Branch", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("EmpBranchName", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                            </div>
+                                        </div>
+                                        <br />
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="block">
+                                    <div class="tags">
+                                        <a href="" class="tag">
+                                            <span>Attendance</span>
+                                        </a>
+                                    </div>
+                                    <div class="block_content">
+                                        <br />
+                                        <div class="row form-group">
+                                            @Html.Label("Attendance Type", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.DropDownList("MnlAttenTypeList", new SelectList(ViewBag.MnlAttenTypeList, "AttenType", "TypeDescription"), new { @class = "form-control bordercss" })
+                                            </div>
+                                            @*</div>
+                                                <div class="row form-group">*@ 
+                                            @Html.Label("Date ", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("AttendanceDate", new { htmlAttributes = new { @class = "form-control CurrentDate" } })
+                                            </div>
+                                        </div>
+                                        <div class="row form-group">
+                                            @Html.Label("Purpose", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.TextArea("Remarks", htmlAttributes: new { @class = "form-control", @rows = "4", @style = "color:black" })
+                                            </div>
+                                            @Html.Label("Approver", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.DropDownList("Approverlist", null, new { @id = "ddlApproverList", @class = "form-control bordercss" })
+                                            </div>
+                                            @*@Html.Label("Date To", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                                 <div class="col-md-4 col-sm-6 col-xs-12">
+                                                  @Html.Editor("AttendanceDateTo", new { htmlAttributes = new { @class = "form-control DateInput" } })
+                                                </div>*@
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-md-4"></div>
+                                            <div class="col-md-1">
+                                                <button type="submit" class="btn btn-success" id="btnSave">Save</button>
+                                            </div>
+                                            <div class="col-md-1">
+                                                <button type="submit" class="btn btn-primary" id="btnNew">New</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    </div>
+                            </li>
+                            <li>
+                                <div class="block">
+                                    <div class="tags">
+                                        <a href="" class="tag">
+                                            <span>List</span>
+                                        </a>
+                                    </div>
+                                    <div class="block_content">
+                                        <br />
+                                        <div class="row form-group">
+                                            <div id="grid">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+

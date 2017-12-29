@@ -1,0 +1,148 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+<style>
+    .ui-autocomplete {
+        cursor: pointer;
+        height: 400px;
+        width: 300px;
+        overflow-y: scroll;
+        background-color: white;
+        color: rgb(0,188,212);
+        /*outline-style:outset;*/
+    }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+<script type="text/javascript">
+
+
+    $(document).ready(function () {
+
+        $("#txtYear").val(@DateTime.Now.Year);
+        $("#ddlMonthList").val(@DateTime.Now.Month);
+
+
+        $("#btnSave").click(function (e) {
+            e.preventDefault();
+            alert("under development");
+        });
+
+    });
+</script>
+
+@using (Html.BeginForm("SalaryInfo", "Salary", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "SalaryForm" }))
+{
+
+    @Html.AntiForgeryToken()
+
+    <div role="main">
+
+        <div class="">
+            <div id="AjaxLoader" class="ajaxLoader"></div>
+            <div class="page-title">
+                <div class="title_left PageHeader" style="width:90%;">
+                    <h3 style="color: white;padding:2px">&nbsp; Approve Attendance Summary Report For Salary</h3>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-6 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                        <ul class="list-unstyled timeline">
+                            <li>
+                                <div class="block">
+                                    <div class="tags">
+                                        <a href="" class="tag">
+                                            <span>Basic Info</span>
+                                        </a>
+                                    </div>
+                                    <div class="block_content">
+                                        <div class="row form-group">
+                                            @Html.Label("Branch ", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.DropDownList("OfficeBranchList", new SelectList(ViewBag.OfficeBranchList, "BranchId", "BranchName"), "Please select", new { @class = "form-control bordercss" })
+                                            </div>
+                                            @Html.Label("Attendance Year", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("AttendanceYear", new { htmlAttributes = new { @class = "form-control", @disabled = true,@Id="txtYear" } })
+                                            </div>
+                                        </div>
+
+                                        <div class="row form-group">
+                                            @Html.Label("Attendance Month ", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <select class="form-control bordercss" id="ddlMonthList">
+                                                    <option value="1">January</option>
+                                                    <option value="2">February</option>
+                                                    <option value="3">March</option>
+                                                    <option value="4">April</option>
+                                                    <option value="5">May</option>
+                                                    <option value="6">June</option>
+                                                    <option value="7">July</option>
+                                                    <option value="8">August</option>
+                                                    <option value="9">September</option>
+                                                    <option value="10">October</option>
+                                                    <option value="11">November</option>
+                                                    <option value="12">December</option>
+                                                </select>
+                                            </div>
+                                            @Html.Label("Start Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("StartDate", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                                            </div>
+
+                                        </div>
+
+                                        <div class="row form-group">
+                                            @Html.Label("End Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.Editor("EndDate", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                                            </div>
+
+                                        </div>
+                                        
+                                        <br />
+                                        <div class="form-group">
+                                            <div class="col-md-4"></div>
+                                            <div class="col-md-1">
+                                                <button type="submit" class="btn btn-success" id="btnSave">Save</button>
+                                            </div>
+                                            @*<div class="col-md-1">
+                                                <button type="submit" class="btn btn-primary" id="btnNew">New</button>
+                                            </div>*@
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                          
+
+
+                        </ul>
+                       
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+
+
+

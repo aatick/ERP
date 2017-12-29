@@ -1,0 +1,331 @@
+﻿
+@{
+    ViewBag.Title = "frmLeaveCancel";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+<style>
+    .ui-autocomplete {
+        cursor: pointer;
+        height: 400px;
+        width: 300px;
+        overflow-y: scroll;
+        background-color: white;
+        color: rgb(0,188,212);
+        /*outline-style:outset;*/
+    }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    /* Modal Content/Box */
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto; /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%; /* Could be more or less, depending on screen size */
+    }
+
+    /* The Close Button */
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+</style>
+<script type="text/javascript">
+
+
+
+    //GetLeaveInfoForLeaveCancel(string EmployeeCode, string StartDate, string EndDate)
+    function GetLeaveInfoForLeaveCancel() {
+        var EmployeeCode = $("#EmployeeCode").val();
+        var StartDate = $("#LeaveFromDate").val();
+        var EndDate = $("#LeaveToDate").val();
+        if (EmployeeCode != "" && StartDate != "" && EndDate != "")
+        {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetLeaveInfoForLeaveCancel", "Leave", "http")',
+                data: { EmployeeCode: EmployeeCode, StartDate: StartDate, EndDate: EndDate },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    Clear();
+                    if (data.Result == "Success") {
+                        $.each(data.EmpAccInfoList, function (id, option) {
+                            $("#EmployeeCode").val(option.emp_office_code);
+                            $("#hdnLeaveId").val(option.emp_leave_application_id);
+                            $("#EmployeeName").val(option.emp_name);
+                            $("#EmpDesignation").val(option.desg_name);
+                            $("#EmpDepartment").val(option.dept_name);
+                            $("#EmpBranchName").val(option.branch_name);
+                           // $("#empJoiningDate").val(option.emp_joining_datetime);
+                            //$("#empDateOfBirth").val(option.DateOfBirth);
+
+                            $("#LeaveTypeName").val(option.leave_type_name);
+                            $("#TotalDays").val(option.applied_no_of_days);
+                            $("#AppliedDate").val(option.applied_date);
+                            $("#LeaveFromDate").val(option.applied_start_date);
+                            $("#LeaveToDate").val(option.applied_end_date);
+                            $("#PurposeOfleave").val(option.purpose_of_leave);
+                            $("#LeaveAddress").val(option.address_during_leave);
+                            $("#Telephone").val(option.contact_no);
+                            $("#Remarks").val(option.remarks);
+                            $("#LeaveStatusMsg").val(option.LeaveStatusMsg);
+                        });
+                    }
+                    else {
+                        $.alert.open("error", data.Message);
+                    }
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+        else
+        {
+            $.alert.open("error", "Insert employee code, leave start date and end date");
+        }
+    }
+
+    function Clear() {
+
+        $("#EmployeeCode").val("");
+        $("#hdnLeaveId").val("");
+        $("#EmployeeName").val("");
+        $("#EmpDesignation").val("");
+        $("#EmpDepartment").val("");
+        $("#EmpBranchName").val("");
+        $("#LeaveTypeName").val("");
+        $("#TotalDays").val("");
+        $("#AppliedDate").val("");
+        $("#LeaveFromDate").val("");
+        $("#LeaveToDate").val("");
+        $("#PurposeOfleave").val("");
+        $("#LeaveAddress").val("");
+        $("#Telephone").val("");
+        $("#Remarks").val("");
+        $("#LeaveStatusMsg").val("");
+    }
+
+    function Leave_Cancel() {
+        var emp_leave_application_id = $("#hdnLeaveId").val();
+        if (emp_leave_application_id != "0")
+        {
+        $.alert.open('confirm', 'Are you sure you want to CANCEL this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("Leave_Cancel", "Leave", "http")',
+                    data: { LeaveAppId: emp_leave_application_id,LeaveStatus:3,Remarks :$("#Remarks").val().trim() },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        Clear();
+                        $("#hdnLeaveId").val("0")
+                        if (data.Result == "Success") {
+                            window.location.reload();
+                            $.alert.open("success", data.Message);
+                        }
+                        else {
+                            $.alert.open("Error", data.Message);
+                        }
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+        }
+        else
+        {
+            $.alert.open("Error", "No leave available for cancel");
+        }
+    }
+
+    $(document).ready(function () {
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+            GetLeaveInfoForLeaveCancel();
+        });
+        $("#btnCancel").click(function (e) { e.preventDefault(); Leave_Cancel(); });
+    });
+</script>
+
+@using (Html.BeginForm("frmLeaveCancel", "Leave", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "LeaveCancelForm" }))
+{
+
+    @Html.AntiForgeryToken()
+
+    <div role="main">
+
+        <div class="">
+            <div id="AjaxLoader" class="ajaxLoader"></div>
+            <div class="page-title">
+                <div class="title_left PageHeader" style="width:90%;">
+                    <h3 style="color: white;padding:2px">&nbsp; Leave Cancel</h3>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-6 col-xs-12">
+                <div class="x_panel">
+                            <div class="x_panel">
+                                <div class="x_content">
+                                    <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left">
+                                        @*<div class="col-sm-2">
+                                            <img id="thumbnil" style="width:100px; height:100px;" src="/Employee/RetrieveImage/@UHRMS.Web.Helpers.SessionHelper.LoggedInUserId" alt="Image" class="img-responsive" />
+                                        </div>*@
+                                        <fieldset>
+                                            <legend>Search Option</legend>
+                                            <div class="row form-group">
+                                                @Html.Label("Employee Code", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("EmployeeCode", new { htmlAttributes = new { @class = "form-control" } })
+                                                    <input type="hidden" id="hdnLeaveId" value="0" />
+                                                </div>
+                                                @Html.Label("Leave From Date", htmlAttributes: new { @class = "control-label col-md-2 DateInput required" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("LeaveFromDate", new { htmlAttributes = new { @class = "form-control DateInput" } })
+                                                </div>
+                                            </div>
+                                            <div class="row form-group">
+                                                @Html.Label("Leave To Date", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("LeaveToDate", new { htmlAttributes = new { @class = "form-control DateInput required" } })
+                                                </div>
+                                                <div class="col-md-2 col-sm-6 col-xs-12"></div>
+                                                <div class="col-md-3 col-sm-6 col-xs-12">
+                                                    <button type="submit" class="btn btn-primary" id="btnSearch"><i class="fa fa-search" aria-hidden="true"></i>&nbsp;&nbsp; Seacch</button>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                        <br />
+                                        <br />
+                                        <fieldset>
+                                            <legend>Leave Information</legend>
+
+                                            <div class="row form-group">
+                                                @Html.Label("Name", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("EmployeeName", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                                </div>
+                                                @Html.Label("Designation ", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("EmpDesignation", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                                </div>
+                                            </div>
+                                            <div class="row form-group">
+                                                @Html.Label("Department", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("EmpDepartment", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                                </div>
+                                                @Html.Label("Branch", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("EmpBranchName", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                                </div>
+                                            </div>
+                                            <div class="row form-group">
+                                                @Html.Label("Apply For ", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("LeaveTypeName", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                                </div>
+                                                @Html.Label("Applied Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("AppliedDate", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                                </div>
+                                            </div>
+                                            <div class="row form-group">
+                                                @Html.Label("Total Day(s)", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("TotalDays", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                                </div>
+                                                @Html.Label("Purpose of leave", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("PurposeOfleave", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                                </div>
+                                            </div>
+                                            <div class="row form-group">
+                                                @Html.Label("Leave Address", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("LeaveAddress", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                                </div>
+                                                @Html.Label("Telephone", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("Telephone", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                                </div>
+                                            </div>
+                                            <div class="row form-group">
+                                                @Html.Label("Leave Status", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.Editor("LeaveStatusMsg", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                                </div>
+                                                @Html.Label("Remarks", htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.TextArea("Remarks", htmlAttributes: new { @class = "form-control", @rows = "4" })
+                                                    @*@Html.Editor("Remarks", new { htmlAttributes = new { @class = "form-control"} })*@
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                        <br />
+                                        <div class="row form-group">
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                            </div>
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <button type="submit" class="btn btn-danger" id="btnCancel"><i class="fa fa-trash-o" aria-hidden="true"></i>&nbsp;&nbsp; Cancel</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+
+

@@ -1,0 +1,133 @@
+﻿@model Hrms.HRMViewModel.EmployeeReportViewModel
+@{
+    ViewBag.Title = "Office Calendar";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<script type="text/javascript">
+
+
+
+
+    $(document).ready(function () {
+        //function loadDropDown(_url, data, method,targetTag,selectedValue,AsyncMode)
+
+        loadDropDown('/Common/getEMPBranchList', {}, 'Post', '#BranchId', "", false);
+        loadDropDown('/Common/getEMPDepartment', {}, 'Post', '#DepartmentId', "", false);
+        loadDropDown('/Common/getEmpJobType', {}, 'Post', '#JobType', "", false);
+        loadDropDown('/Common/getDesignation', {}, 'Post', '#DesignationId', "", false);
+        loadDropDown('/Common/getBloodGroup', {}, 'Post', '#BloodGroup', "", false);
+        loadDropDown('/Common/getEmpActivStatus', {}, 'Post', '#ActiveStatus', "", false);
+
+    });
+</script>
+
+
+<form name="frmEmployeeReport" class="form-horizontal form-label-left" id="frmEmployeeReport" method="post">
+    @Html.AntiForgeryToken()
+
+    <div role="main">
+
+        <div class="">
+            <div id="AjaxLoader" class="ajaxLoader"></div>
+            <div class="page-title">
+                <div class="title_left PageHeader" style="width:90%;">
+                    <h3 style="color: white;padding:2px">&nbsp; Employee List Report</h3>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-6 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                        <ul class="list-unstyled timeline">
+                            <li>
+                                <div class="block">
+                                    <div class="tags">
+                                        <a href="" class="tag">
+                                            <span></span>
+                                        </a>
+                                    </div>
+                                    <div class="block_content">
+                                        <div class="row form-group">
+                                            @Html.LabelFor(model => model.DateType, new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <select id="DateType" class="input-sm form-control"></select>
+
+                                            </div>
+                                        </div>
+
+                                        <div class="row form-group">
+                                            @Html.LabelFor(model => model.DateField, new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.TextBoxFor(model => model.DateField, new { @class = "form-control DateInput" })
+                                            </div>
+                                            @Html.LabelFor(model => model.BranchId, new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <select id="BranchId" class="input-sm form-control"></select>
+                                            </div>
+
+                                        </div>
+                                        <div class="row form-group">
+                                            @Html.LabelFor(model => model.DepartmentId, new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <select id="DepartmentId" name="DepartmentId" class="input-sm form-control"></select>
+                                            </div>
+                                            @Html.LabelFor(model => model.JobType, new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <select id="JobType" name="JobType" class="input-sm form-control"></select>
+                                            </div>
+
+                                        </div>
+                                        <div class="row form-group">
+                                            @Html.LabelFor(model => model.DesignationId, new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <select id="DesignationId" name="DesignationId" class="input-sm form-control"></select>
+                                            </div>
+                                            @Html.LabelFor(model => model.BloodGroup, new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <select id="BloodGroup" name="BloodGroup" class="input-sm form-control"></select>
+                                            </div>
+
+                                        </div>
+                                        <div class="row form-group">
+                                            @Html.LabelFor(model => model.EmployeeActiveStatus, new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.DropDownListFor(model => model.EmployeeActiveStatus, Model.EmployeeActiveStatusList, new { @class = "form-control bordercss" })
+                                            </div>
+
+
+                                        </div>
+                                        @*<div class="row form-group">
+                                            @Html.LabelFor(model => model.ActiveStatus, new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <select id="ActiveStatus" name="ActiveStatus" class="input-sm form-control"></select>
+                                            </div>
+
+
+                                        </div>*@
+                                        <br />
+                                    </div>
+                                </div>
+                            </li>
+
+
+
+                        </ul>
+                        <div class="form-group">
+                            <div class="col-md-4"></div>
+                            <div class="col-md-1">
+                                <button type="submit" class="btn btn-success" id="btnShow">Show</button>
+                            </div>
+                            <div class="col-md-1">
+                                <button type="submit" class="btn btn-primary" id="tbnExpoetToExcel">Export To Excel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</form>
+
+
+

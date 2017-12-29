@@ -1,0 +1,208 @@
+﻿
+@*@{
+    ViewBag.Title = "EmployeelistReport";
+    Layout = "~/Views/Shared/_LayoutUHRMS.cshtml";
+}*@
+
+@model Hrms.HRMViewModel.EmployeeReportViewModel
+@{
+    ViewBag.Title = "EmployeelistReport";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script src="http://localhost:56805/CommonJs/CommonJs.js"></script>
+
+<script type="text/javascript">
+
+    function GetDesignationList() {
+
+        var JobTypeId = $("#JobTypeList").val() == "" ? "0" : $("#JobTypeList").val();
+        var DesignamtionList = $("#DesignamtionList");
+
+        if (JobTypeId != "0") {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetDesignationList", "Employee", "http")',
+                data: { JobTypeId: JobTypeId },
+                dataType: 'json',
+                async: true,
+                success: function (DesgList) {
+                    DesignamtionList.html('');
+                    DesignamtionList.append($('<option></option>').val("0").html("Please select"));
+                    $.each(DesgList, function (id, option) {
+                        DesignamtionList.append($('<option></option>').val(option.Id).html(option.DesignationName));
+                    });
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+    }
+
+
+
+    $(document).ready(function () {
+        //function loadDropDown(_url, data, method,targetTag,selectedValue,AsyncMode)
+
+        loadDropDown('/Common/getEMPBranchList', {}, 'Post', '#BranchId', "", false);
+        loadDropDown('/Common/getEMPDepartment', {}, 'Post', '#DepartmentId', "", false);
+
+
+        $("#btnShow").click(function (e) {
+            e.preventDefault();
+
+
+            var BranchId = $("#BranchId").val() == "" || null ? "0" : $("#BranchId").val();
+            var DepartmentId = $("#DepartmentId").val() == "" || null ? "0" : $("#DepartmentId").val();
+            var StartDate = ''; //$("#StartDate").val();
+            var EndDate = '';//$("#EndDate").val();
+            var ReportType = $("#cmbReportType").val();
+            var BloodGroupId = $("#BloodGroupList").val() == "" || null ? "0" : $("#BloodGroupList").val();
+            var JobTypeId = $("#JobTypeList").val() == "" ? "0" : $("#JobTypeList").val();
+            var DesignationId = $("#DesignamtionList").val() == "" || null ? "0" : $("#DesignamtionList").val();
+
+            //if (DepartmentId != "" && BranchId != "" && StartDate != "" && EndDate != "")
+            //{
+            var data = "rptslnx=1&StartDate=" + StartDate + "&EndDate=" + EndDate + "&BranchId=" + BranchId + "&DepartmentId=" + DepartmentId + '&PDESK_ID=0 &JobTypeId=' + JobTypeId + '&PDESG_ID_FROM=' + DesignationId + ' &PDESG_ID_TO=' + DesignationId + ' &PBLOOD_GROUP_ID=' + BloodGroupId + ' &PEMP_ACTIVE_STATUS=0&ReportType=' + ReportType;
+                ShowReport('/ReportView/ShowEmployeelistReport', data);
+            //}
+            //else
+            //{
+            //    $.alert.open("Error","All field required.");
+            //}
+
+        });
+
+
+
+        $("#StartDate").on("change", function () {
+            var fromDate = $("#StartDate").val();
+            $("#EndDate").datepicker('option', { minDate: fromDate });
+        });
+        $("#EndDate").on("change", function () {
+            var toDate = $("#EndDate").val();
+            $("#TotalDays").val(0);
+            $("#StartDate").datepicker('option', { maxDate: toDate });
+        });
+
+        $("#JobTypeList").change(function () { GetDesignationList(); });
+
+    });
+</script>
+
+
+<form name="frmEmployeeReport" class="form-horizontal form-label-left" id="frmEmployeeReport" method="post">
+    @Html.AntiForgeryToken()
+
+    <div role="main">
+
+        <div class="">
+            <div id="AjaxLoader" class="ajaxLoader"></div>
+            <div class="page-title">
+                <div class="title_left PageHeader" style="width:90%;">
+                    <h3 style="color: white;padding:2px">&nbsp; Blood Group wise Employee List</h3>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-6 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                        <ul class="list-unstyled timeline">
+                            <li>
+                                <div class="block">
+                                    <div class="tags">
+                                        <a href="" class="tag">
+                                            <span>Search Options</span>
+                                        </a>
+                                    </div>
+                                    <div class="block_content">
+                                        @*<div class="row form-group">
+                                                @Html.LabelFor(model => model.ReportName, new { @class = "control-label col-md-2 required" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.DropDownListFor(model => model.ReportName, Model.ReportNameList, new { @class = "form-control bordercss" })
+                                                </div>
+                                            </div>*@
+                                        <div class="row form-group">
+                                            @Html.LabelFor(model => model.BranchId, new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <select id="BranchId" name="BranchId" class="input-sm form-control bordercss"></select>
+                                            </div>
+                                            @Html.LabelFor(model => model.DepartmentId, new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <select id="DepartmentId" name="DepartmentId" class="input-sm form-control bordercss"></select>
+                                            </div>
+                                        </div>
+                                        <div class="row form-group">
+                                            @Html.Label("Job Type", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.DropDownList("JobTypeList", new SelectList(ViewBag.JobTypeList, "JOB_ID", "JOB_NAME"), "Please select", new { @class = "form-control bordercss" })
+                                            </div>
+                                            @Html.Label("Designation ", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.DropDownList("DesignationList", null, new { @id = "DesignamtionList", @class = "form-control bordercss" })
+                                                @*@Html.DropDownList("DesignamtionList", new SelectList(ViewBag.DesignamtionList, "desg_id", "desg_name"), "Please select", new { @class = "form-control bordercss" })*@
+                                            </div>
+                                        </div>
+                                        <div class="row form-group">
+                                            @Html.Label("Blood Group ", htmlAttributes: new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.DropDownList("BloodGroupList", new SelectList(ViewBag.BloodGroupList, "BLOOD_GROUP_ID", "BLOOD_GROUP_NAME"), "Please select", new { @class = "form-control bordercss" })
+                                            </div>
+                                            @Html.Label("Report Type", new { @class = "control-label col-md-2 required" })
+                                            <div class="col-sm-4">
+                                                <select class="input-sm form-control bordercss" id="cmbReportType">
+                                                    <option value="Pdf" selected="selected">Pdf</option>
+                                                    <option value="ExcelBook">Microsoft Excel</option>
+                                                    <option value="Excel">Microsoft Excel (97-2003)</option>
+                                                    <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                                                    <option value="Word">Microsoft Word (97-2003)</option>
+                                                    <option value="XML">XML</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="row form-group">
+
+                                        </div>
+                                        <br />
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="form-group">
+                            <div class="col-md-4"></div>
+                            <div class="col-md-1">
+                                <button type="submit" class="btn btn-success" id="btnShow">Show</button>
+                            </div>
+                            @*<div class="col-md-1">
+                                    <button type="submit" class="btn btn-primary" id="tbnExpoetToExcel">Export To Excel</button>
+                                </div>*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</form>
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,173 @@
+﻿
+@*@{
+    ViewBag.Title = "OfficeCalendarReport";
+    Layout = "~/Views/Shared/_LayoutUHRMS.cshtml";
+}
+
+<h2>OfficeCalendarReport</h2>*@
+
+
+
+
+
+@model Hrms.HRMViewModel.EmployeeReportViewModel
+@{
+    ViewBag.Title = "OfficeCalendarReport";
+    Layout = "~/Views/Shared/_LayoutUcasPortfolio.cshtml";
+}
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script src="http://localhost:56805/CommonJs/CommonJs.js"></script>
+<script type="text/javascript">
+
+
+
+
+    $(document).ready(function () {
+        //function loadDropDown(_url, data, method,targetTag,selectedValue,AsyncMode)
+
+        loadDropDown('/Common/getEMPBranchList', {}, 'Post', '#BranchId', "", false);
+        //loadDropDown('/Common/getEMPDepartment', {}, 'Post', '#DepartmentId', "", false);
+
+
+        $("#btnShow").click(function (e) {
+            e.preventDefault();
+
+            var ReportName = $("#ReportName").val();
+            var BranchId = $("#BranchId").val() == "" || null ? "0" : $("#BranchId").val();
+            var DayType = $("#cmbDayType").val() == "" || null ? "0" : $("#cmbDayType").val();
+            var StartDate = $("#StartDate").val();
+            var EndDate = $("#EndDate").val();
+            var ReportType = $("#cmbReportType").val();
+            if (StartDate != "" && EndDate != "") {
+                var data = "rptslnx=1&StartDate=" + StartDate + "&EndDate=" + EndDate + "&BranchId=" + BranchId + "&DayType=" + DayType + "&PLATE_COUNT=0&PABSENT_COUNT=0&ReportType=" + ReportType;
+                ShowReport('/ReportView/ShowOfficeCalendarReport', data);
+            }
+            else {
+                $.alert.open("error", "Select start date and end date.");
+            }
+
+
+        });
+
+
+
+        $("#StartDate").on("change", function () {
+            var fromDate = $("#StartDate").val();
+            $("#EndDate").datepicker('option', { minDate: fromDate });
+        });
+        $("#EndDate").on("change", function () {
+            var toDate = $("#EndDate").val();
+            $("#TotalDays").val(0);
+            $("#StartDate").datepicker('option', { maxDate: toDate });
+        });
+
+
+
+    });
+</script>
+
+
+<form name="frmEmployeeReport" class="form-horizontal form-label-left" id="frmEmployeeReport" method="post">
+    @Html.AntiForgeryToken()
+
+    <div role="main">
+
+        <div class="">
+            <div id="AjaxLoader" class="ajaxLoader"></div>
+            <div class="page-title">
+                <div class="title_left PageHeader" style="width:90%;">
+                    <h3 style="color: white;padding:2px">&nbsp; Office Calendar Report</h3>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-6 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                        <ul class="list-unstyled timeline">
+                            <li>
+                                <div class="block">
+                                    <div class="tags">
+                                        <a href="" class="tag">
+                                            <span></span>
+                                        </a>
+                                    </div>
+                                    <div class="block_content">
+                                        @*<div class="row form-group">
+                                                @Html.LabelFor(model => model.ReportName, new { @class = "control-label col-md-2 required" })
+                                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                                    @Html.DropDownListFor(model => model.ReportName, Model.ReportNameList, new { @class = "form-control bordercss" })
+                                                </div>
+                                            </div>*@
+                                        <div class="row form-group">
+                                            @Html.LabelFor(model => model.BranchId, new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <select id="BranchId" name="BranchId" class="input-sm form-control bordercss"></select>
+                                            </div>
+                                            @Html.Label("Day Type", new { @class = "control-label col-md-2 required" })
+                                            <div class="col-sm-4">
+                                                <select class="input-sm form-control bordercss" id="cmbDayType">
+                                                    <option value="WH" selected="selected">Weekly Holiday</option>
+                                                    <option value="GH">Government Holiday</option>
+                                                    <option value="BH">Bank Holiday</option>
+                                                    <option value="WD">Working Day</option>
+                                                    <option value="HO">Half Office Day</option>
+                                                    <option value="">All</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="row form-group">
+                                            @Html.LabelFor(model => model.StartDate, new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.TextBoxFor(model => model.StartDate, new { @class = "form-control DateInput" })
+                                            </div>
+                                            @Html.LabelFor(model => model.EndDate, new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.TextBoxFor(model => model.EndDate, new { @class = "form-control DateInput" })
+                                            </div>
+                                        </div>
+                                        <div class="row form-group">
+                                            @Html.Label("Report Type", new { @class = "control-label col-md-2 required" })
+                                            <div class="col-sm-4">
+                                                <select class="input-sm form-control bordercss" id="cmbReportType">
+                                                    <option value="Pdf" selected="selected">Pdf</option>
+                                                    <option value="ExcelBook">Microsoft Excel</option>
+                                                    <option value="Excel">Microsoft Excel (97-2003)</option>
+                                                    <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                                                    <option value="Word">Microsoft Word (97-2003)</option>
+                                                    <option value="XML">XML</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <br />
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="form-group">
+                            <div class="col-md-4"></div>
+                            <div class="col-md-1">
+                                <button type="submit" class="btn btn-success" id="btnShow">Show</button>
+                            </div>
+                            @*<div class="col-md-1">
+                                    <button type="submit" class="btn btn-primary" id="tbnExpoetToExcel">Export To Excel</button>
+                                </div>*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</form>
+
+
+

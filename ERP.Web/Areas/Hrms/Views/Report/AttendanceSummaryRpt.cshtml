@@ -1,0 +1,38 @@
+﻿
+@{
+    ViewBag.Title = "AttendanceSummaryRpt";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<script type="text/javascript">
+
+
+    $(document).ready(function () {
+
+        $("#btnView").click(function (e) {
+            e.preventDefault();
+            var url;
+
+            url = '/Report/AttendanceSummaryReport?PATTENDANCE_STARTdatetime=' + "01 Aug 2017" + '&PATTENDANCE_ENDdatetime=' + "31 Aug 2017" + '&PBRANCH_ID=1 &PDEPT_ID=1';
+            window.open(url);
+
+        });
+    });
+</script>
+<h2 class="page-title">Attendance Summary Report</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <h2 class="page-title"></h2>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group from-action">
+                <input type="submit" value="View" class="btn btn-primary" id="btnView" />
+            </div>
+        </div>
+    </div>
+
+}
+
+

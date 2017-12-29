@@ -1,0 +1,458 @@
+﻿
+@{
+    ViewBag.Title = "EmpAttachment";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<style>
+    .imgContainer {
+        position: relative;
+        float: left;
+        width: 100px;
+        padding:5px;
+    }
+
+        .imgContainer a, .big-images a {
+            display: inline-block;
+        }
+
+            .imgContainer a.selected {
+                border: 1px solid red;
+            }
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+
+<script type="text/javascript">
+
+    var doc_type_Id = new Array();
+    function LoadAttachment() {
+        $('#AjaxLoader').show()
+        var EmployeeCode = $("#EmployeeCode").val();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("Get_Employee_Document_Info", "Employee", "http")',
+            data: { EmployeeCode: EmployeeCode },
+            dataType: 'json',
+            async: true,
+            success: function (Doc_Employee) {
+                var index = 1;
+                var dtDiv = $("#divAttachment");
+                var dtDivBig = $("#Divbig-image");
+                dtDiv.empty();
+                dtDivBig.empty();
+                $.each(Doc_Employee, function (index, E) {//big-image Divbig-image
+                    doc_type_Id[doc_type_Id.length] = E.document_type_id;
+                    dtDiv.append("<div class='imgContainer' style='float:left'><img id='thumbnil' style='width:90px; height:150px;' src='/Employee/Retrieve_Employee_Document/" + E.Id + "' alt='Image' class='img-responsive' /><div>" + E.Document_Name + "</div></div>")
+                    dtDivBig.append("<div id='big-image'><img src='/Employee/Retrieve_Employee_Document/" + E.Id + "' alt='Image' /></div>")
+                });
+
+                $("#big-image img").hide();
+                //  $("#big-image img:eq(0)").nextAll().hide();
+                $(".imgContainer").click(function (e) {
+                    // alert(1)
+                    $("#big-image img").hide();
+                    var index = $(this).index();
+
+                    $("#big-image img").eq(index).show().siblings().hide();
+                });
+                $('#AjaxLoader').hide();
+            },
+            error: function (request, status, error) {
+                $('#AjaxLoader').hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+
+        //
+        //if (E.FilePath != "") {
+        //    if (E.MimeType == "application/msword" || E.MimeType == "application/pdf" || E.MimeType == "application/x-msexcel") {
+        //        dtDiv.append("            <div class='imgContainer' style='float:left'><a href='" + BaseUrl + E.FilePath + "' target='_blank'><div style='height:90px;width:80px;background-color:lightgray' title=" + E.FileName + "><label>File</label></div></a></div>")
+        //    }
+        //    else {
+        //        dtDiv.append("<div class='imgContainer' style='float:left'><a href='" + BaseUrl + E.FilePath + "' target='_blank'><img src='" + E.FilePath + "' alt='" + E.FileName + "' height=90 width=80 /></a><div></div></div>")
+        //    }
+        //}
+    }
+
+
+
+    function showMyImage(fileInput) {
+        var files = fileInput.files;
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var imageType = /image.*/;
+
+            if (file.type.match(imageType)) {
+                //continue;
+                var size = Math.round(file.size / 1024);
+                if (size <= 100) {
+                    var img = document.getElementById("thumbnil");
+                    img.file = file;
+                    var reader = new FileReader();
+                    reader.onload = (function (aImg) {
+                        return function (e) {
+                            aImg.src = e.target.result;
+                        };
+                    })(img);
+                    reader.readAsDataURL(file);
+                }
+                else
+                {
+                     $("#PhotographMsg").val('');
+                    $.alert.open("error", "Image file cannot be greater than 100 KB.");
+                    // alert('Image file cannot be greater than 100 KB.');
+                }
+                  
+            }
+            else {
+                // $("#PhotographMsg").replaceWith($("#PhotographMsg").clone(true));
+                $("#PhotographMsg").val('');
+                $.alert.open("error", "Please select a valid image file");
+            }
+
+        }
+    }
+
+    function Clear() {
+        $("#hdnEmployeeId").val(0);
+        $("#EmployeeName").val("");
+        $("#empDateOfBirth").val("");
+        $("#DesignamtionList").val("");
+        $("#empJoiningDate").val("");
+        $("#empJoiningDate").attr("disabled", false);
+        $("#DepartmentList").val("");
+        $("#BranchList").val("");
+        $("#JobTypeList").val("");
+        $("#DeskList").val("");
+        $("#DueDateofConfirmation").val("");
+        $("#WithIncrement").val(0);
+        $("#EmployeeCode").attr("autofocus", true)
+
+    }
+
+
+    function Get_EmployeeInfo_Details_By_Code() {
+        var EmployeeCode = $("#EmployeeCode").val();
+        $('#AjaxLoader').show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("Get_EmployeeInfo_Details_By_Code", "Employee", "http")',
+            data: { EmployeeCode: EmployeeCode },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                ActionMode = "Edit"
+                $('#AjaxLoader').hide();
+                Clear();
+                if (data.Result == "Success") {
+                    $.each(data.EmployeeInfo, function (id, E) {
+
+                        $("#hdnEmployeeId").val(E.emp_id);
+                        $("#EmployeeCode").val(E.emp_office_code);
+                        $("#EmployeeName").val(E.emp_name);
+                        $("#empDateOfBirth").val(E.emp_datetimeof_birth);
+
+                        $("#empJoiningDate").val(E.emp_joining_datetime);
+                        $("#desg_name").val(E.desg_name);
+                        $("#Dept_name").val(E.Dept_name);
+                        $("#job_name").val(E.job_name);
+                        $("#branch_name").val(E.branch_name);
+                        $("#desk_name").val(E.desk_name);
+                        $("#DueDateofConfirmation").val(E.emp_confirmation_datetime);
+
+                        $('#AjaxLoader').hide();
+                    });
+                    LoadAttachment();
+                }
+                else {
+                    $('#AjaxLoader').hide();
+                    $.alert.open("Error", data.Message);
+                }
+
+
+            },
+            error: function (request, status, error) {
+                $('#AjaxLoader').hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+
+        $("#EmployeeCode").blur(function () {
+            if ($("#EmployeeCode").val() != "") {
+                Get_EmployeeInfo_Details_By_Code();
+            }
+
+        });
+
+        $('#btnImagesSave').click(function (e) {
+            e.preventDefault();
+            var DocumentTypeId = $("#DocumentTypeList").val() == "" ? "0" : $("#DocumentTypeList").val();
+
+            //alert(doc_type_Id.length)
+
+            var IsExsitDoc = "No"
+            for (i = 0; i < doc_type_Id.length; i++)
+            {
+                if (doc_type_Id[i] == DocumentTypeId)
+                {
+                    IsExsitDoc = "Yes";
+                }
+            }
+
+            var EmployeeId = $("#hdnEmployeeId").val();
+            if (DocumentTypeId != "0" && EmployeeId != 0) {
+                if(  $("#PhotographMsg").val()!= "")
+                {
+                    if (IsExsitDoc == "No")
+                    {
+                        $('#EmployeeImageForm').ajaxSubmit({
+                            type: "POST",
+                            target: '#thumbnil',
+                            data: { EmployeeId: EmployeeId, DocumentTypeId: DocumentTypeId, Remarks: $("#Remarks").val() },
+                            dataType: 'json',
+                            resetForm: true,
+                            success: function (data) {
+                                if (data.Result == "Success") {
+                                    LoadAttachment();
+                                    $("#SucInvDeailMsg").show(800).fadeToggle(3000);
+                                }
+                                else {
+                                    $.alert.open("Error", data.Message);
+                                }
+                            },
+                            error: function () {
+                                $("#dialog-message").html('<p>Error, Fail to Save.</p>');
+                                $("#dialog-message").dialog({
+                                    modal: true,
+                                    buttons: {
+                                        Ok: function () {
+                                            $(this).dialog("close");
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    else
+                    {
+                        $.alert.open('confirm', '' + $("#DocumentTypeList option:selected").text() + ' document is already existed. Are you sure you want to Replase this document?', function (button) {
+                            if (button == 'yes') {
+                                $('#EmployeeImageForm').ajaxSubmit({
+                            type: "POST",
+                            target: '#thumbnil',
+                            data: { EmployeeId: EmployeeId, DocumentTypeId: DocumentTypeId, Remarks: $("#Remarks").val() },
+                            dataType: 'json',
+                            resetForm: true,
+                            success: function (data) {
+                                if (data.Result == "Success") {
+                                    LoadAttachment();
+                                    $("#SucInvDeailMsg").show(800).fadeToggle(3000);
+                                }
+                                else {
+                                    $.alert.open("Error", data.Message);
+                                }
+                            },
+                            error: function () {
+                                $("#dialog-message").html('<p>Error, Fail to Save.</p>');
+                                $("#dialog-message").dialog({
+                                    modal: true,
+                                    buttons: {
+                                        Ok: function () {
+                                            $(this).dialog("close");
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                                return true;
+                            }
+                            else {
+                                return false;
+                            }
+                        });
+                    }
+
+                }
+                else
+                {
+                    $.alert.open("error","Please select image");
+                }
+
+            }
+            else {
+                $.alert.open("Error", "Select employee and document type");
+            }
+
+        });
+
+    });
+
+
+</script>
+@using (Html.BeginForm("Create", "Employee", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "EmployeeForm" }))
+{
+
+    <div class="">
+        <div id="AjaxLoader" class="ajaxLoader"></div>
+        <input type="hidden" id="hdnEmployeeId" value="0" />
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <div class="page-title">
+                            <div class="title_left PageHeader" style="width:90%;">
+                                <h3 style="color: white;padding:2px">&nbsp;Employee's Documents</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="x_content">
+                        <fieldset>
+                            <legend style="color: rgb(26,187,156)"> Basic Information</legend>
+
+                            <form class="form-horizontal form-label-left">
+                                <div class="row form-group">
+                                    @Html.Label("Employee Code", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("EmployeeCode", new { htmlAttributes = new { @class = "form-control", @autofocus = true } })
+                                    </div>
+                                    @Html.Label("Name", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("EmployeeName", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+                                </div>
+
+                                <div class="row form-group" style="display:none">
+                                    @Html.Label("Date of Birth", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("empDateOfBirth", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+                                    @Html.Label("Joining Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("empJoiningDate", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    @Html.Label("Job Type", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("job_name", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+                                    @Html.Label("Designation ", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("desg_name", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    @Html.Label("Branch", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("branch_name", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+                                    @Html.Label("Department", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("Dept_name", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+
+                                </div>
+                                <div class="row form-group">
+                                    @Html.Label("Desk", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("desk_name", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+                                    <div style="display:none">
+                                        @Html.Label("Due Date of Confirmation", htmlAttributes: new { @class = "control-label col-md-2" })
+                                        <div class="col-md-4 col-sm-6 col-xs-12">
+                                            @Html.Editor("DueDateofConfirmation", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                        </div>
+                                    </div>
+                                  
+                                </div>
+                            </form>
+                        </fieldset>
+                        <fieldset>
+                            <legend style="color: rgb(26,187,156)"> Add Attachment</legend>
+
+                            @using (Html.BeginForm("EmployeeAttachmentSave", "Employee", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "EmployeeImageForm" }))
+                            {
+                                @model Hrms.Controllers.EmployeeController.EmployeeModel
+
+                                 <div class="row form-group">
+                                    @Html.Label("Document Type", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.DropDownList("DocumentTypeList", new SelectList(ViewBag.DocumentTypeList, "Id", "Document_Name"), "Please select", new { @class = "form-control bordercss" })
+                                    </div>
+                                     @Html.Label("Remarks", htmlAttributes: new { @class = "control-label col-md-2" })
+                                     <div class="col-md-4 col-sm-6 col-xs-12">
+                                         @Html.Editor("Remarks", new { htmlAttributes = new { @class = "form-control" } })
+                                     </div>
+                                </div>
+                                
+                                <div class="row form-group">
+                                    @Html.Label("Image", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.TextBoxFor(model => model.PhotographMsg, new { type = "file", @onchange = "showMyImage(this);", @class = "form-control" })
+                                       <br />
+                                         <img id="thumbnil" style="width:100px; height:100px;" src="" alt="Image" class="img-responsive" />
+                                    </div>
+                                </div>
+
+                                <div class="row form-group">
+                                    <div class="control-label col-md-5">
+                                        <button type="submit" class="btn btn-success" id="btnImagesSave">Save</button>
+                                    </div>
+                                </div>
+                                <div class="item form-group">
+                                    <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                        <div class="success" role="alert" style="display:none" id="SucInvDeailMsg">
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                            <p class="message-content">Saved Sucessfully</p>
+                                        </div>
+                                        <div class="failed" role="alert" style="display:none">
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                            <p class="message-content">Fail to save</p>
+                                        </div>
+                                        <br />
+                                    </div>
+                                </div>
+                            }
+                        </fieldset>
+                        <fieldset>
+                            <legend style="color: rgb(26,187,156)">Attachment list</legend>
+                            <div class="row">
+                                <div id="divAttachment">
+
+                                </div>
+                            </div>
+                               
+                            <br />
+                           
+                            <div class="row" >
+                                <br />
+                                <div class="col-sm-3"></div>
+                                <div class="col-sm-6" style="border:double;border-color:green;min-height:300px;min-width:100px">
+                                    <div id="Divbig-image"> </div>
+
+                                </div>
+                               
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+}

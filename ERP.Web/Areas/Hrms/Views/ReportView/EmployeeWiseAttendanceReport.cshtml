@@ -1,0 +1,247 @@
+﻿@model Hrms.HRMViewModel.EmployeeReportViewModel
+@{
+    ViewBag.Title = "Office Calendar";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+<script src="http://localhost:56805/CommonJs/CommonJs.js"></script>
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script type="text/javascript">
+
+
+
+    var AllEmployeeList = [];
+
+    function GetEmployeeList() {
+
+        $('#EmployeeCode').attr("placeholder", "Loading . .. ... ....")
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("EmployeeInfoListForAutoComplete", "Employee", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: { },
+            success: function (List_EmployeeInfo) {
+                $.each(List_EmployeeInfo, function (id, option) {
+                    var obj2 = new Object();
+                    obj2.key = option.emp_id;
+                    obj2.value = option.EmployeeName;
+                    obj2.empCpde = option.emp_office_code;
+
+                    AllEmployeeList[AllEmployeeList.length] = obj2;
+                });
+                $('#EmployeeCode').removeAttr("placeholder")
+            },
+            failure: function () {
+                $('#EmployeeCode').removeAttr("placeholder")
+                $.alert.open("error", "Failed!");
+            }
+        });
+
+        $('#EmployeeCode').autocomplete({
+            source: AllEmployeeList,
+            select: function (event, ui) {
+
+                $("#EmployeeCode").val(ui.item.value); // display the selected text
+                $("#EmployeeId").val(ui.item.key);// save selected id to hidden input 
+                $("#EmpOfficeCode").val(ui.item.empCpde);
+            }
+        });
+    }
+
+
+
+    $(document).ready(function () {
+
+        GetEmployeeList();
+
+        ////function AutoCompleteLoad(autocompleteField, _url, hiddenField, _data)
+        //AutoCompleteLoad('#EmployeeCode', '/Common/EmployeeCodeAutoCompleteByNameAndCode', '#EmployeeId');
+        //$("#EmployeeCode").on("autocompletechange", function () {
+        //    employeeCodeAutocompleteChangeEvent();
+        //});
+        ////$("#EmployeeCode").on("autocompleteselect", function (event, ui) {
+        ////   // alert(ui.item.value);
+        ////    employeeCodeAutocompleteChangeEvent();
+        ////});
+
+
+        $("#btnShow").click(function (e) {
+            e.preventDefault();
+            var EmpOfficeCode = $("#EmpOfficeCode").val().split("-")[0];
+           // var EmployeeId = $("#EmployeeId").val();
+            var StartDate = $("#StartDate").val();
+            var EndDate = $("#EndDate").val();
+            var ReportType = $("#cmbReportType").val();
+
+            if (EmpOfficeCode != "" && StartDate != "" && StartDate != "")
+            {
+                var data = "rptslnx=1&StartDate=" + StartDate + "&EndDate=" + EndDate + "&EmployeeOfficeCode=" + EmpOfficeCode + "&ReportType=" + ReportType;
+                ShowReport('/ReportView/ShowEmployeeWiseAttendanceReport', data);
+            }
+            else
+            {
+                $.alert.open("All field required");
+            }
+            
+        });
+
+
+
+
+        $("#StartDate").on("change", function () {
+            var fromDate = $("#StartDate").val();
+            $("#EndDate").datepicker('option', { minDate: fromDate });
+        });
+        $("#EndDate").on("change", function () {
+            var toDate = $("#EndDate").val();
+            $("#TotalDays").val(0);
+            $("#StartDate").datepicker('option', { maxDate: toDate });
+        });
+
+    });
+
+    function employeeCodeAutocompleteChangeEvent() {
+
+        //  getDataList(_url, data, method, AsyncMode)
+        var empId = $("#EmployeeId").val();
+        if (!empId) {
+            $.alert.open("error", 'No data found');
+        }
+        var list = getDataList('/Common/EmployeeShortInfoByEmpCodeOrId', { Emp_Id: empId }, 'GET', false);
+        if (list.result > 0) {
+            $("#EmployeeName").html(list.data[0].emp_name);
+            $("#DesignationId").html(list.data[0].desg_name);
+            $("#DepartmentId").html(list.data[0].dept_name);
+            $("#BranchId").html(list.data[0].branch_name);
+            $("#EmpOfficeCode").html(list.data[0].emp_office_code);
+        } else {
+            $.alert.open("error", list.message);
+        }
+    }
+</script>
+
+
+<form name="frmEmployeeReport" class="form-horizontal form-label-left" id="frmEmployeeReport" method="post">
+    @Html.AntiForgeryToken()
+
+    <div role="main">
+
+        <div class="">
+            <div id="AjaxLoader" class="ajaxLoader"></div>
+            <div class="page-title">
+                <div class="title_left PageHeader" style="width:90%;">
+                    <h3 style="color: white;padding:2px">&nbsp; Employee Wise Attendance Report</h3>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-6 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                        <ul class="list-unstyled timeline">
+                            <li>
+                                <div class="block">
+                                    <div class="tags">
+                                        <a href="" class="tag">
+                                            <span>Attendance</span>
+                                        </a>
+                                    </div>
+                                    <div class="block_content">
+
+                                        <div class="row form-group">
+                                            @Html.LabelFor(model => model.StartDate, new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.TextBoxFor(model => model.StartDate, new { @class = "form-control DateInput check-date" })
+                                            </div>
+                                            @Html.LabelFor(model => model.EndDate, new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.TextBoxFor(model => model.EndDate, new { @class = "form-control DateInput check-date" })
+                                            </div>
+
+                                        </div>
+                                        @*<div class="row form-group">
+                                            @Html.LabelFor(model => model.EmployeeCode, new { @class = "control-label col-md-2" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.TextBoxFor(model => model.EmployeeCode, new { @class = "form-control"})
+                                            </div>
+                                            @Html.HiddenFor(model => model.EmployeeId)
+                                            @Html.HiddenFor(model => model.EmpOfficeCode)
+
+                                        </div>*@
+
+                                        <div class="row form-group">
+                                            @Html.Label("Employee Code", new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                @Html.TextBoxFor(model => model.EmployeeCode, new { @class = "form-control", @required = "true" })
+                                            </div>
+                                            @Html.HiddenFor(model => model.EmployeeId)
+                                            @Html.HiddenFor(model => model.EmpOfficeCode)
+                                            @Html.Label("Report Type", new { @class = "control-label col-md-2 required" })
+                                            <div class="col-sm-4">
+                                                <select class="input-sm form-control bordercss" id="cmbReportType">
+                                                    <option value="Pdf" selected="selected">Pdf</option>
+                                                    <option value="ExcelBook">Microsoft Excel</option>
+                                                    <option value="Excel">Microsoft Excel (97-2003)</option>
+                                                    <option value="ExcelData">Microsoft Excel (97-2003) Data-Only</option>
+                                                    <option value="Word">Microsoft Word (97-2003)</option>
+                                                    <option value="XML">XML</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        @*<div class="row form-group">
+                                            @Html.LabelFor(model => model.EmployeeName, new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <label class="control-label" id="EmployeeName"> Name </label>
+                                            </div>
+                                            @Html.LabelFor(model => model.DesignationId, new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <label class="control-label" id="DesignationId"> Name </label>
+                                            </div>
+
+                                        </div>
+                                        <div class="row form-group">
+                                            @Html.LabelFor(model => model.DepartmentId, new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <label class="control-label" id="DepartmentId"> Name </label>
+                                            </div>
+                                            @Html.LabelFor(model => model.BranchId, new { @class = "control-label col-md-2 required" })
+                                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                                <label class="control-label" id="BranchId"> Name </label>
+                                            </div>
+
+                                        </div>*@
+                                        <br />
+                                    </div>
+                                </div>
+                            </li>
+
+
+
+                        </ul>
+                        <div class="form-group">
+                            <div class="col-md-4"></div>
+                            <div class="col-md-1">
+                                <button type="submit" class="btn btn-success" id="btnShow">Show</button>
+                            </div>
+                            @*<div class="col-md-1">
+                                <button type="submit" class="btn btn-primary" id="tbnExpoetToExcel">Export To Excel</button>
+                            </div>*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</form>
+

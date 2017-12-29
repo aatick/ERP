@@ -1,0 +1,879 @@
+﻿@model Hrms.Controllers.EmployeeController.EmployeeModel
+@{
+    ViewBag.Title = "EmpDetails";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+
+<style>
+    .ui-autocomplete {
+        cursor: pointer;
+        height: 400px;
+        width: 300px;
+        overflow-y: scroll;
+        background-color: white;
+        color: rgb(0,188,212);
+        /*outline-style:outset;*/
+    }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+
+    .accordion .panel-heading {
+        padding: 8px;
+    }
+
+    .wizard_content {
+        /*overflow:auto;*/
+        margin: 0 auto;
+        height: 350px;
+        bottom: 0px;
+        top: 0px;
+        overflow-x: hidden;
+    }
+</style>
+
+<script type="text/javascript">
+
+    var ActionMode = "Create";
+    var PresThanaId = "0";
+    var PermThanaId = "0";
+
+
+
+
+    function showMyImage(fileInput) {
+        var files = fileInput.files;
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var imageType = /image.*/;
+
+            if (file.type.match(imageType)) {
+                //continue;
+                var size = Math.round(file.size / 1024);
+                if (size <= 100) {
+                    var img = document.getElementById("thumbnil");
+                    img.file = file;
+                    var reader = new FileReader();
+                    reader.onload = (function (aImg) {
+                        return function (e) {
+                            aImg.src = e.target.result;
+                        };
+                    })(img);
+                    reader.readAsDataURL(file);
+                }
+                else
+                    alert('Image file cannot be greater than 100 KB.');
+            }
+            else {
+                $("#PhotographMsg").replaceWith($("#PhotographMsg").clone(true));
+                alert('Please select a valid image file');
+            }
+
+        }
+    }
+
+
+
+    function showMyImageSign(fileInput) {
+        var files = fileInput.files;
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var imageType = /image.*/;
+
+            if (file.type.match(imageType)) {
+                //continue;
+                var size = Math.round(file.size / 1024);
+                if (size <= 100) {
+                    var img = document.getElementById("thumbnil2");
+                    img.file = file;
+                    var reader = new FileReader();
+                    reader.onload = (function (aImg) {
+                        return function (e) {
+                            aImg.src = e.target.result;
+                        };
+                    })(img);
+                    reader.readAsDataURL(file);
+                }
+                else
+                    alert('Image file cannot be greater than 100 KB.');
+            }
+            else {
+                $("#SignatureMsg").replaceWith($("#SignatureMsg").clone(true));
+                alert('Please select a valid image file');
+            }
+
+        }
+    }
+
+
+
+
+
+
+    function Clear() {
+        $("#hdnEmployeeId").val(0);
+        $("#EmployeeName").val("");
+        $("#empDateOfBirth").val("");
+        $("#desg_name").val("");
+
+        //if (IsSalaryDisburse == 0) {
+        //$("#empJoiningDate").attr("disabled", false);
+        //}
+        //else {
+        //$("#empJoiningDate").attr("disabled", true);
+        //}
+        $("#empJoiningDate").val("");
+        $("#desg_name").val("");
+        $("#branch_name").val("");
+        $("#job_name").val("");
+        $("#desk_name").val("");
+        $("#DueDateofConfirmation").val("");
+
+        $("#hdnEmployeeDetailId").val(0);
+        $("#FatherName").val("");
+        $("#MotherName").val("");
+        $("#ddlGender").val("MALE");
+        $("#BloodGroupList").val("");
+        $("#ReligionList").val("");
+        $("#MaritalStatusList").val("");
+        $("#SpouseName").val("");
+        $("#SpouseDateOfBirth").val("");
+        $("#SpouseContactNo").val("");
+        $("#CountryList").val("");
+        $("#NationalId").val("");
+        $("#PassportNo").val("");
+        $("#LandPhoneNo").val("");
+        $("#SellPhoneNo").val("");
+        $("#LandPhoneNoOffice").val("");
+        $("#EmailOffice").val("");
+        $("#EmailPersonal").val("");
+        $("#EmergencyContactPerson").val("");
+        $("#EmergencyContactNo").val("");
+        // $("#RelationList").val("");
+        $("#Remarks").val("");
+        $("#PresentAddress").val("");
+        $("#ddlDistrictlist").val("0");
+        $("#PermanentAddress").val("");
+        $("#ddlPerDistrictlist").val("0");
+
+        $('#thumbnil').attr('src', '');
+        $('#thumbnil2').attr('src', '');
+    }
+
+    function Get_EmployeeInfo_Details_By_Code() {
+        var EmployeeCode = $("#EmployeeCode").val();
+        $('#AjaxLoader').show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("Get_EmployeeInfo_Details_By_Code", "Employee", "http")',
+            data: { EmployeeCode: EmployeeCode },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $('#AjaxLoader').hide();
+                ActionMode = "Edit"
+                Clear();
+                if (data.Result == "Success") {
+                    $.each(data.EmployeeInfo, function (id, E) {
+
+                        $("#hdnEmployeeId").val(E.emp_id);
+                        $("#EmployeeCode").val(E.emp_office_code);
+                        $("#EmployeeName").val(E.emp_name);
+                        $("#empDateOfBirth").val(E.emp_datetimeof_birth);
+
+                        $("#empJoiningDate").val(E.emp_joining_datetime);
+                        $("#desg_name").val(E.desg_name);
+                        $("#Dept_name").val(E.Dept_name);
+                        $("#job_name").val(E.job_name);
+                        $("#branch_name").val(E.branch_name);
+                        $("#desk_name").val(E.desk_name);
+                        $("#DueDateofConfirmation").val(E.emp_confirmation_datetime);
+
+                        $("#hdnEmployeeDetailId").val(E.DetailId);
+                        $("#FatherName").val(E.emp_father_name);
+                        $("#MotherName").val(E.emp_mother_name);
+                        if (E.emp_gender != 0 && E.emp_gender != null)
+                            $("#ddlGender").val(E.emp_gender);
+                        if (E.blood_group_id != 0 && E.blood_group_id != null)
+                            $("#BloodGroupList").val(E.blood_group_id);
+                        if (E.religion_id != 0 && E.religion_id != null)
+                            $("#ReligionList").val(E.religion_id);
+                        if (E.marital_status_id != 0 && E.marital_status_id != null)
+                            $("#MaritalStatusList").val(E.marital_status_id);
+                        $("#SpouseName").val(E.emp_spouse_name);
+                        $("#SpouseDateOfBirth").val(E.emp_spouse_dateofbirth);
+                        $("#SpouseContactNo").val(E.emp_spouse_contact_no);
+                        if (E.emp_country_id != 0 && E.emp_country_id != null)
+                            $("#CountryList").val(E.emp_country_id);
+                        $("#NationalId").val(E.emp_nation_id_no);
+                        $("#PassportNo").val(E.emp_passport_no);
+                        $("#LandPhoneNo").val(E.emp_phone_residance);
+                        $("#SellPhoneNo").val(E.emp_mobile);
+                        $("#LandPhoneNoOffice").val(E.emp_phone_office);
+                        $("#EmailOffice").val(E.emp_office_mail_address);
+                        $("#EmailPersonal").val(E.emp_personal_mail_address);
+                        $("#EmergencyContactPerson").val(E.emergency_contact_person_name);
+                        $("#EmergencyContactNo").val(E.emergency_contact_no);
+                        //$("#RelationList").val(E.relation_emergency_person);
+                        $("#Remarks").val(E.remarks);
+                        $("#PresentAddress").val(E.emp_present_address);
+                        if (E.emp_present_district_id != 0 && E.emp_present_district_id != null) {
+                            $("#ddlDistrictlist").val(E.emp_present_district_id);
+                            GetThanaList();
+                            PresThanaId = E.emp_present_thana_id;
+                        }
+                        $("#PermanentAddress").val(E.emp_permanent_address);
+                        if (E.emp_permanent_district_id != 0 && E.emp_permanent_district_id != null) {
+                            $("#ddlPerDistrictlist").val(E.emp_permanent_district_id);
+                            GetPer_ThanaList();
+                            PermThanaId = E.emp_permanent_thana_id;
+                        }
+                        $('#AjaxLoader').hide();
+
+                        $("#thumbnil2").attr("src", "/Employee/RetrieveSign/" + E.emp_id + "");
+                        $("#thumbnil").attr("src", "/Employee/RetrieveImage/" + E.emp_id + "");
+
+
+                    });
+                }
+                else {
+                    $('#AjaxLoader').hide();
+                    $.alert.open("Error", data.Message);
+                }
+
+
+            },
+            error: function (request, status, error) {
+                $('#AjaxLoader').hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+    function GetDistrictList() {
+        var ddlDistrictlist = $("#ddlDistrictlist");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetDistrictList", "Employee", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (DistrictList) {
+                // $('#AjaxLoader').hide();
+                ddlDistrictlist.html('');
+                ddlDistrictlist.append($('<option></option>').val("0").html("Please select"));
+                $.each(DistrictList, function (id, option) {
+                    ddlDistrictlist.append($('<option></option>').val(option.Id).html(option.DistrictName));
+                });
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+
+    }
+
+    function GetThanaList() {
+
+        var DistrictId = $("#ddlDistrictlist").val();
+        var ddlThanalist = $("#ddlThanalist");
+
+        if (DistrictId != "0") {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetddlThanaList", "Employee", "http")',
+                data: { DistrictId: DistrictId },
+                dataType: 'json',
+                async: true,
+                success: function (ThanaList) {
+                    ddlThanalist.html('');
+                    ddlThanalist.append($('<option></option>').val("0").html("Please select"));
+                    $.each(ThanaList, function (id, option) {
+                        ddlThanalist.append($('<option></option>').val(option.Id).html(option.ThanaName));
+                    });
+                    if (ActionMode == "Edit") {
+                        $("#ddlThanalist").val(PresThanaId);
+                    }
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+    }
+
+    function GetPer_DistrictList() {
+
+        var ddlDistrictlist = $("#ddlPerDistrictlist");
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetDistrictList", "Employee", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (DistrictList) {
+                // $('#AjaxLoader').hide();
+                ddlDistrictlist.html('');
+                ddlDistrictlist.append($('<option></option>').val("0").html("Please select"));
+                $.each(DistrictList, function (id, option) {
+                    ddlDistrictlist.append($('<option></option>').val(option.Id).html(option.DistrictName));
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+
+    }
+
+    function GetPer_ThanaList() {
+
+        var DistrictId = $("#ddlPerDistrictlist").val();
+        var ddlThanalist = $("#ddlPerThanalist");
+
+        if (DistrictId != "0") {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetddlThanaList", "Employee", "http")',
+                data: { DistrictId: DistrictId },
+                dataType: 'json',
+                async: true,
+                success: function (ThanaList) {
+                    ddlThanalist.html('');
+                    ddlThanalist.append($('<option></option>').val("0").html("Please select"));
+                    $.each(ThanaList, function (id, option) {
+                        ddlThanalist.append($('<option></option>').val(option.Id).html(option.ThanaName));
+                    });
+                    if (ActionMode == "Edit") {
+                        $("#ddlPerThanalist").val(PermThanaId);
+                    }
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+    }
+
+    @*function SaveEmployeeDetails() {
+
+        var EmployeeId = $("#hdnEmployeeId").val() == null ? "0" : $("#hdnEmployeeId").val();
+        var FatherName = $("#FatherName").val();
+        var MotherName = $("#MotherName").val();
+        var ddlGender = $("#ddlGender").val();
+        var BloodGroupList = $("#BloodGroupList").val() == "" ? null : $("#BloodGroupList").val();
+        var ReligionList = $("#ReligionList").val() == "" ? null : $("#ReligionList").val();
+        var MaritalStatusList = $("#MaritalStatusList").val() == "" ? null : $("#MaritalStatusList").val();
+        var SpouseName = $("#SpouseName").val();
+        var SpouseDateOfBirth = $("#SpouseDateOfBirth").val();
+        var SpouseContactNo = $("#SpouseContactNo").val();
+        var CountryList = $("#CountryList").val() == "" ? null : $("#CountryList").val();
+        var NationalId = $("#NationalId").val();
+        var PassportNo = $("#PassportNo").val();
+        var LandPhoneNo = $("#LandPhoneNo").val();
+        var SellPhoneNo = $("#SellPhoneNo").val();
+        var LandPhoneNoOffice = $("#LandPhoneNoOffice").val();
+        var EmailOffice = $("#EmailOffice").val();
+        var EmailPersonal = $("#EmailPersonal").val();
+        var EmergencyContactPerson = $("#EmergencyContactPerson").val();
+        var EmergencyContactNo = $("#EmergencyContactNo").val();
+
+        var RelationList = $("#RelationList").val() == "" ? null : $("#RelationList").val();
+        var Remarks = $("#Remarks").val();
+        var PresentAddress = $("#PresentAddress").val();
+        var ddlDistrictlist = $("#ddlDistrictlist").val() == "0" ? null : $("#ddlDistrictlist").val();
+        var ddlThanalist = $("#ddlThanalist").val() == "0" || "" ? null : $("#ddlThanalist").val();
+        var PermanentAddress = $("#PermanentAddress").val();
+        var ddlPerDistrictlist = $("#ddlPerDistrictlist").val() == "0" ? null : $("#ddlPerDistrictlist").val();
+        var ddlPerThanalist = $("#ddlPerThanalist").val() == "0" || "" ? null : $("#ddlPerThanalist").val();
+
+        if (EmployeeId != "0") {
+            if (FatherName != "" && MotherName != "" && BloodGroupList != null && ReligionList != null && MaritalStatusList != null && CountryList != null) {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveEmployeeDetails", "Employee", "http")',
+                        data: {
+                            EmployeeId: EmployeeId, FatherName:FatherName ,  MotherName: MotherName, Gender: ddlGender, BloodGroupList: BloodGroupList, ReligionList:ReligionList ,  MaritalStatusList: MaritalStatusList,  SpouseName: SpouseName,
+                            SpouseDateOfBirth: SpouseDateOfBirth,  SpouseContactNo: SpouseContactNo, CountryList: CountryList, NationalId : NationalId, PassportNo: PassportNo, LandPhoneNo: LandPhoneNo, SellPhoneNo: SellPhoneNo,
+                            LandPhoneNoOffice: LandPhoneNoOffice, EmailOffice: EmailOffice, EmailPersonal: EmailPersonal, EmergencyContactPerson: EmergencyContactPerson, EmergencyContactNo: EmergencyContactNo, RelationList: RelationList, Remarks: Remarks,
+                            PresentAddress: PresentAddress, ddlDistrictlist: ddlDistrictlist, ddlThanalist: ddlThanalist, PermanentAddress: PermanentAddress, ddlPerDistrictlist: ddlPerDistrictlist, ddlPerThanalist: ddlPerThanalist
+                        },
+                        dataType: 'json',
+                        async: true,
+                        success: function (data) {
+                            if (data.Result == "Success") {
+                                $('#AjaxLoader').hide();
+                                Clear();
+                                $("#hdnEmployeeId").val(0);
+                                $.alert.open('Success', data.Message);
+                                return true;
+
+                            }
+                            else {
+                                $.alert.open('Error', data.Message);
+                                return false;
+                            }
+                        },
+                        error: function (request, status, error) {
+                            alert(error)
+                        }
+                    });
+                }
+                else {
+                    $('#AjaxLoader').hide();
+                    $.alert.open("error", "Insert all required field");
+                }
+
+            }
+            else
+            {
+                $('#AjaxLoader').hide();
+                $.alert.open("error"," Please save employee basic information");
+            }
+    }*@
+
+
+
+
+    function onFinishCallback(objs, context) {
+        if (context.fromStep == 3) {
+            var status = "1"; //Step2_Save();
+            if (status == '0' || status == 'undefined') {
+                return false;
+            }
+            else {
+                return true;
+
+            }
+        }
+    }
+
+    $(document).ready(function () {
+
+        GetDistrictList();
+        GetPer_DistrictList();
+
+        //if ($("#hdnEmployeeId").val() != "0") {
+        //    ActionMode == "Edit";
+        //    //Get_EmployeeInfo_For_Edit();
+        //}
+
+        //$("#btnSaveStep1").click(function (e) {
+        //    e.preventDefault();
+        //    SaveEmployeeBasic();
+        //});
+
+        $("#btnSaveStep2").click(function (e) {
+            e.preventDefault()
+            // SaveEmployeeDetails();
+
+
+            var EmployeeId = $("#hdnEmployeeId").val() == null ? "0" : $("#hdnEmployeeId").val();
+            var FatherName = $("#FatherName").val();
+            var MotherName = $("#MotherName").val();
+            var ddlGender = $("#ddlGender").val();
+            var BloodGroupList = $("#BloodGroupList").val() == "" ? null : $("#BloodGroupList").val();
+            var ReligionList = $("#ReligionList").val() == "" ? null : $("#ReligionList").val();
+            var MaritalStatusList = $("#MaritalStatusList").val() == "" ? null : $("#MaritalStatusList").val();
+            var SpouseName = $("#SpouseName").val();
+            var SpouseDateOfBirth = $("#SpouseDateOfBirth").val();
+            var SpouseContactNo = $("#SpouseContactNo").val();
+            var CountryList = $("#CountryList").val() == "" ? null : $("#CountryList").val();
+            var NationalId = $("#NationalId").val();
+            var PassportNo = $("#PassportNo").val();
+            var LandPhoneNo = $("#LandPhoneNo").val();
+            var SellPhoneNo = $("#SellPhoneNo").val();
+            var LandPhoneNoOffice = $("#LandPhoneNoOffice").val();
+            var EmailOffice = $("#EmailOffice").val();
+            var EmailPersonal = $("#EmailPersonal").val();
+            var EmergencyContactPerson = $("#EmergencyContactPerson").val();
+            var EmergencyContactNo = $("#EmergencyContactNo").val();
+
+            var RelationList = $("#RelationList").val() == "" ? null : $("#RelationList").val();
+            var Remarks = $("#Remarks").val();
+            var PresentAddress = $("#PresentAddress").val();
+            var ddlDistrictlist = $("#ddlDistrictlist").val() == "0" ? null : $("#ddlDistrictlist").val();
+            var ddlThanalist = $("#ddlThanalist").val() == "0" || "" ? null : $("#ddlThanalist").val();
+            var PermanentAddress = $("#PermanentAddress").val();
+            var ddlPerDistrictlist = $("#ddlPerDistrictlist").val() == "0" ? null : $("#ddlPerDistrictlist").val();
+            var ddlPerThanalist = $("#ddlPerThanalist").val() == "0" || "" ? null : $("#ddlPerThanalist").val();
+
+            if (EmployeeId != "0") {
+                if (FatherName != "" && MotherName != "" && BloodGroupList != null && ReligionList != null && MaritalStatusList != null && CountryList != null) {
+                    $('#EmployeeForm').ajaxSubmit({
+                        type: "POST",
+                        target: '#thumbnil',
+                        data: {
+                            EmployeeId: EmployeeId, FatherName: FatherName, MotherName: MotherName, Gender: ddlGender, BloodGroupList: BloodGroupList, ReligionList: ReligionList, MaritalStatusList: MaritalStatusList, SpouseName: SpouseName,
+                            SpouseDateOfBirth: SpouseDateOfBirth, SpouseContactNo: SpouseContactNo, CountryList: CountryList, NationalId: NationalId, PassportNo: PassportNo, LandPhoneNo: LandPhoneNo, SellPhoneNo: SellPhoneNo,
+                            LandPhoneNoOffice: LandPhoneNoOffice, EmailOffice: EmailOffice, EmailPersonal: EmailPersonal, EmergencyContactPerson: EmergencyContactPerson, EmergencyContactNo: EmergencyContactNo, RelationList: RelationList, Remarks: Remarks,
+                            PresentAddress: PresentAddress, ddlDistrictlist: ddlDistrictlist, ddlThanalist: ddlThanalist, PermanentAddress: PermanentAddress, ddlPerDistrictlist: ddlPerDistrictlist, ddlPerThanalist: ddlPerThanalist
+                        },
+                        dataType: 'json',
+                        resetForm: true,
+                        success: function (data) {
+                            if (data.Result == "Success") {
+                                $('#AjaxLoader').hide();
+                                Clear();
+                                $("#hdnEmployeeId").val(0);
+                                $.alert.open('Success', data.Message);
+                                return true;
+
+                            }
+                            else {
+                                $.alert.open('Error', data.Message);
+                                return false;
+                            }
+                        },
+                        error: function (request, status, error) {
+                            alert(error)
+                        }
+                    });
+                }
+                else {
+                    $('#AjaxLoader').hide();
+                    $.alert.open("error", "Insert all required field");
+                }
+            }
+            else {
+                $('#AjaxLoader').hide();
+                $.alert.open("error", " Please save employee basic information");
+            }
+        });
+
+
+        $("#EmployeeCode").blur(function () {
+            if($("#EmployeeCode").val() != "")
+            {
+                Get_EmployeeInfo_Details_By_Code();
+            }
+
+        });
+
+
+        $("#ddlDistrictlist").change(function () { ActionMode == "Save"; GetThanaList() });
+
+        $("#ddlPerDistrictlist").change(function () { ActionMode == "Save"; GetPer_ThanaList() });
+
+    });
+
+    $("#CountryList").val(18);
+</script>
+@using (Html.BeginForm("SaveEmployeeDetails", "Employee", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "EmployeeForm" }))
+{
+
+    <div class="">
+        <div id="AjaxLoader" class="ajaxLoader"></div>
+        <input type="hidden" id="hdnEmployeeId" value="0" />
+        <input type="hidden" id="hdnEmployeeDetailId" value="0" />
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <div class="page-title">
+                            <div class="title_left PageHeader" style="width:90%;">
+                                <h3 style="color: white;padding:2px">&nbsp;Employee Basic Information</h3>
+                            </div>
+                           @* @Html.ActionLink("Back to list", "Index", "Employee", new { EmployeeId = 0 }, new { @class = "btn btn-primary btn-sm pull-right" })*@
+                        </div>
+                    </div>
+                    <div class="x_content">
+                        <fieldset>
+                            <legend>Basic Information</legend>
+
+                            <form class="form-horizontal form-label-left">
+                                <div class="row form-group">
+                                    @Html.Label("Employee Code", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("EmployeeCode", new { htmlAttributes = new { @class = "form-control",@autofocus=true } })
+                                    </div>
+                                    @Html.Label("Name", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("EmployeeName", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+                                </div>
+
+                                <div class="row form-group">
+                                    @Html.Label("Date of Birth", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("empDateOfBirth", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+                                    @Html.Label("Joining Date", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("empJoiningDate", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    @Html.Label("Job Type", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("job_name", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+                                    @Html.Label("Designation ", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("desg_name", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    @Html.Label("Branch", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("branch_name", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+                                    @Html.Label("Department", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("Dept_name", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+                                   
+                                </div>
+                                <div class="row form-group">
+                                    @Html.Label("Desk", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("desk_name", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+
+                                    @Html.Label("Due Date of Confirmation", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("DueDateofConfirmation", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+                                </div>
+                                @*<div class="row form-group">
+                                    <div class="control-label col-md-2">
+                                        <input type="checkbox" id="ckInrement" /><span style="color:black"><b>With Increment</b></span>
+                                    </div>
+                                    <div class="col-md-4 col-sm-6 col-xs-12" id="divIncrement" style="display:none">
+                                        @Html.Editor("WithIncrement", new { htmlAttributes = new { @class = "form-control", @type = "number" } })
+                                    </div>
+                                </div>*@
+                                                @*<div class="row form-group">
+                                    <div class="control-label col-md-5">
+                                        <button type="submit" class="btn btn-success" id="btnSaveStep1">Save</button>
+                                    </div>
+                                </div>*@
+                            </form>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Details</legend>
+
+                            <div class="row form-group">
+                                @Html.Label("Father Name", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("FatherName", new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                                @Html.Label("Mother Name", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("MotherName", new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+
+                            <div class="row form-group">
+                                @Html.Label("Gender", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    <select class="form-control bordercss" id="ddlGender">
+                                        <option value="MALE" selected>Male</option>
+                                        <option value="FEMALE">Female</option>
+                                    </select>
+                                </div>
+                                @Html.Label("Blood Group ", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("BloodGroupList", new SelectList(ViewBag.BloodGroupList, "BLOOD_GROUP_ID", "BLOOD_GROUP_NAME"), "Please select", new { @class = "form-control bordercss" })
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                @Html.Label("Religion", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("ReligionList", new SelectList(ViewBag.ReligionList, "RELIGION_ID", "RELIGION_NAME"), "Please select", new { @class = "form-control bordercss" })
+                                </div>
+                                @Html.Label("Marital Status", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("MaritalStatusList", new SelectList(ViewBag.MaritalStatusList, "MARITAL_STATUS_ID", "MARITAL_STATUS_NAME"), "Please select", new { @class = "form-control bordercss" })
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                @Html.Label("Spouse Name", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("SpouseName", new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                                @Html.Label("Spouse Date of Birth", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("SpouseDateOfBirth", new { htmlAttributes = new { @class = "form-control DateInput" } })
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                @Html.Label("Spouse Contact No", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("SpouseContactNo", new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+
+                                @Html.Label("Country", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("CountryList", new SelectList(ViewBag.CountryList, "Id", "CountryName"), "Please select", new { @class = "form-control bordercss" })
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                @Html.Label("National Id", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("NationalId", new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                                @Html.Label("Passport No", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("PassportNo", new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                @Html.Label("Land Phone No", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("LandPhoneNo", new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                                @Html.Label("Sell Phone No", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("SellPhoneNo", new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                @Html.Label("Land Phone No (Office)", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("LandPhoneNoOffice", new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                                @Html.Label("Email (Office)", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("EmailOffice", new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                @Html.Label("Email (Personal)", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("EmailPersonal", new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                                @Html.Label("Emergency Contact Person", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("EmergencyContactPerson", new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                @Html.Label("Emergency Contact No", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("EmergencyContactNo", new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                                @Html.Label("Relation", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("RelationList", new SelectList(ViewBag.RelationList, "Id", "Relation"), "Please select", new { @class = "form-control bordercss" })
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                @Html.Label("Present Address", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @*@Html.Editor("PresentAddress", new { htmlAttributes = new { @class = "form-control" } })*@
+                                    @Html.TextArea("PresentAddress", htmlAttributes: new { @class = "form-control", @rows = "4" })
+                                </div>
+                                @Html.Label("Permanent Address", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @*@Html.Editor("PermanentAddress", new { htmlAttributes = new { @class = "form-control" } })*@
+                                    @Html.TextArea("PermanentAddress", htmlAttributes: new { @class = "form-control", @rows = "4" })
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                @Html.Label("Present District", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("Districtlist", null, new { @id = "ddlDistrictlist", @class = "form-control bordercss" })
+                                </div>
+                                @Html.Label("Permanent District", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("PerDistrictlist", null, new { @id = "ddlPerDistrictlist", @class = "form-control bordercss" })
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                @Html.Label("Present Thana", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("Thanalist", null, new { @id = "ddlThanalist", @class = "form-control bordercss" })
+                                </div>
+                                @Html.Label("Permanent Thana", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("PerThanalist", null, new { @id = "ddlPerThanalist", @class = "form-control bordercss" })
+                                </div>
+                            </div>
+
+                            <div class="row form-group">
+                                @Html.Label("Rmarks", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.TextArea("Remarks", htmlAttributes: new { @class = "form-control", @rows = "4" })
+                                </div>
+                            </div>
+
+                          @*@using (Html.BeginForm("SaveEmployeeDetails", "Employee", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "EmployeeImageForm" }))*@
+                            @*{*@
+                              
+
+                            <div class="row form-group">
+                                @Html.Label("Image", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.TextBoxFor(model => model.PhotographMsg, new { type = "file", @onchange = "showMyImage(this);", @class = "form-control" })
+                                    <br />
+                                    <img id="thumbnil" style="width:100px; height:100px;" src="" alt="Image" class="img-responsive" />
+                                </div>
+                                @Html.Label("Sign", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.TextBoxFor(model => model.SignatureMsg, new { type = "file", @onchange = "showMyImageSign(this);", @class = "form-control" })
+                                    <br />
+                                    <img id="thumbnil2" style="width:100px; height:100px;" src="" alt="Image" class="img-responsive" />
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                <div class="control-label col-md-5">
+                                    <button type="submit" class="btn btn-success" id="btnSaveStep2">Save</button>
+                                </div>
+                            </div>
+                            <div class="item form-group">
+                                <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                    <div class="success" role="alert" style="display:none" id="SucInvDeailMsg">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <p class="message-content">Saved Sucessfully</p>
+                                    </div>
+                                    <div class="failed" role="alert" style="display:none">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <p class="message-content">Fail to save</p>
+                                    </div>
+                                    <br />
+                                </div>
+                            </div>
+                          @*//  }*@
+
+
+
+                            @*<div class="row form-group">
+                                <div class="control-label col-md-5">
+                                    <button type="submit" class="btn btn-success" id="btnSaveStep2">Save</button>
+                                </div>
+                            </div>*@
+                        </fieldset>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+}
+

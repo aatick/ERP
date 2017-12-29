@@ -1,0 +1,1172 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+<style>
+    .imgContainer {
+        position: relative;
+        float: left;
+        width: 100px;
+        padding: 5px;
+    }
+
+        .imgContainer a, .big-images a {
+            display: inline-block;
+        }
+
+    .imgContainer a.selected {
+                border: 1px solid red;
+            }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+    .bordercss:focus {
+        box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+        border: 2px solid rgba(81, 203, 238, 1);
+    }
+
+    /*.k-grouping-header {
+        background-color: #1ABB9C;
+    }*/
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    /* Modal Content/Box */
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto; /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 100%; /* Could be more or less, depending on screen size */
+    }
+
+    /* The Close Button */
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+    .modal-backdrop {
+        z-index: 1040 !important;
+    }
+
+    .modal-dialog {
+        margin: 2px auto;
+        z-index: 1100 !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+
+
+    function GetRecommenderList() {
+
+        var DeptId = $("#HdneEp_dept_id").val();
+        var ddlRecommenderList = $("#ddlRecommenderList");
+
+        if (DeptId != "" && DeptId != null) {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetApproverList", "Leave", "http")',
+                data: { DeptId: DeptId, PermissionType: 1 },
+                dataType: 'json',
+                async: true,
+                success: function (EmpAccInfoList) {
+                    ddlRecommenderList.html('');
+                    //ddlRecommenderList.append($('<option></option>').val("0").html("Please select"));
+                    $.each(EmpAccInfoList, function (id, option) {
+                        ddlRecommenderList.append($('<option></option>').val(option.EMP_ID).html(option.emp_name));
+                    });
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+    }
+
+
+
+    function GetApproverList() {
+        var DeptId = $("#HdneEp_dept_id").val();
+        var ddlApproverList = $("#ddlApproverList");
+
+        if (DeptId != "" && DeptId != null) {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetApproverList", "Leave", "http")',
+                data: { DeptId: DeptId, PermissionType: 2 },
+                dataType: 'json',
+                async: true,
+                success: function (EmpAccInfoList) {
+                    ddlApproverList.html('');
+                    //ddlApproverList.append($('<option></option>').val("0").html("Please select"));
+                    $.each(EmpAccInfoList, function (id, option) {
+                        ddlApproverList.append($('<option></option>').val(option.EMP_ID).html(option.emp_name));
+                    });
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+    }
+
+
+
+
+    function GET_EMP_LEAVE_APPLY_Info() {
+        $("#AjaxLoader").show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GET_EMP_LEAVE_APPLY_Info", "Leave", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                $("#AjaxLoader").hide();
+                if (data.Result == "Success") {
+                    var dtTable = $('#gridtable');
+                    var tableBody = dtTable.find('tbody');
+                    $('#gridtable tbody tr').empty();
+                    $.each(data.List_EmployeeInfo, function (id, e) {
+
+                        $("#EmployeeCode").val(e.EMP_OFFICE_CODE);
+                        $("#hdnEmployeeId").val(e.EMP_ID);
+                        $("#EmployeeName").val(e.EMP_NAME);
+                        $("#HdneEp_dept_id").val(e.EMP_DEPT_ID);
+                        $("#EmpDesignation").val(e.EMP_DESG_NAME);
+                        $("#EmpDepartment").val(e.EMP_DEPT_NAME);
+                        $("#EmpBranchName").val(e.EMP_BRANCH_NAME);
+
+
+                        $("#CL_bal").html(e.CL_BALANCE);
+                        $("#CL_ava").html(e.CL_AVAILED);
+
+                        $("#PL_bal").html(e.PL_BALANCE);
+                        $("#PL_ava").html(e.PL_AVAILED);
+
+                        $("#ML_bal").html(e.ML_BALANCE);
+                        $("#ML_ava").html(e.ML_AVAILED);
+
+                        $("#SL_bal").html(e.SL_BALANCE);
+                        $("#SL_ava").html(e.SL_AVAILED);
+
+                        $("#LWP_bal").html(e.LWP_BALANCE);
+                        $("#LWP_ava").html(e.LWP_AVAILED);
+
+                        $("#LWP_CTS_bal").html(e.LWP_CTS_BALANCE);
+                        $("#LWP_CTS_ava").html(e.LWP_CTS_AVAILED);
+
+
+
+                        if (e.EMP_LEAVE_APPLICATION_ID != 0) {
+
+                            if (e.LEAVE_STATUS == 1) //Apply   APPLIED_START_date APPLIED_END_date
+                            {
+                                tableBody.append('<tr>' +
+                                      '<td style="width:15%">' + e.LEAVE_TYPE_NAME + '<input type="text" value="' + e.LEAVE_TYPE_ID + '" style="display:none;" id="txtProduct' + e.EMP_LEAVE_APPLICATION_ID + '" /></td>' +
+                                       '<td>' + e.APPLIED_START_date + '</td>' +
+                                      '<td>' + e.APPLIED_END_date + '</td>' +
+                                       '<td></td>' +
+                                      '<td></td>' +
+                                      '<td>' + e.APPLIED_NO_OF_DAYS + '</td>' +
+                                       '<td>' + e.PURPOSE_OF_LEAVE + '</td>' +
+                                      '<td>' + e.REMARKS + '</td>' +
+                                      '<td><a href="#" title="Edit" onclick="LeaveEdit(' + e.EMP_LEAVE_APPLICATION_ID + ',' + e.LEAVE_TYPE_ID + ',' + e.APPLIED_NO_OF_DAYS + ',' + e.RELIEVER_EMP_ID + ', ' + e.recommend_emp_id + ',' + e.HRD_APPRVED_EMP_ID + ',' + "'" + e.APPLIED_START_date + "'" + ', ' + "'" + e.APPLIED_END_date + "'" + ', ' + "'" + e.APPLIED_date + "'" + ', ' + "'" + e.PURPOSE_OF_LEAVE + "'" + ', ' + "'" + e.ADDRESS_DURING_LEAVE + "'" + ', ' + "'" + e.CONTACT_NO + "'" + ', ' + "'" + e.REMARKS + "'" + ')" class="btn btn-info btn-xs"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a><a href="#" title="Delete" onclick="LeaveDelete(' + e.EMP_LEAVE_APPLICATION_ID + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o" aria-hidden="true"></i></a></td>' +
+                                      '</tr>')
+                            }
+                            else if (e.LEAVE_STATUS == 6) //Apply
+                            {
+                                tableBody.append('<tr>' +
+                                      '<td style="width:15%">' + e.LEAVE_TYPE_NAME + '<input type="text" value="' + e.LEAVE_TYPE_ID + '" style="display:none;" id="txtProduct' + e.EMP_LEAVE_APPLICATION_ID + '" /></td>' +
+                                       '<td>' + e.APPLIED_START_date + '</td>' +
+                                      '<td>' + e.APPLIED_END_date + '</td>' +
+                                      '<td></td>' +
+                                      '<td></td>' +
+                                      '<td>' + e.APPLIED_NO_OF_DAYS + '</td>' +
+                                       '<td>' + e.PURPOSE_OF_LEAVE + '</td>' +
+                                      '<td>' + e.REMARKS + '</td>' +
+                                      '<td><a href="#" title="Edit" onclick="LeaveEdit(' + e.EMP_LEAVE_APPLICATION_ID + ',' + e.LEAVE_TYPE_ID + ',' + e.APPLIED_NO_OF_DAYS + ',' + e.RELIEVER_EMP_ID + ', ' + e.recommend_emp_id + ',' + e.HRD_APPRVED_EMP_ID + ',' + "'" + e.APPLIED_START_date + "'" + ', ' + "'" + e.APPLIED_END_date + "'" + ', ' + "'" + e.APPLIED_date + "'" + ', ' + "'" + e.PURPOSE_OF_LEAVE + "'" + ', ' + "'" + e.ADDRESS_DURING_LEAVE + "'" + ', ' + "'" + e.CONTACT_NO + "'" + ', ' + "'" + e.REMARKS + "'" + ')" class="btn btn-info btn-xs"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a><a href="#" title="Delete" onclick="LeaveDelete(' + e.EMP_LEAVE_APPLICATION_ID + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o" aria-hidden="true"></i></a><span style="color:red">Reject by reliever</span></td>' +
+                                      '</tr>')
+                            }
+                            else if (e.LEAVE_STATUS == 4 && e.RELIEVER_EMP_ID != "0")//Reliever
+                            {
+                                $("#ThEdit").html("Leave Status");
+                                tableBody.append('<tr>' +
+                                     '<td style="width:15%">' + e.LEAVE_TYPE_NAME + '<input type="text" value="' + e.LEAVE_TYPE_ID + '" style="display:none;" id="txtProduct' + e.EMP_LEAVE_APPLICATION_ID + '" /></td>' +
+                                      '<td>' + e.APPLIED_START_date + '</td>' +
+                                     '<td>' + e.APPLIED_END_date + '</td>' +
+                                      '<td></td>' +
+                                     '<td></td>' +
+                                     '<td>' + e.APPLIED_NO_OF_DAYS + '</td>' +
+                                      '<td>' + e.PURPOSE_OF_LEAVE + '</td>' +
+                                     '<td>' + e.REMARKS + '</td>' +
+                                       '<td>' + e.LEAVE_STATUSMsg + '</td>' +
+                                     '</tr>')
+                            }
+                            else if (e.LEAVE_STATUS == 4 && e.RELIEVER_EMP_ID == "0")//Reliever// Edit 28 nov 2017
+                            {
+                                tableBody.append('<tr>' +
+                                      '<td style="width:15%">' + e.LEAVE_TYPE_NAME + '<input type="text" value="' + e.LEAVE_TYPE_ID + '" style="display:none;" id="txtProduct' + e.EMP_LEAVE_APPLICATION_ID + '" /></td>' +
+                                       '<td>' + e.APPLIED_START_date + '</td>' +
+                                      '<td>' + e.APPLIED_END_date + '</td>' +
+                                       '<td></td>' +
+                                      '<td></td>' +
+                                      '<td>' + e.APPLIED_NO_OF_DAYS + '</td>' +
+                                       '<td>' + e.PURPOSE_OF_LEAVE + '</td>' +
+                                      '<td>' + e.REMARKS + '</td>' +
+                                      '<td><a href="#" title="Edit" onclick="LeaveEdit(' + e.EMP_LEAVE_APPLICATION_ID + ',' + e.LEAVE_TYPE_ID + ',' + e.APPLIED_NO_OF_DAYS + ',' + e.RELIEVER_EMP_ID + ', ' + e.recommend_emp_id + ',' + e.HRD_APPRVED_EMP_ID + ',' + "'" + e.APPLIED_START_date + "'" + ', ' + "'" + e.APPLIED_END_date + "'" + ', ' + "'" + e.APPLIED_date + "'" + ', ' + "'" + e.PURPOSE_OF_LEAVE + "'" + ', ' + "'" + e.ADDRESS_DURING_LEAVE + "'" + ', ' + "'" + e.CONTACT_NO + "'" + ', ' + "'" + e.REMARKS + "'" + ')" class="btn btn-info btn-xs"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a><a href="#" title="Delete" onclick="LeaveDelete(' + e.EMP_LEAVE_APPLICATION_ID + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o" aria-hidden="true"></i></a></td>' +
+                                      '</tr>')
+                            }
+                            else if (e.LEAVE_STATUS == 5) //Recommand
+                            {
+                                $("#ThEdit").html("Leave Status");
+                                tableBody.append('<tr>' +
+                                      '<td style="width:15%">' + e.LEAVE_TYPE_NAME + '<input type="text" value="' + e.LEAVE_TYPE_ID + '" style="display:none;" id="txtProduct' + e.EMP_LEAVE_APPLICATION_ID + '" /></td>' +
+                                       '<td>' + e.APPLIED_START_date + '</td>' +
+                                      '<td>' + e.APPLIED_END_date + '</td>' +
+                                      '<td>' + e.recommend_start_date + '</td>' +
+                                      '<td>' + e.recommend_end_date + '</td>' +
+                                      '<td>' + e.recommend_no_of_days + '</td>' +
+                                       '<td>' + e.PURPOSE_OF_LEAVE + '</td>' +
+                                      '<td>' + e.REMARKS + '</td>' +
+                                      '<td>' + e.LEAVE_STATUSMsg + '</td>' +
+                                      '</tr>')
+                            }
+                            else if (e.LEAVE_STATUS == 2) //Approve
+                            {
+                                $("#ThEdit").html("Leave Status");
+                                tableBody.append('<tr>' +
+                                      '<td style="width:15%">' + e.LEAVE_TYPE_NAME + '<input type="text" value="' + e.LEAVE_TYPE_ID + '" style="display:none;" id="txtProduct' + e.EMP_LEAVE_APPLICATION_ID + '" /></td>' +
+                                      '<td>' + e.APPLIED_START_date + '</td>' +
+                                      '<td>' + e.APPLIED_END_date + '</td>' +
+                                      '<td>' + e.APPROVED_START_date + '</td>' +
+                                      '<td>' + e.APPROVED_END_date + '</td>' +
+                                      '<td>' + e.APPROVED_NO_OF_DAYS + '</td>' +
+                                       '<td>' + e.PURPOSE_OF_LEAVE + '</td>' +
+                                      '<td>' + e.REMARKS + '</td>' +
+                                      '<td>' + e.LEAVE_STATUSMsg + '</td>' +
+                                      '</tr>')
+                            }
+                            else //Cancel
+                            {
+                                $("#ThRemarks").html("Leave Status");
+                                $("#ThEdit").html("Cancel by");
+                                tableBody.append('<tr>' +
+                                     '<td style="width:15%">' + e.LEAVE_TYPE_NAME + '<input type="text" value="' + e.LEAVE_TYPE_ID + '" style="display:none;" id="txtProduct' + e.EMP_LEAVE_APPLICATION_ID + '" /></td>' +
+                                      '<td>' + e.APPLIED_START_date + '</td>' +
+                                     '<td>' + e.APPLIED_END_date + '</td>' +
+                                      '<td></td>' +
+                                      '<td></td>' +
+                                     '<td>' + e.APPLIED_NO_OF_DAYS + '</td>' +
+                                      '<td>' + e.PURPOSE_OF_LEAVE + '</td>' +
+                                       '<td>' + e.LEAVE_STATUSMsg + '</td>' +
+                                        '<td>' + e.LeaveCancelEmpName + '</td>' +
+                                     '</tr>')
+                            }
+                        }
+                    });
+                    $("#AjaxLoader").hide();
+                    GetRecommenderList();
+                    GetApproverList();
+                }
+                else {
+                    $("#AjaxLoader").hide();
+                    $.alert.open("error", data.Message);
+                }
+            },
+            error: function (request, status, error) {
+                $("#AjaxLoader").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+    function LeaveEdit(EMP_LEAVE_APPLICATION_ID, LEAVE_TYPE_ID, APPLIED_NO_OF_DAYS, RELIEVER_EMP_ID, recommend_emp_id, HRD_APPRVED_EMP_ID, APPLIED_START_date, APPLIED_END_date, APPLIED_date, PURPOSE_OF_LEAVE, ADDRESS_DURING_LEAVE, CONTACT_NO, REMARKS) {
+        $("#hdnLeaveApplicationId").val(EMP_LEAVE_APPLICATION_ID);
+
+        $("#LeaveTypeList").val(LEAVE_TYPE_ID);
+        if (LEAVE_TYPE_ID == 3)
+        {
+            $("#divAttach").show();
+            $("#thumbnil").attr("src", "/Leave/RetrieveMedicalCertificate/" + EMP_LEAVE_APPLICATION_ID + "");
+            $("#thumbnil2").attr("src", "/Leave/RetrievePrescription/" + EMP_LEAVE_APPLICATION_ID + "");
+        }
+        $("#TotalDays").val(APPLIED_NO_OF_DAYS);
+        $("#AppliedDate").val(APPLIED_date);
+        $("#LeaveFromDate").val(APPLIED_START_date);
+        $("#LeaveToDate").val(APPLIED_END_date);
+        $("#PurposeOfleave").val(PURPOSE_OF_LEAVE);
+        $("#LeaveAddress").val(ADDRESS_DURING_LEAVE);
+        $("#Telephone").val(CONTACT_NO);
+        $("#Remarks").val(REMARKS);
+        $("#RELIEVERList").val(RELIEVER_EMP_ID);
+        $("#ddlRecommenderList").val(recommend_emp_id);
+        $("#ddlApproverList").val(HRD_APPRVED_EMP_ID);
+        CheckIsRelieverMandatory();
+    }
+
+
+    function LeaveDelete(EMP_LEAVE_APPLICATION_ID) {
+        $.alert.open('confirm', 'Are you sure you want to DELETE this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("LeaveDelete", "Leave", "http")',
+                    data: { LeaveAppId: EMP_LEAVE_APPLICATION_ID },//, Remarks: $("#txtRemarks" + emp_leave_application_id).val()
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        if (data.Result == "Success") {
+
+                            // GetEmployeeLeaveInfoForProcess();
+                            $.alert.open("success", data.Message, function () {
+                                window.location.reload();
+                            });
+                        }
+                        else {
+                            $.alert.open("Error", data.Message);
+                        }
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+
+    function LeaveMailSend(EmployeeId, LeaveAppId) {
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("LeaveMailSend", "Leave", "http")',
+            data: { EmployeeId: EmployeeId, LeaveId: LeaveAppId, LvStatus: "Reliever" },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                if (data.Result == "Error") {
+                    $.alert.open("Error", data.Message);
+                }
+                else {
+                    return true;
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+    function GetEmployeeSalaryAccountInfo() {
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetEmployeeSalaryAccountInfo", "Leave", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                Clear();
+                if (data.Result == "Success") {
+                    $.each(data.EmpAccInfoList, function (id, option) {
+                        $("#EmployeeCode").val(option.empcode);
+                        $("#hdnEmployeeId").val(option.emp_id);
+                        $("#EmployeeName").val(option.empname);
+                        $("#EmpDesignation").val(option.desgname);
+
+                        $("#EmpDepartment").val(option.deptname);
+                        $("#EmpBranchName").val(option.branchname);
+                        $("#empJoiningDate").val(option.JoiningDate);
+                        $("#empDateOfBirth").val(option.DateOfBirth);
+                    });
+
+                }
+                else {
+                    $.alert.open("error", data.Message);
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function Clear() {
+
+        $("#hdnLeaveApplicationId").val("0");
+        $("#LeaveTypeList").val("");
+        $("#AppliedDate").val("");
+        $("#LeaveFromDate").val("");
+        $("#LeaveToDate").val("");
+        $("#PurposeOfleave").val("");
+        $("#LeaveAddress").val("");
+        $("#Telephone").val("");
+        $("#Remarks").val("");
+        $("#RELIEVERList").val("");
+        $("#TotalDays").val("0");
+        $("#thumbnil").attr("src", "");
+        $("#thumbnil2").attr("src", "");
+    }
+
+
+    function LeaveDeailsShow(LeaveType) {
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("Get_Employee_leave_Typewise", "Leave", "http")',
+            data: { LeaveShortName: LeaveType },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                var dtTable = $('#tblLeavedtls');
+                var tableBody = dtTable.find('tbody');
+                $('#tblLeavedtls tbody tr').empty();
+                $("#tblCaption").html("");
+                //emp_leave_application_id employee_id leave_type_id
+                if (data.List_LeaveInfo.length != 0) {
+                    $.each(data.List_LeaveInfo, function (id, e) {
+                        $("#LeaveTypeName").html(e.leave_type_name + ' (' + e.leave_type_shortname + ')');
+                        tableBody.append('<tr>' +
+                                          '<td style="width:25%">' + e.applied_date + '</td>' +
+                                           '<td>' + e.applied_start_date + '</td>' +
+                                          '<td>' + e.ASapplied_end_date + '</td>' +
+                                          //'<td>' + e.NoOfDays + '</td>' +
+                                          '</tr>')
+
+                    });
+                }
+                else {
+                    $("#tblCaption").html("No leave available");
+                }
+                //tblLeavedtls LeaveTypeName tblCaption
+            },
+            error: function (request, status, error) {
+                $("#AjaxLoader").hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function DateDifference() {
+        if ($("#LeaveFromDate").val() != "" && $("#LeaveToDate").val() != "") {
+            var Date1 = $("#LeaveFromDate").val().split("/");
+            var Date2 = $("#LeaveToDate").val().split("/");
+            var DateFrom = new Date(Date1[2], Date1[1], Date1[0]); // Y/M/D
+            var DateTo = new Date(Date2[2], Date2[1], Date2[0]);// Y/M/D
+            var diff = DateTo - DateFrom;
+            var DiffDays = (diff / 1000 / 60 / 60 / 24) + 1;
+            var year = Date1[2];
+
+            if ((Date1[1] == 4 || Date1[1] == 6 || Date1[1] == 9 || Date1[1] == 11) && Date1[1] < Date2[1]) //30 days month
+            {
+                $("#TotalDays").val((diff / 1000 / 60 / 60 / 24));
+            }
+            else if (Date1[1] == 2 && Date1[1] < Date2[1] && ((year % 4 == 0) && ((year % 100 != 0)) || (year % 400 == 0)) == true) //Leap year February
+            {
+                $("#TotalDays").val(((diff / 1000 / 60 / 60 / 24) + 1) - 2);
+            }
+            else if (Date1[1] == 2 && Date1[1] < Date2[1]) //February
+            {
+                $("#TotalDays").val(((diff / 1000 / 60 / 60 / 24) + 1) - 3);
+            }
+            else if (Date1[1] < Date2[1]) {
+                $("#TotalDays").val((diff / 1000 / 60 / 60 / 24) + 2);
+            }
+            else {
+                $("#TotalDays").val((diff / 1000 / 60 / 60 / 24) + 1);
+            }
+        }
+        else {
+            $("#TotalDays").val(0);
+        }
+    }
+
+    function showMyImage2(fileInput) {
+        var files = fileInput.files;
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var imageType = /image.*/;
+
+            if (file.type.match(imageType)) {
+                //continue;
+                var size = Math.round(file.size / 1024);
+                if (size <= 100) {
+                    var img = document.getElementById("thumbnil2");
+                    img.file = file;
+                    var reader = new FileReader();
+                    reader.onload = (function (aImg) {
+                        return function (e) {
+                            aImg.src = e.target.result;
+                        };
+                    })(img);
+                    reader.readAsDataURL(file);
+                }
+                else {
+                    $("#medical_prescription").val('');
+                    $.alert.open("error", "Image file cannot be greater than 100 KB.");
+                    // alert('Image file cannot be greater than 100 KB.');
+                }
+
+            }
+            else {
+                // $("#medical_prescription").replaceWith($("#medical_prescription").clone(true));
+                $("#medical_prescription").val('');
+                $.alert.open("error", "Please select a valid image file");
+            }
+
+        }
+    }
+
+
+    function showMyImage(fileInput) {
+        var files = fileInput.files;
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var imageType = /image.*/;
+
+            if (file.type.match(imageType)) {
+                //continue;
+                var size = Math.round(file.size / 1024);
+                if (size <= 100) {
+                    var img = document.getElementById("thumbnil");
+                    img.file = file;
+                    var reader = new FileReader();
+                    reader.onload = (function (aImg) {
+                        return function (e) {
+                            aImg.src = e.target.result;
+                        };
+                    })(img);
+                    reader.readAsDataURL(file);
+                }
+                else {
+                    $("#medical_Certificate").val('');
+                    $.alert.open("error", "Image file cannot be greater than 100 KB.");
+                    // alert('Image file cannot be greater than 100 KB.');
+                }
+
+            }
+            else {
+                // $("#medical_Certificate").replaceWith($("#medical_Certificate").clone(true));
+                $("#medical_Certificate").val('');
+                $.alert.open("error", "Please select a valid image file");
+            }
+
+        }
+    }
+
+    function CheckIsRelieverMandatory()
+    {
+        if ($("#LeaveFromDate").val() != "") {
+            var d = new Date();
+
+            var month = d.getMonth() + 1;
+            var day = d.getDate();
+
+            var CurrentDate = (day < 10 ? '0' : '') + day + '/' +
+                (month < 10 ? '0' : '') + month + '/' +
+                 d.getFullYear();
+
+            if (CurrentDate > $("#LeaveFromDate").val()) {
+                $("#RELIEVERList").val("");
+                $("#RELIEVERList").attr("disabled", true);
+                return false;
+            }
+            else {
+               // $("#RELIEVERList").val("");
+                $("#RELIEVERList").attr("disabled", false);
+                return true;
+            }
+        }
+    }
+
+
+    $(document).ready(function () {
+
+        GET_EMP_LEAVE_APPLY_Info();
+
+        $("#divAttach").hide();
+        $("#TotalDays").val(1);
+
+        $("#btnNew").click(function (e) { e.preventDefault(); Clear(); });
+
+        $("#LeaveFromDate").on("change", function () {
+            var fromDate = $("#LeaveFromDate").val();
+            $("#LeaveToDate").datepicker('option', { minDate: fromDate });
+            DateDifference();
+        });
+        $("#LeaveToDate").on("change", function () {
+            var toDate = $("#LeaveToDate").val();
+            $("#TotalDays").val(0);
+            $("#LeaveFromDate").datepicker('option', { maxDate: toDate });
+            DateDifference();
+        });
+
+        //$("#LeaveTypeList").change(function () {
+        //    if ($("#LeaveTypeList").val() == 3) {
+        //        $("#RELIEVERList").attr("disabled", true);
+        //    }
+        //    else {
+        //        $("#RELIEVERList").attr("disabled", false);
+        //    }
+        //});
+
+
+
+
+        ///////////////////////
+        $("#EmployeeCode").blur(function () {
+            if ($("#EmployeeCode").val() != "") {
+                Get_EmployeeInfo_Details_By_Code();
+            }
+
+        });
+
+
+
+
+        $("#btnImagtrtesSave").click(function (e) {
+            e.preventDefault();
+
+            var LeaveTypeId = $("#LeaveTypeList").val();
+            var AppliedDate = $("#AppliedDate").val();
+            var LeaveFromDate = $("#LeaveFromDate").val();
+            var LeaveToDate = $("#LeaveToDate").val();
+            var PurposeOfleave = $("#PurposeOfleave").val();
+            var LeaveAddress = $("#LeaveAddress").val();
+            var Telephone = $("#Telephone").val();
+            var Remarks = ""; //$("#Remarks").val();
+            var RelieverEmployeeId = $("#RELIEVERList").val() == "" ? "0" : $("#RELIEVERList").val();
+            var LeaveApplicationId = $("#hdnLeaveApplicationId").val();
+            var approved_emp_id = $("#ddlApproverList").val();
+            var recommend_emp_id = $("#ddlRecommenderList").val();
+
+
+            if (LeaveTypeId == "") {
+                $.alert.open("error", "Select  leave type");
+            }
+            else if ($("#AppliedDate").val() == "") {
+                $.alert.open("error", "Insert applied date");
+            }
+            else if (LeaveFromDate == "") {
+                $.alert.open("error", "Insert from date");
+            }
+            else if (LeaveToDate == "") {
+                $.alert.open("error", "Insert to date");
+            }
+            else if (PurposeOfleave == "") {
+                $.alert.open("error", "Insert purpose of leave");
+            }
+            else if (LeaveAddress == "") {
+                $.alert.open("error", "Insert purpose leave address");
+            }
+            else if (Telephone == "") {
+                $.alert.open("error", "Insert contact no.");
+            }
+            else if (RelieverEmployeeId == "0" && LeaveTypeId != 3) {
+                $.alert.open("error", "Select your reliever");
+            }
+            else if (approved_emp_id == "0" || approved_emp_id == "" || approved_emp_id == null) {
+                $.alert.open("error", "Select your approver");
+            }
+            else if (recommend_emp_id == "0" || recommend_emp_id == "" || recommend_emp_id == null) {
+                $.alert.open("error", "Select your recommender");
+            }
+
+            else {
+                // $("#AjaxLoader").show();
+                $('#LeaveForm').ajaxSubmit({
+                    type: 'POST',
+                    //contentType: "application/json; charset=utf-8",
+                    target: '#thumbnil',
+                    //url: '@Url.Action("SaveLeaveApplication", "Leave", "http")',
+                    data: { LeaveApplicationId: LeaveApplicationId, LeaveTypeId: LeaveTypeId, AppliedDate: AppliedDate, LeaveFromDate: LeaveFromDate, LeaveToDate: LeaveToDate, PurposeOfleave: PurposeOfleave, LeaveAddress: LeaveAddress, Telephone: Telephone, Remarks: Remarks, RelieverEmployeeId: RelieverEmployeeId, approved_emp_id: approved_emp_id, recommend_emp_id: recommend_emp_id },
+                    dataType: 'json',
+                    resetForm: true,
+                    success: function (data) {
+                        $("#AjaxLoader").hide();
+                        Clear();
+                        LeaveMailSend(data.EmployeeId, data.LeaveAppId)
+                        $.alert.open(data.Result, data.Message, function () {
+                            GET_EMP_LEAVE_APPLY_Info();
+                        });
+                    },
+                    error: function (request, status, error) {
+                        $("#AjaxLoader").hide();
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+            }
+        });
+
+
+        $('#btnSave').click(function (e) {
+            e.preventDefault();
+
+
+
+
+
+            var LeaveTypeId = $("#LeaveTypeList").val();
+            var AppliedDate = $("#AppliedDate").val();
+            var LeaveFromDate = $("#LeaveFromDate").val();
+            var LeaveToDate = $("#LeaveToDate").val();
+            var PurposeOfleave = $("#PurposeOfleave").val();
+            var LeaveAddress = $("#LeaveAddress").val();
+            var Telephone = $("#Telephone").val();
+            var Remarks = ""; //$("#Remarks").val();
+            var RelieverEmployeeId = $("#RELIEVERList").val() == "" ? "0" : $("#RELIEVERList").val();
+            var LeaveApplicationId = $("#hdnLeaveApplicationId").val();
+            var approved_emp_id = $("#ddlApproverList").val();
+            var recommend_emp_id = $("#ddlRecommenderList").val();
+
+
+            if (LeaveTypeId == "") {
+                $.alert.open("error", "Select  leave type");
+            }
+            else if ($("#AppliedDate").val() == "") {
+                $.alert.open("error", "Insert applied date");
+            }
+            else if (LeaveFromDate == "") {
+                $.alert.open("error", "Insert from date");
+            }
+            else if (LeaveToDate == "") {
+                $.alert.open("error", "Insert to date");
+            }
+            else if (PurposeOfleave == "") {
+                $.alert.open("error", "Insert purpose of leave");
+            }
+            else if (LeaveAddress == "") {
+                $.alert.open("error", "Insert purpose leave address");
+            }
+            else if (Telephone == "") {
+                $.alert.open("error", "Insert contact no.");
+            }
+            else if (RelieverEmployeeId == "0" && CheckIsRelieverMandatory() == true) {
+                $.alert.open("error", "Select your reliever");
+            }
+            else if (approved_emp_id == "0" || approved_emp_id == "" || approved_emp_id == null) {
+                $.alert.open("error", "Select your approver");
+            }
+            else if (recommend_emp_id == "0" || recommend_emp_id == "" || recommend_emp_id == null) {
+                $.alert.open("error", "Select your recommender");
+            }
+            else if (LeaveTypeId == 3 && $("#TotalDays").val() >= 3 && $("#medical_Certificate").val() == "" && $("#medical_prescription").val() == "")//
+            {
+                $.alert.open("Error","Please attach medical certificate");
+            }
+            else
+            {
+                $('#EmployeeImageForm').ajaxSubmit({
+                    type: "POST",
+                    target: '#thumbnil',
+                    data: { LeaveApplicationId: LeaveApplicationId, LeaveTypeId: LeaveTypeId, AppliedDate: AppliedDate, LeaveFromDate: LeaveFromDate, LeaveToDate: LeaveToDate, PurposeOfleave: PurposeOfleave, LeaveAddress: LeaveAddress, Telephone: Telephone, Remarks: Remarks, RelieverEmployeeId: RelieverEmployeeId, approved_emp_id: approved_emp_id, recommend_emp_id: recommend_emp_id },
+                   // data: { LeaveApplicationId: 1, LeaveTypeId: 1, AppliedDate: '', LeaveFromDate: '', LeaveToDate: '', PurposeOfleave: '', LeaveAddress: '', Telephone: '', Remarks: '', RelieverEmployeeId: 1, approved_emp_id: 1, recommend_emp_id: 1 },
+                    //data: { EmployeeId: EmployeeId, DocumentTypeId: DocumentTypeId, Remarks: $("#Remarks").val() },
+                    dataType: 'json',
+                    resetForm: true,
+                    success: function (data) {
+                        $("#AjaxLoader").hide();
+                        
+                        if (data.Result == "Success")
+                        {
+                            Clear();
+                            LeaveMailSend(data.EmployeeId, data.LeaveAppId)
+                            $.alert.open(data.Result, data.Message, function () {
+                                GET_EMP_LEAVE_APPLY_Info();
+                            });
+                        }
+                        else
+                        {
+                            $.alert.open(data.Result, data.Message);
+
+                        }
+
+                    },
+                    error: function () {
+                        $("#dialog-message").html('<p>Error, Fail to Save.</p>');
+                        $("#dialog-message").dialog({
+                            modal: true,
+                            buttons: {
+                                Ok: function () {
+                                    $(this).dialog("close");
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+
+        });
+
+
+
+        $("#btnNew").click(function (e) { e.preventDefault(); Clear(); });
+
+        $("#LeaveFromDate").on("change", function () {
+            CheckIsRelieverMandatory();
+            DateDifference();
+        });
+
+
+        $("#LeaveToDate").on("change", function () {
+           // var toDate = $("#LeaveToDate").val();
+            //$("#TotalDays").val(0);
+           // $("#LeaveFromDate").datepicker('option', { maxDate: toDate });
+            DateDifference();
+        });
+
+        $("#LeaveTypeList").change(function () {
+            if ($("#LeaveTypeList").val() == 3) {
+               // $("#RELIEVERList").val("");
+                ///$("#RELIEVERList").attr("disabled", true);
+                $("#divAttach").show();
+            }
+            else {
+                //$("#RELIEVERList").attr("disabled", false);
+                $("#divAttach").hide();
+            }
+        });
+
+    });
+
+
+</script>
+@using (Html.BeginForm("Index", "Leave", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "EmployeeForm" }))
+{
+
+    <div class="">
+        <div id="AjaxLoader" class="ajaxLoader"></div>
+        <input type="hidden" id="hdnEmployeeId" value="0" />
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <div class="page-title">
+                            <div class="title_left PageHeader" style="width:90%;">
+                                <h3 style="color: white;padding:2px">&nbsp;Leave Application</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="x_content">
+                        <fieldset>
+                            <form class="form-horizontal form-label-left">
+                                <div class="col-sm-2">
+                                    <img id="thumbnilhg" style="width:100px; height:100px;" src="/Employee/RetrieveImage/@ERP.Web.Helpers.SessionHelper.LoggedInUserId" alt="Image" class="img-responsive" />
+                                </div>
+                                <div class="col-sm-5">
+                                    <div class="row form-group">
+                                        @Html.Label("Employee Code", htmlAttributes: new { @class = "control-label col-md-4 required" })
+                                        <div class="col-md-8 col-sm-6 col-xs-12">
+                                            @Html.Editor("EmployeeCode", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                            <input type="hidden" id="hdnEmployeeId" value="0" />
+                                        </div>
+                                    </div>
+                                    <div class="row form-group">
+                                        @Html.Label("Name", htmlAttributes: new { @class = "control-label col-md-4" })
+                                        <div class="col-md-8 col-sm-6 col-xs-12">
+                                            @Html.Editor("EmployeeName", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                        </div>
+                                    </div>
+                                    <div class="row form-group">
+                                        @Html.Label("Designation ", htmlAttributes: new { @class = "control-label col-md-4" })
+                                        <div class="col-md-8 col-sm-6 col-xs-12">
+                                            @Html.Editor("EmpDesignation", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                        </div>
+                                    </div>
+                                    <div class="row form-group">
+                                        @Html.Label("Department", htmlAttributes: new { @class = "control-label col-md-4" })
+                                        <div class="col-md-8 col-sm-6 col-xs-12">
+                                            @Html.Editor("EmpDepartment", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                            <input type="hidden" id="HdneEp_dept_id" />
+                                        </div>
+                                    </div>
+                                    <div class="row form-group">
+                                        @Html.Label("Branch", htmlAttributes: new { @class = "control-label col-md-4" })
+                                        <div class="col-md-8 col-sm-6 col-xs-12">
+                                            @Html.Editor("EmpBranchName", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-5">
+                                    <table border="1" style="width:100%;text-align:center">
+                                        <caption style="color: rgb(26,187,156)">Leave Balance</caption>
+                                        <thead>
+                                            <tr>
+                                                <th style="text-align:center">Leave Type</th>
+                                                <th style="text-align:center">Availed Leave</th>
+                                                <th style="text-align:center"> Balance</th>
+                                                <th style="text-align:center">Details</th>
+                                            </tr>
+                                        </thead>
+                                        @*<tr>
+                                            <td><label id="CL_Col">Casual Leave</label></td>
+                                            <td><label id="CL_ava"></label></td>
+                                            <td><label id="CL_bal"></label></td>
+                                            <td><button type="button" id="" onclick="LeaveDeailsShow(LeaveType = 'CL');" class="btn btn-primary btn-xs" data-toggle="modal" data-target="#myModal"><i class="fa fa-list" aria-hidden="true"></i></button></td>
+                                        </tr>*@
+                                        <tr>
+                                            <td><label id="PL_Col">Annual Leave</label></td>
+                                            <td><label id="PL_ava"></label></td>
+                                            <td><label id="PL_bal"></label></td>
+                                            <td><button type="button" onclick="LeaveDeailsShow(LeaveType = 'PL');" class="btn btn-primary btn-xs" data-toggle="modal" data-target="#myModal"><i class="fa fa-list" aria-hidden="true"></i></button></td>
+                                        </tr>
+                                        <tr>
+                                            <td><label id="SL_Col">Sick Leave</label></td>
+                                            <td><label id="SL_ava"></label></td>
+                                            <td><label id="SL_bal"></label></td>
+                                            <td><button type="button" onclick="LeaveDeailsShow(LeaveType = 'SL');" class="btn btn-primary btn-xs" data-toggle="modal" data-target="#myModal"><i class="fa fa-list" aria-hidden="true"></i></button></td>
+                                        </tr>
+                                        <tr>
+                                            <td><label id="ML_Col">Maternity Leave</label></td>
+                                            <td><label id="ML_ava"></label></td>
+                                            <td><label id="ML_bal"></label></td>
+                                            <td><button type="button" onclick="LeaveDeailsShow(LeaveType = 'ML');" class="btn btn-primary btn-xs" data-toggle="modal" data-target="#myModal"><i class="fa fa-list" aria-hidden="true"></i></button></td>
+                                        </tr>
+                                        <tr>
+                                            <td><label id="LWP_Col">Leave Without Pay</label></td>
+                                            <td><label id="LWP_ava"></label></td>
+                                            <td><label id="LWP_bal"></label></td>
+                                            <td><button type="button" onclick="LeaveDeailsShow(LeaveType = 'LWP');" class="btn btn-primary btn-xs" data-toggle="modal" data-target="#myModal"><i class="fa fa-list" aria-hidden="true"></i></button></td>
+                                        </tr>
+                                        @*<tr>
+                                            <td><label id="LWP_CTS_Col">LWP CTS</label></td>
+                                            <td><label id="LWP_CTS_ava"></label></td>
+                                            <td><label id="LWP_CTS_bal"></label></td>
+                                            <td><button type="button" onclick="LeaveDeailsShow(LeaveType = 'LWP_CTS');" class="btn btn-primary btn-xs" data-toggle="modal" data-target="#myModal"><i class="fa fa-list" aria-hidden="true"></i></button></td>
+                                        </tr>*@
+                                    </table>
+                                </div>
+                            </form>
+                        </fieldset>
+                        <fieldset>
+                            <legend></legend>
+                            @using (Html.BeginForm("SaveLeaveApplication", "Leave", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "EmployeeImageForm" }))
+                            {
+                                @model Hrms.Controllers.LeaveController.EmployeeModelMedical
+
+                                <div class="row form-group">
+                                    @Html.Label("Apply For ", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.DropDownList("LeaveTypeList", new SelectList(ViewBag.LeaveTypeList, "LEAVE_TYPE_ID", "LEAVE_TYPE_NAME"), "Please select", new { @class = "form-control bordercss" })
+                                        <input type="hidden" id="hdnLeaveApplicationId" value="0" />
+                                    </div>
+                                    @Html.Label("Applied Date", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("AppliedDate", new { htmlAttributes = new { @class = "form-control CurrentDate check-date" } })
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    @Html.Label("Leave From Date", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("LeaveFromDate", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                                    </div>
+                                    @Html.Label("Leave To Date", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("LeaveToDate", new { htmlAttributes = new { @class = "form-control DateInput check-date" } })
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    @Html.Label("Total Day(s)", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("TotalDays", new { htmlAttributes = new { @class = "form-control", @disabled = true } })
+                                    </div>
+                                    @Html.Label("Purpose of leave", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("PurposeOfleave", new { htmlAttributes = new { @class = "form-control" } })
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    @Html.Label("Leave Address", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("LeaveAddress", new { htmlAttributes = new { @class = "form-control" } })
+                                    </div>
+                                    @Html.Label("Telephone", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.Editor("Telephone", new { htmlAttributes = new { @class = "form-control" } })
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    @Html.Label("Reliever", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.DropDownList("RELIEVERList", new SelectList(ViewBag.RELIEVERList, "Reliever_EMP_ID", "EMP_NAME"), "Please select", new { @class = "form-control bordercss" })
+                                    </div>
+                                    @Html.Label("Recommender", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.DropDownList("Recommenderlist", null, new { @id = "ddlRecommenderList", @class = "form-control bordercss" })
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    @Html.Label("Approver", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.DropDownList("Approverlist", null, new { @id = "ddlApproverList", @class = "form-control bordercss" })
+                                    </div>
+                                </div>
+
+                                <div class="row form-group" id="divAttach">
+                                    @Html.Label("Medical Certificate", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.TextBoxFor(model => model.medical_Certificate, new { type = "file", @onchange = "showMyImage(this);", @class = "form-control" })
+                                        <br />
+                                        <img id="thumbnil" style="width:100px; height:100px;" src="" alt="Image" class="img-responsive" />
+                                    </div>
+                                    @Html.Label("Medical Prescription", htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-4 col-sm-6 col-xs-12">
+                                        @Html.TextBoxFor(model => model.medical_prescription, new { type = "file", @onchange = "showMyImage2(this);", @class = "form-control" })
+                                        <br />
+                                        <img id="thumbnil2" style="width:100px; height:100px;" src="" alt="Image" class="img-responsive" />
+                                    </div>
+                                </div>
+                                <br />
+                                <div class="form-group">
+                                    <div class="col-md-4"></div>
+                                    <div class="col-md-1">
+                                        <button type="submit" class="btn btn-success" id="btnSave">Save</button>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="submit" class="btn btn-primary" id="btnNew">New</button>
+                                    </div>
+                                </div>
+                                @*<div class="row form-group">
+                                    <div class="control-label col-md-5">
+                                        <button type="submit" class="btn btn-success" id="btnImagesSave">Save</button>
+                                    </div>
+                                </div>*@
+                                <div class="item form-group">
+                                    <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                        <div class="success" role="alert" style="display:none" id="SucInvDeailMsg">
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                            <p class="message-content">Saved Sucessfully</p>
+                                        </div>
+                                        <div class="failed" role="alert" style="display:none">
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                            <p class="message-content">Fail to save</p>
+                                        </div>
+                                        <br />
+                                    </div>
+                                </div>
+                                 <br />
+                                <div class="form-group">
+                                    <div class="col-md-12">
+                                        <div id="example">
+                                            <table id="gridtable">
+                                                <thead>
+                                                    <tr>
+                                                        <th data-field="ThLeaveTyle" style="width:15%">Leave Type</th>
+                                                        <th data-field="ThLeaveFrom">Applied From</th>
+                                                        <th data-field="ThLeaveTo">Applied To</th>
+                                                        <th data-field="ThLeaveFrom">Approved From</th>
+                                                        <th data-field="ThLeaveTo">Approved To</th>
+                                                        <th data-field="ThTotalDay">Total Day(s)</th>
+                                                        <th data-field="ThPurposeOfLeave">Purpose Of Leave</th>
+                                                        <th data-field="ThRemarks">Remarks</th>
+                                                        <th id="ThEdit">Edit</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                            </table>
+
+                                            <script>
+                                                $(document).ready(function () {
+                                                    $("#gridtable").kendoGrid({
+                                                        height: 400,
+                                                        //sortable: true
+                                                    });
+                                                });
+                                            </script>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            }
+                        </fieldset>
+                       
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+}
+<div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title" id="LeaveTypeName" style="color: rgb(26,187,156)"></h4>
+            </div>
+            <div class="modal-body">
+                <table id="tblLeavedtls">
+                    <caption id="tblCaption"></caption>
+                    <thead>
+                        <tr>
+                            <th style="width:25%">Applied Date</th>
+                            <th>Leave Start Date</th>
+                            <th>Leave End Date</th>
+                            @*<th>Total Day(s)</th>*@
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <script>
+                    $(document).ready(function () {
+                        $("#tblLeavedtls").kendoGrid({
+                            //height: 150,
+                            //width:300
+                            //sortable: true
+                        });
+                    });
+                </script>
+
+            </div>
+            <div class="modal-footer">
+                @*<button type="button" class="btn btn-primary" id="btnSendMail">Send Mail</button>*@
+                <button type="button" class="btn btn-default" data-dismiss="modal" id="dismissModal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
