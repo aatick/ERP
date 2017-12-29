@@ -1,0 +1,792 @@
+﻿@using System.Configuration
+@using Common.Data.CommonDataModel
+@using ERP.Web.Helpers
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@Page.Title</title>
+    <style type="text/css">
+        .success {
+            display: block;
+            background-color: #008d4c;
+            color: white;
+            padding: 10px;
+            font-size: 12px;
+            font-family: Arial;
+        }
+
+        .failed {
+            display: block;
+            background-color: red;
+            color: white;
+            text-decoration: initial;
+            padding: 10px;
+            padding: 10px;
+            font-size: 12px;
+            font-family: Arial;
+        }
+
+        fieldset {
+            display: block;
+            -webkit-margin-start: 2px;
+            -webkit-margin-end: 2px;
+            -webkit-padding-before: 0.35em;
+            -webkit-padding-start: 0.75em;
+            -webkit-padding-end: 0.75em;
+            -webkit-padding-after: 0.625em;
+            border: 2px groove threedface;
+            border-image-source: initial;
+            border-image-slice: initial;
+            border-image-width: initial;
+            border-image-outset: initial;
+            border-image-repeat: initial;
+            min-width: -webkit-min-content;
+        }
+
+        legend {
+            display: block;
+            -webkit-padding-start: 2px;
+            -webkit-padding-end: 2px;
+            border: none;
+            border-image-source: initial;
+            border-image-slice: initial;
+            border-image-width: initial;
+            border-image-outset: initial;
+            border-image-repeat: initial;
+            font-size: 16px;
+            width: auto;
+        }
+
+        .ajaxLoader {
+            /* outline-style: none;
+                outline-color: invert;
+                outline-width: 0px;
+                width: 24px;
+                height: 24px;
+                background-image: url("~/Content/images/ajax-loader.gif");*/
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background: rgba( 255, 255, 255, .8 ) url(../../Content/images/ajax-loader.gif) 50% 50% no-repeat;
+        }
+
+        #logoutForm {
+            width: 100%;
+            padding: 12px 20px;
+            cursor: pointer;
+        }
+
+            #logoutForm a {
+                width: 100%;
+                padding: 0px;
+                display: inline-block;
+                text-decoration: none;
+            }
+
+            #logoutForm:hover {
+                background-color: #f7f7f7;
+            }
+
+        .margin10 {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+
+
+        input[type=number] {
+            border: 3px double #CCCCCC;
+            color: black;
+        }
+
+        input[type=text] {
+            border: 3px double #CCCCCC;
+            color: black;
+        }
+
+        label {
+            color: black;
+        }
+
+        input[type=datetime] {
+            border: 3px double #CCCCCC;
+            color: black;
+        }
+
+            input[type=datetime]:focus {
+                box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+                border: 2px solid rgba(81, 203, 238, 1);
+            }
+
+        input[type=number]:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+        input[type=text]:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+        .PageHeader {
+            /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#20a03e+0,ffffff+100 */
+            background: #1ABB9C; /* Old browsers */
+            background: -moz-linear-gradient(left, #1ABB9C 0%, #ffffff 100%); /* FF3.6-15 */
+            background: -webkit-linear-gradient(left, #1ABB9C 0%,#ffffff 100%); /* Chrome10-25,Safari5.1-6 */
+            background: linear-gradient(to right, #1ABB9C 0%,#ffffff 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+            filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#1ABB9C', endColorstr='#ffffff',GradientType=1 ); /* IE6-9 */
+        }
+
+            .PageHeader > h3 {
+                padding-left: 10px !important;
+                color: #FFFFFF !important;
+            }
+
+        table {
+            color: black;
+        }
+
+        .k-grid th.k-header,
+        .k-grid th.k-header .k-link {
+            color: #1ABB9C;
+        }
+
+        .current-page {
+            background-color: rgb(26,187,156) !important;
+        }
+
+        .required::after {
+            content: " *";
+            color: red;
+        }
+
+        .k-grid .k-grid-header .k-header .k-link {
+            height: auto;
+        }
+
+        .k-grid .k-grid-header .k-header {
+            white-space: normal;
+        }
+
+        /*.nav.side-menu > li.current-page,
+            .nav.side-menu > li.active {
+                border-right: 5px solid red;
+            }
+
+            .nav li.current-page {
+                background: blue;
+            }
+
+            .nav li li li.current-page {
+                background: none;
+            }
+
+            .nav li li.current-page a {
+                color: green;
+            }*/
+
+
+        /*.nav-sm .nav.child_menu li.active,
+            .nav-sm .nav.side-menu li.active-sm {
+                border-right: 5px solid red;
+            }*/
+    </style>
+
+    @*@RenderSection("head", required: false)*@
+
+    <link href="~/Content/css/bootstrap.min.css" rel="stylesheet">
+    <link href="~/Content/fonts/css/font-awesome.min.css" rel="stylesheet">
+    @*
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />*@
+    <link href="~/Content/css/animate.min.css" rel="stylesheet">
+    <!-- Custom styling plus plugins -->
+    <link href="~/Content/css/custom.css" rel="stylesheet">
+    <link href="~/Content/css/icheck/flat/green.css" rel="stylesheet">
+    <!-- kendo grid -->
+    <link href="~/Content/css/kendo.common-material.min.css" rel="stylesheet" />
+    <link href="~/Content/css/kendo.material.min.css" rel="stylesheet" />
+    <link href="~/Content/css/bpopupStyle.css" rel="stylesheet" />
+
+
+
+    <!-- select2 -->
+    <link href="~/Content/css/select/select2.min.css" rel="stylesheet">
+    <!-- switchery -->
+    <link rel="stylesheet" href="~/Content/css/switchery/switchery.min.css" />
+
+    @Styles.Render("~/Content/themes/base/css")
+
+    <!--kendo grid css-->
+
+    <link href="~/Content/css/kendo.common-material.min.css" rel="stylesheet" />
+    <link href="~/Content/css/kendo.material.min.css" rel="stylesheet" />
+
+    <!--alert css-->
+    <link rel="stylesheet" href="~/Content/alert/themes/default/theme.css" />
+    <link rel="stylesheet" href="~/Content/alert/css/alert.css" />
+
+    <!--end-->
+    @Scripts.Render("~/bundles/jquery")
+
+    @Scripts.Render("~/bundles/uidesign")
+
+    @Scripts.Render("~/bundles/jqueryui")
+
+    <script src="~/Content/js/jquery.form.min.js"></script>
+    <!--kendo grid js-->
+    @*
+        <script src="//kendo.cdn.telerik.com/2015.2.805/js/jquery.min.js"></script>
+        <script src="//kendo.cdn.telerik.com/2015.2.805/js/kendo.all.min.js"></script>*@
+    <!--for alert-->
+    <script src="~/Content/alert/js/alert.js"></script>
+    <script language="javaScript">
+
+        function gBankerDatePicker(controlid) {
+            if (controlid == null) {
+                return;
+            }
+            $("#" + controlid).datepicker(
+            {
+                dateFormat: "dd-M-yy",
+                showAnim: "scale",
+            });
+        }
+        function confirmDayInitiated() {
+            var isDayInitiated = "@SessionHelper.IsDayInitiated";
+            if (isDayInitiated.toLowerCase() == 'false') {
+                var css = "failed";
+                $("#dvMessage").attr('class', css);
+                $("#dvMessage").html("Please run the start work process.");
+                $("#dvMessage").show();
+
+
+            }
+        }
+
+        function CurrenctDate() {
+            var d = new Date();
+            var Day = d.getDate();
+            var Mont = d.getMonth() + 1;
+            if (d.getDate() < 10) {
+
+                Day = '0' + '' + d.getDate() + '';
+            }
+
+            if (d.getMonth() < 10) {
+                Mont = '0' + '' + d.getMonth() + '';
+            }
+
+            $(".CurrentDate").val(Day + '/' + Mont + '/' + d.getFullYear());
+
+        }
+
+
+        function LoadProject(ProjectShortName) {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("Project_X", "Account", new { area = "" }, "http")',
+                data: { ProjectName: ProjectShortName },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                    window.location.href = data.Url;
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            @*n = new Date();
+            y = n.getFullYear();
+            m = n.getMonth() + 1;
+            d = n.getDate();
+            $(".date").val(d + "/" + m + "/" + y); //alert(@SessionHelper.BusinessDate.ToString());
+            $(".Trxdate").val('@SessionHelper.BusinessDate.ToString()');*@
+
+
+            $('#imgenvelope').hide();
+
+            var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+
+
+            $(".DateInput").datepicker(
+            {
+                dateFormat: "dd/mm/yy",
+                showAnim: "scale",
+                changeMonth: true,
+                changeYear: true,
+                maxDate: "+10Y"
+            });
+
+
+            $(".DateInput").attr("placeholder", "dd/mm/yyyy");
+            $(".DateInputRpt").attr("placeholder", "dd/mm/yyyy");
+            $(".DateInput").attr("maxlength", "10");
+            $(".check-date").mask("99/99/9999");
+
+            $(".DateInputEx").datepicker(
+            {
+                dateFormat: "dd/mm/yy",
+                showAnim: "scale",
+                changeMonth: true,
+                changeYear: true,
+                maxDate: "+30Y"
+            });
+            $(".DateInputEx").attr("placeholder", "dd/mm/yyyy");
+            $(".DateInputEx").attr("maxlength", "10");
+
+
+            $(".CurrentDate").datepicker(
+             {
+                 dateFormat: "dd/mm/yy",
+                 showAnim: "scale",
+                 changeMonth: true,
+                 changeYear: true,
+                 maxDate: "+10Y"
+             });
+            $(".CurrentDate").attr("placeholder", "dd/mm/yyyy");
+            $(".CurrentDate").attr("maxlength", "10");
+            $(".CurrentDate").mask("99/99/9999");
+
+
+
+
+            $(document).on("change", ".check-date", function () {
+                var obj = $(this);
+                var hid = $(this).attr("data-hid");
+                var isValid = true;
+                var arrDate = obj.val().trim().split("/");
+                if (obj.val().trim() == "") {
+                    if (hid != "") {
+                        $("#" + hid).val("");
+                    }
+                    return true;
+                }
+                var message = "";
+                if (arrDate.length != 3) {
+                    message = "Invalid date format.";
+                    isValid = false;
+                } else if (isNaN(arrDate[0]) || isNaN(arrDate[1]) || isNaN(arrDate[2])) {
+                    message = "Day, month, year must be numeric value.";
+                    isValid = false;
+                } else if (arrDate[0].length != 2 || arrDate[1].length != 2 || arrDate[2].length != 4) {
+                    message = "Day, month must be 2 digit and year must be 4 digit.";
+                    isValid = false;
+                } else if (parseInt(arrDate[0]) > 31 || parseInt(arrDate[0]) < 1) {
+                    message = "Day must be between 1 to 31.";
+                    isValid = false;
+                } else if (parseInt(arrDate[1]) > 12 || parseInt(arrDate[1]) < 1) {
+                    message = "Month must be between 1 to 12.";
+                    isValid = false;
+                } else {
+                    var date = new Date(arrDate[2], parseInt(arrDate[1]), 0);
+                    var noOfDays = date.getDate();
+                    if (parseInt(arrDate[0]) > noOfDays) {
+                        message = "There is maximum " + noOfDays + " days in selected month.";
+                        isValid = false;
+                    }
+                }
+                if (isValid == false) {
+                    $.alert.open("ERROR", "<span style='color: red;'>Invalid date.<br/>" + message + "<br/>Format must be <b>dd/mm/yyyy. (e.g. 01/01/2017)</b></span>", function () {
+                        if (hid != "") {
+                            $("#" + hid).val("");
+                        }
+                        obj.val("");
+                        obj.focus();
+                    });
+                } else {
+                    $("#" + hid).val($.datepicker.formatDate("dd-M-yy", new Date(arrDate[2], parseInt(arrDate[1]) - 1, arrDate[0])));
+                }
+                return isValid;
+            });
+
+
+            //$(".DateInput").keyup(function () {
+            //    var date = this.value; if (date.match(/^\d{2}$/) !== null) { this.value = date + '/'; } else if (date.match(/^\d{2}\/\d{2}$/) !== null) { this.value = date + '/'; }
+            //});
+        });
+    </script>
+    <script src="~/Scripts/jquery.bpopup.min.js"></script>
+</head>
+
+<body class="nav-md">
+    @{
+        var parentModules = SessionHelper.AllPrentModules ?? new List<AspNetSecurityModule>();
+        var Second_parentModules = SessionHelper.SecondPrentModules ?? new List<AspNetSecurityModule>();
+        var userModules = SessionHelper.UserSecurityModules ?? new List<AspNetSecurityModule>();
+        var AllProject = SessionHelper.Projects ?? new List<UcasSoftware_Projects>();
+        var parent_Modules = parentModules.OrderBy(w => w.DisplayOrder);
+        var AllProjectddl = SessionHelper.ddlProjects ?? new List<UcasSoftware_Projects>();
+    }
+    <div class="container body">
+
+        <div class="main_container">
+
+            <div class="col-md-3 left_col">
+                <div class="left_col scroll-view">
+                    <br />
+                    <div class="navbar nav_title" style="border: 0;">
+                        &nbsp;&nbsp;&nbsp;<img src="~/Images/@SessionHelper.OrganizationLogoPath" width="90" height="60" />&nbsp;&nbsp;&nbsp;<span style="font-size: 24px;color: #FFFFFF;"><b>@SessionHelper.OrganizationShortName</b> </span>
+                    </div>
+                    <div class="clearfix"></div>
+                    <!-- menu profile quick info -->
+                    <div class="profile clearfix">
+                        <div class="profile_pic">
+                            <img src="~/Content/images/user.png" alt="..." class="img-circle profile_img">
+                        </div>
+                        <div class="profile_info">
+                            <span>Welcome</span>
+                            <h2>@SessionHelper.RoleName</h2>
+                        </div>
+                    </div>
+                    <br />
+                    <div style="width:100%;text-align:center">
+                        @if (AllProjectddl.Count > 1)
+                        {
+                        <a href="#" aria-controls="" role="tab" class="alert alert-success" style="padding:3px!important" onclick="LoadProject('0');">
+                            <strong>All</strong>
+                        </a>
+                            foreach (var p in AllProjectddl.Where(x => x.ProjectShortName != "Basic").ToList())
+                            {
+                        <span>&nbsp;</span>
+                        <a href="#" aria-controls="" class="@p.Style_Css" role="tab" style="padding:3px!important" onclick="LoadProject('@p.ProjectShortName');">
+                            <strong>@p.ProjectShortName</strong>
+                        </a>
+                            }
+                        }
+
+
+                    </div>
+                    <!-- /menu profile quick info -->
+                    <br />
+
+                    <!-- menu prile quick info -->
+                    <div class="clearfix"></div>
+                    @*<hr style="margin-bottom: 0px; margin-top: 0px;" />*@
+                    <!-- /menu prile quick info -->
+                    <!-- sidebar menu -->
+                    <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+
+                        <div class="menu_section">
+
+                            <ul class="nav side-menu">
+                                @*<li>
+                                        <a href="#"><i class="fa fa-home"></i>Basic Sutup<span class="fa fa-chevron-down"></span></a>
+                                        <ul class="nav child_menu">
+                                            <li>A</li>
+                                            <li>B</li>
+                                            <li>C</li>
+                                        </ul>
+                                    </li>*@
+                                @foreach (var p in AllProject)
+                                {
+                                <li>
+                                    <a href="#"><i class="fa fa-home"></i> @p.ProjectName <span class="fa fa-chevron-down"></span></a>
+
+                                    <ul class="nav child_menu">
+                                        @foreach (var module in parent_Modules)
+                                            {
+
+                                                var securityModules = userModules.Where(w => w.ParentModuleId == module.AspNetSecurityModuleId && w.IsActive == true && w.ProjectShortName == p.ProjectShortName && (!w.IsMenuItem.HasValue || w.IsMenuItem.Value)).OrderBy(o => o.DisplayOrder).ToList();
+                                                if (securityModules.Count > 0)
+                                                {
+                                            <li>
+                                                <a href="#@p.ProjectShortName" aria-controls="@p.ProjectShortName" role="tab">
+                                                    <i class="fa fa-arrow-circle-o-right"></i>
+                                                    @module.LinkText
+                                                    <span class="fa fa-chevron-down"></span>
+                                                </a>
+                                                <ul class="nav child_menu">
+                                                    @foreach (var childModule in securityModules)
+                                                            {
+                                                                if (childModule.MenuLevel == 2 && childModule.ActionName != "#")
+                                                                {
+                                                            <li><a href="@Url.Action(childModule.ActionName, childModule.ControllerName, new { Area = childModule.AreaName })">@childModule.LinkText </a></li>
+                                                                }
+                                                                else
+                                                                {
+                                                                    var SecondParentModules = userModules.Where(w => w.MenuLevel == 3 && w.ParentModuleId == childModule.AspNetSecurityModuleId && w.IsActive == true).OrderBy(o => o.DisplayOrder).ToList();
+                                                            <li role="presentation">
+                                                                <a href="#@childModule.AspNetSecurityModuleId" aria-controls="@childModule.AspNetSecurityModuleId" role="tab">
+                                                                    <i class="fa fa-arrow-circle-o-right"></i>
+                                                                    @childModule.LinkText
+                                                                    <span class="fa fa-chevron-down"></span>
+                                                                </a>
+                                                                <ul class="nav child_menu">
+                                                                    @foreach (var app in SecondParentModules)
+                                                                            {
+                                                                            <li><a href="@Url.Action(app.ActionName,app.ControllerName,new {Area=app.AreaName})">@app.LinkText </a></li>
+                                                                            }
+                                                                </ul>
+                                                            </li>
+                                                                }
+                                                            }
+                                                </ul>
+                                            </li>
+                                                }
+                                            }
+
+                                    </ul>
+
+                                </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- top navigation -->
+            <div class="top_nav">
+                <div class="nav_menu">
+                    <nav class="" role="navigation">
+                        <div class="nav toggle">
+                            <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+                        </div>
+                        <div style="display: inline-block;width: 90%;">
+                            <span class="pull-left" style="padding: 13px 15px 12px 12px; margin-top: 10px; color: #42C7AD;">@SessionHelper.LoggedInOfficeName | @ReportHelper.FormatDateToString(SessionHelper.BusinessDate) | Day @(SessionHelper.IsDayInitiated ? "Started" : "Closed")</span>
+
+                            <span class="pull-left" id="spnFileSession" style="padding: 13px 15px 12px 12px; margin-top: 10px; color: red; @(string.IsNullOrEmpty(SessionHelper.NotProcessedFile)?" display: none;":"")">@SessionHelper.NotProcessedFile has been uploaded but not processed !!!</span>
+                            <ul class="nav navbar-nav navbar-right">
+                                <li class="">
+                                    <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                        <img src="~/Account/RetrieveUserImage?PersonId=@SessionHelper.LoggedInUserId">@SessionHelper.LoggedInUserFullName
+                                        <span class=" fa fa-angle-down"></span>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-usermenu animated fadeInDown pull-right">
+                                        <li>
+                                            @*<a href="javascript:;"> Profile</a>*@
+                                            <a href="~/Employee/EmployeeProfile?EmployeeId=@SessionHelper.LoggedInUserId">Profile</a>
+                                            <input type="hidden" id="UserType" value="@SessionHelper.LoggedInPersonType" />
+                                        </li>
+                                        <li>
+                                            @*<span class="badge bg-red pull-right">50%</span>*@
+                                            @Html.ActionLink("Change Password", "ChangePassword", "Account")
+                                            @*<span>Change Password</span>*@
+                                            <input type="hidden" id="UserType" value="@SessionHelper.LoggedInPersonType" />
+                                        </li>
+                                        @*
+                                            <li>
+                                                <a href="javascript:;">Help</a>
+                                            </li>*@
+                                        <li>
+
+                                            @using (Html.BeginForm("LogOff", "Account", new { area = "" }, FormMethod.Post, new { id = "logoutForm" }))
+                                            {
+                                            @Html.AntiForgeryToken()
+                                            <a href="javascript:document.getElementById('logoutForm').submit()"><i class="fa fa-sign-out pull-right"></i> Log Out</a>
+                                            }
+                                            @*@Html.AntiForgeryToken()
+                                                @Html.ActionLink("Log Out", "LogOff", "Account")
+                                                <a href="~/Account/LogOff/"><i class="fa fa-sign-out pull-right"></i> Log Out</a>*@
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li id="imgenvelope" role="presentation" class="dropdown">
+                                    <a href="/ExamResultChange/TeacherResultChange" id="abc" class="dropdown-toggle info-number">
+                                        <i class="fa fa-envelope-o"></i>
+                                        <span class="badge bg-green" id="teacherNoti"></span>
+                                    </a>
+                                    @*<ul id="menu1" class="dropdown-menu list-unstyled msg_list animated fadeInDown" role="menu">
+                                            <li>
+                                                <a>
+                                                    <span class="image">
+                                                        <img src="~/Content/images/img.jpg" alt="Profile Image" />
+                                                    </span>
+                                                    <span>
+                                                        <span>John Smith</span>
+                                                        <span class="time">3 mins ago</span>
+                                                    </span>
+                                                    <span class="message">
+                                                        Film festivals used to be do-or-die moments for movie makers. They were where...
+                                                    </span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a>
+                                                    <span class="image">
+                                                        <img src="~/Content/images/img.jpg" alt="Profile Image" />
+                                                    </span>
+                                                    <span>
+                                                        <span>John Smith</span>
+                                                        <span class="time">3 mins ago</span>
+                                                    </span>
+                                                    <span class="message">
+                                                        Film festivals used to be do-or-die moments for movie makers. They were where...
+                                                    </span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a>
+                                                    <span class="image">
+                                                        <img src="~/Content/images/img.jpg" alt="Profile Image" />
+                                                    </span>
+                                                    <span>
+                                                        <span>John Smith</span>
+                                                        <span class="time">3 mins ago</span>
+                                                    </span>
+                                                    <span class="message">
+                                                        Film festivals used to be do-or-die moments for movie makers. They were where...
+                                                    </span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a>
+                                                    <span class="image">
+                                                        <img src="~/Content/images/img.jpg" alt="Profile Image" />
+                                                    </span>
+                                                    <span>
+                                                        <span>John Smith</span>
+                                                        <span class="time">3 mins ago</span>
+                                                    </span>
+                                                    <span class="message">
+                                                        Film festivals used to be do-or-die moments for movie makers. They were where...
+                                                    </span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <div class="text-center">
+                                                    <a>
+                                                        <strong>See All Alerts</strong>
+                                                        <i class="fa fa-angle-right"></i>
+                                                    </a>
+                                                </div>
+                                            </li>
+                                        </ul>*@
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+            <!-- /top navigation -->
+            <!-- page content -->
+            <div class="right_col" role="main" style="min-height:560px">
+                <div class="">
+
+                    <div class="clearfix"></div>
+                    <div class="row">
+                        <div class="col-md-12 col-sm-12 col-xs-12" style="min-height:550px">
+                            @RenderBody()
+                        </div>
+                    </div>
+                </div>
+                <footer>
+                    <div class="">
+                        <p class="pull-right" style="color: #1ABB9C">
+                            Ucas Portfolio, Powered By UCAS
+                        </p>
+                    </div>
+                    <div class="clearfix"></div>
+                </footer>
+                <!-- /footer content -->
+            </div>
+        </div>
+    </div>
+    @*<div id="custom_notifications" class="custom-notifications dsp_none">
+            <ul class="list-unstyled notifications clearfix" data-tabbed_notifications="notif-group"></ul>
+            <div class="clearfix"></div>
+            <div id="notif-group" class="tabbed_notifications"></div>
+        </div>*@
+
+    @*
+        <script src="~/Content/js/bootstrap.min.js"></script>*@
+    <!-- chart js -->
+    <script src="~/Content/js/chartjs/chart.min.js"></script>
+    <!-- bootstrap progress js -->
+    <script src="~/Content/js/progressbar/bootstrap-progressbar.min.js"></script>
+    <script src="~/Content/js/nicescroll/jquery.nicescroll.min.js"></script>
+    <!-- icheck -->
+    <script src="~/Content/js/icheck/icheck.min.js"></script>
+    <!-- tags -->
+    <script src="~/Content/js/tags/jquery.tagsinput.min.js"></script>
+    <!-- switchery -->
+    <script src="~/Content/js/switchery/switchery.min.js"></script>
+    <!-- daterangepicker -->
+    <script type="text/javascript" src="~/Content/js/moment.min2.js"></script>
+    <script type="text/javascript" src="~/Content/js/datepicker/daterangepicker.js"></script>
+    <!-- richtext editor -->
+    <script src="~/Content/js/editor/bootstrap-wysiwyg.js"></script>
+    <script src="~/Content/js/editor/external/jquery.hotkeys.js"></script>
+    <script src="~/Content/js/editor/external/google-code-prettify/prettify.js"></script>
+    <!-- select2 -->
+    <script src="~/Content/js/select/select2.full.js"></script>
+
+    <script src="~/Content/js/custom.js"></script>
+    <script src="~/Content/js/validator/validator.js"></script>
+    <script src="~/Scripts/jquery.bootpag.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.maskedinput-1.3.min.js"></script>
+    <script type="text/javascript">
+
+        function checkNumeric(e) {
+            if (e.which == 46 || e.which >= 48 && e.which <= 57) {
+                return true;
+            }
+            else
+                return false;
+        }
+        ///Valid Decimal Number
+        // onkeypress="return validDecimalNumber(this,event)"
+        function validDecimalNumber(el, evt) {
+            var charCode = (evt.which) ? evt.which : event.keyCode;
+            var number = el.value.split('.');
+            if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57)) {
+                return false;
+            }
+            //just one dot
+            if (number.length > 1 && charCode == 46) {
+                return false;
+            }
+            //get the carat position
+            var caratPos = getSelectionStart(el);
+            var dotPos = el.value.indexOf(".");
+            if (caratPos > dotPos && dotPos > -1 && (number[1].length > 1)) {
+                return false;
+            }
+            return true;
+        }
+
+        $(document).ready(function () {
+            // initialize the validator function
+            validator.message['date'] = 'not a real date';
+
+            $('form')
+                .on('blur', 'input[required], input.optional, select.required', validator.checkField)
+                .on('change', 'select.required', validator.checkField)
+                .on('keypress', 'input[required][pattern]', validator.keypress);
+
+            $('.multi.required')
+                .on('keyup blur', 'input', function () {
+                    validator.checkField.apply($(this).siblings().last()[0]);
+                });
+
+        });
+
+    </script>
+    @if (ConfigurationManager.AppSettings["Mode"] == "0")
+    {
+        <script type="text/javascript">
+            window.history.pushState('', '', '/');
+        </script>
+    }
+    @if (ConfigurationManager.AppSettings["ReportInNewWindow"] == "1")
+    {
+        <script type="text/javascript">
+            var newWindowOpen = window.open;
+            window.open = function (url) {
+                return newWindowOpen(url, "UPMS window", "location=0");
+            }
+        </script>
+    }
+</body>
+
+
+
+</html>

@@ -1,0 +1,653 @@
+﻿
+@{
+    ViewBag.Title = "EmpBasic";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+
+    .accordion .panel-heading {
+        padding: 8px;
+    }
+
+    .wizard_content {
+        /*overflow:auto;*/
+        margin: 0 auto;
+        height: 350px;
+        bottom: 0px;
+        top: 0px;
+        overflow-x: hidden;
+    }
+</style>
+<script type="text/javascript">
+
+
+    var ActionMode = "Create";
+    var PresThanaId = "0";
+    var PermThanaId = "0";
+    var DesignationId = "0";
+
+
+
+    function EmployeeInfoList() {
+
+        var EmployeeCode = $("#EmployeeCodeSearch").val().trim();
+        var Employeename = $("#EmployeeNameSearch").val();
+        var DesignationId = $("#DesignationId").val() == "" ? "0" : $("#DesignationId").val();
+        var BranchId = $("#BranchId").val() == "" ? "0" : $("#BranchId").val();
+        var DeptId = $("#DepartmentId").val() == "" ? "0" : $("#DepartmentId").val();
+        var DeskId = $("#DeskId").val() == "" ? "0" : $("#DeskId").val();
+        var JobTypeId = $("#JobTypeId").val() == "" ? "0" : $("#JobTypeId").val();
+        var BloodGroupId = $("#BloodGroupList").val() == "" ? "0" : $("#BloodGroupList").val();
+        var DistrictId = $("#ddlPerDistrictlist").val() == "" ? "0" : $("#ddlPerDistrictlist").val();
+        var ReligionId = $("#ReligionList").val() == "" ? "0" : $("#ReligionList").val();
+
+
+        
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("EmployeeInfoList", "Employee", "http")',
+                    dataType: "json",
+                    data: { EmployeeCode: EmployeeCode, Employeename: Employeename, DesignationId: DesignationId, BranchId: BranchId, DeptId: DeptId, BloodGroupId: BloodGroupId, DeskId: DeskId, JobTypeId: JobTypeId, DistrictId: DistrictId, ReligionId: ReligionId }
+                }
+            },
+            pageSize: 15,
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 600,
+            groupable: true,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "EMP_ID",
+                hidden: true,
+                filterable: false
+            },
+            {
+                field: "RowSl",
+                title: "SL",
+                width: "10%"
+            },
+            //{
+            //    template: "<div class='customer-photo' >" +
+            //                        "<img src='/Broker/RetrieveImage/" + "#:Id#" + "' alt='No Image' height=50 width=50 class='img-circle' /> </div>",
+            //    //field: "StaffImage",
+            //    title: "Image",
+            //    filterable: false,
+            //    width: "8%",
+            //},
+             {
+                 field: "EMP_OFFICE_CODE",
+                 title: "Code",
+                 width: "10%",
+                 groupable: false
+             },
+            {
+                field: "EMP_NAME",
+                title: "Name",
+                width: "25%",
+                groupable: false
+            },
+            {
+                field: "EMP_DESG_NAME",
+                title: "Designation",
+                width: "15%",
+            },
+             {
+                 field: "EMP_BRANCH_NAME",
+                 title: "Branch",
+             },
+            {
+                field: "EMP_DEPT_NAME",
+                title: "Department",
+            },
+            {
+                field: "EMP_DESK_NAME",
+                title: "Desk"
+            },
+            ////
+            {
+                field: "emp_father_name",
+                title: "Father Name",
+                hidden: true
+            },
+            {//,,,,,,,,,,emp_passport_no,emp_permanent_address,PermanantDistrict,emp_personal_mail_address,emp_phone_office,emp_phone_residance,emp_present_address,PresentDistrict,emp_spouse_contact_no,emp_spouse_name,marital_status_name,religion_name
+                field: "emp_mother_name",
+                title: "Mother Name",
+                hidden: true
+            },
+            {
+                field: "blood_group_name",
+                title: "Blood Group",
+                hidden: true
+            },
+             {
+                 field: "emergency_contact_person_name",
+                 title: "Emergency Contact Person",
+                 hidden: true
+             },
+            {
+                field: "emergency_contact_no",
+                title: "Emergency Contact No",
+                hidden: true
+            },
+           
+            {
+                field: "CountryName",
+                title: "Country",
+                hidden: true
+            },
+            {
+                field: "emp_gender",
+                title: "Gender",
+                hidden: true
+            },
+            {
+                field: "emp_mobile",
+                title: "Mobile",
+                hidden: true
+            },
+            {
+                field: "emp_nation_id_no",
+                title: "National Id",
+                hidden: true
+            },
+             {
+                 field: "OfficeEmail",
+                 title: "Office Email",
+                 hidden:true
+             },
+            //{
+            //    title: "Action",
+            //    width: "10%",
+            //    template: function (dataItem) {
+            //        return '<a href="#"  onclick="GetEditDataById(' + dataItem.EMP_ID + ')"  title="Edit" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a>'
+            //        //<a href='#' data-toggle='tooltip' class='k-button k-button-icontext k-grid-Edit' title='Delete' onclick='DeleteEmployeeInfoById(" + dataItem.Id + ")'><i class='fa fa-trash-o fa'></i></a>  <a href='#' data-toggle='tooltip'class='k-button k-button-icontext k-grid-Edit' title='Print' onclick='GetPrintDataById(" + dataItem.Id + ")'><i class='fa fa-print'></i></a>"
+            //    }
+            //}
+            ]
+        });
+    }
+
+
+
+
+
+    function GetPer_DistrictList() {
+
+        var ddlDistrictlist = $("#ddlPerDistrictlist");
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetDistrictList", "Employee", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (DistrictList) {
+                // $('#AjaxLoader').hide();
+                ddlDistrictlist.html('');
+                ddlDistrictlist.append($('<option></option>').val("0").html("Please select"));
+                $.each(DistrictList, function (id, option) {
+                    ddlDistrictlist.append($('<option></option>').val(option.Id).html(option.DistrictName));
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+
+    }
+
+
+
+
+    function Clear() {
+        $("#hdnEmployeeId").val(0);
+        $("#EmployeeName").val("");
+        $("#empDateOfBirth").val("");
+        $("#DesignamtionList").val("");
+        $("#empJoiningDate").val("");
+        $("#empJoiningDate").attr("disabled", false);
+        $("#DepartmentList").val("");
+        $("#BranchList").val("");
+        $("#JobTypeList").val("");
+        $("#OfficeEmail").val("");
+        $("#DeskList").val("");
+        $("#DueDateofConfirmation").val("");
+        $("#WithIncrement").val(0);
+        $("#EmployeeCode").attr("autofocus", true)
+
+    }
+
+    function Get_EmployeeInfo_Details_By_Code() {
+        var EmployeeCode = $("#EmployeeCode").val();
+        $('#AjaxLoader').show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("Get_EmployeeInfo_Details_By_Code", "Employee", "http")',
+            data: { EmployeeCode: EmployeeCode },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+
+                Clear();
+                if (data.Result == "Success") {
+                    ActionMode = "Edit"
+                    $.each(data.EmployeeInfo, function (id, E) {
+
+                        $("#hdnEmployeeId").val(E.emp_id);
+                        $("#EmployeeCode").val(E.emp_office_code);
+                        $("#EmployeeName").val(E.emp_name);
+                        $("#OfficeEmail").val(E.OfficeEmail);
+                        $("#empDateOfBirth").val(E.emp_datetimeof_birth);
+                        //if (E.emp_desg_id != 0 && E.emp_desg_id != null)
+                        //    $("#DesignamtionList").val(E.emp_desg_id);
+                        if (E.IsSalaryDisburse == 0) {
+                            $("#empJoiningDate").attr("disabled", false);
+                        }
+                        else {
+                            $("#empJoiningDate").attr("disabled", true);
+                        }
+                        $("#empJoiningDate").val(E.emp_joining_datetime);
+                        if (E.emp_dept_id != 0 && E.emp_dept_id != null)
+                            $("#DepartmentList").val(E.emp_dept_id);
+                        if (E.emp_branch_id != 0 && E.emp_branch_id != null)
+                            $("#BranchList").val(E.emp_branch_id);
+                        if (E.emp_job_id != 0 && E.emp_job_id != null)
+                        {
+                            $("#JobTypeList").val(E.emp_job_id);
+                            GetDesignationList();
+                            DesignationId = E.emp_desg_id;
+                        }
+
+                        if (E.emp_desk_id != 0 && E.emp_desk_id != null)
+                            $("#DeskList").val(E.emp_desk_id);
+                        $("#DueDateofConfirmation").val(E.emp_confirmation_datetime);
+                        if (E.emp_increment_flag == 1) {
+                            $("#ckInrement").prop("checked", true);
+                            $("#divIncrement").show();
+                            $("#WithIncrement").val(E.emp_noof_increment);
+                        }
+
+                        $('#AjaxLoader').hide();
+                    });
+                }
+
+                else {
+                    $('#AjaxLoader').hide();
+                    if (data.Result != "NoFound")
+                    {
+                        $.alert.open("Error", data.Message);
+                    }
+
+                }
+
+
+            },
+            error: function (request, status, error) {
+                $('#AjaxLoader').hide();
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    function GetDesignationList() {
+
+        var JobTypeId = $("#JobTypeList").val() == "" ? "0" : $("#JobTypeList").val();
+        var DesignamtionList = $("#DesignamtionList");
+
+        if (JobTypeId != "0") {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetDesignationList", "Employee", "http")',
+                data: { JobTypeId: JobTypeId },
+                dataType: 'json',
+                async: true,
+                success: function (DesgList) {
+                    DesignamtionList.html('');
+                    DesignamtionList.append($('<option></option>').val("0").html("Please select"));
+                    $.each(DesgList, function (id, option) {
+                        DesignamtionList.append($('<option></option>').val(option.Id).html(option.DesignationName));
+                    });
+                    if( ActionMode == "Edit")
+                    {
+                        $("#DesignamtionList").val(DesignationId);
+                    }
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+    }
+
+
+    function SaveEmployeeBasic() { //Step1_Save
+
+            var EmployeeCode = $("#EmployeeCode").val();
+            var EmployeeName = $("#EmployeeName").val();
+            var empDateOfBirth = $("#empDateOfBirth").val();
+            var DesignamtionList = $("#DesignamtionList").val();
+            var empJoiningDate = $("#empJoiningDate").val();
+            var DepartmentList = $("#DepartmentList").val();
+            var BranchList = $("#BranchList").val();
+            var JobTypeList = $("#JobTypeList").val();
+            var DeskList = $("#DeskList").val() == "" ? null : $("#DeskList").val();
+            var DueDateofConfirmation = $("#DueDateofConfirmation").val();
+            var WithIncrement = $("#WithIncrement").val() == "" ? "0" : $("#WithIncrement").val();
+            var EmployeeId = $("#hdnEmployeeId").val() == null ? "0" : $("#hdnEmployeeId").val();
+            var OfficeMail = $("#OfficeEmail").val();
+      
+            if (EmployeeCode == "")
+            {
+                $.alert.open("error","Insert employee code");
+            }
+            else if (EmployeeName == "")
+            {
+                $.alert.open("error", "Insert employee name");
+            }
+            else if (OfficeMail == "") {
+                $.alert.open("error", "Insert E-mail");
+            }
+            else if (empDateOfBirth == "") {
+                $.alert.open("error", "Insert employee date of birth");
+            }
+            else if (DesignamtionList == "") {
+                $.alert.open("error", "Select designation");
+            }
+            else if (empJoiningDate == "") {
+                $.alert.open("error", "Insert joining date");
+            }
+            else if (DepartmentList == "") {
+                $.alert.open("error", "Select department");
+            }
+            else if (BranchList == "") {
+                $.alert.open("error", "Select branch.");
+            }
+            else if (JobTypeList == "") {
+                $.alert.open("error", "Select job type");
+            }
+            //else if (DeskList == "") {
+            //    $.alert.open("error", "Select desk");
+            //}
+            else if (DueDateofConfirmation == "") {
+                $.alert.open("error", "Insert confirmation date");
+            }
+            else
+            {
+                $('#AjaxLoader').show();
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("SaveEmployeeBasic", "Employee", "http")',
+                    data: {
+                        EmployeeId: EmployeeId, EmployeeCode: EmployeeCode, EmployeeName: EmployeeName, OfficeMail: OfficeMail, empDateOfBirth: empDateOfBirth, DesignamtionList: DesignamtionList, empJoiningDate: empJoiningDate,
+                        DepartmentList: DepartmentList, BranchList: BranchList, JobTypeList: JobTypeList, DeskList: DeskList, DueDateofConfirmation: DueDateofConfirmation, WithIncrement: WithIncrement
+                    },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        $('#AjaxLoader').hide();
+                        if (data.Result == "Success") {
+                            Clear();
+                            $("#hdnEmployeeId").val(data.EmployeeId);
+                            $.alert.open('Success', data.Message);
+                            return true;
+
+                        }
+                        else {
+                            $.alert.open('Error', data.Message);
+                            return false;
+                        }
+                    },
+                    error: function (request, status, error) {
+                        $('#AjaxLoader').hide();
+                        alert(error)
+                    }
+                });
+            }
+    }
+
+
+
+    $(document).ready(function () {
+
+        GetPer_DistrictList();
+
+        $("#btnSearch").click(function (e) { e.preventDefault(); EmployeeInfoList(); });
+      
+
+        $("#btnSaveStep1").click(function (e) {
+            e.preventDefault();
+            SaveEmployeeBasic();
+        });
+
+        $("#EmployeeCode").blur(function () {
+            if ($("#EmployeeCode").val() != "") {
+                Get_EmployeeInfo_Details_By_Code();
+            }
+
+        });
+
+        $("#JobTypeList").change(function () { ActionMode = "Save"; GetDesignationList(); });
+
+        $("#btnNew").click(function (e) { e.preventDefault(); Clear(); });
+
+        $("#ckInrement").click(function () { if ($("#ckInrement").is(":checked") == true) { $("#divIncrement").show(); } else { $("#divIncrement").hide(); } });
+
+
+
+
+        $("#ddlDistrictlist").change(function () { ActionMode = "Save"; GetThanaList() });
+
+        $("#ddlPerDistrictlist").change(function () { ActionMode = "Save"; GetPer_ThanaList() });
+    });
+
+
+</script>
+@using (Html.BeginForm("Create", "Employee", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "EmployeeForm" }))
+{
+
+    <div class="">
+        <div id="AjaxLoader" class="ajaxLoader"></div>
+        <input type="hidden" id="hdnEmployeeId" value="@ViewData["HdnEmployeeId"]" />
+        <input type="hidden" id="hdnEmployeeDetailId" value="0" />
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <div class="page-title">
+                            <div class="title_left PageHeader" style="width:90%;">
+                                <h3 style="color: white;padding:2px">&nbsp;Employee Information</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="x_content">
+                        <form class="form-horizontal form-label-left">
+                            <div class="row form-group">
+                                @Html.Label("Employee Code", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("EmployeeCode", new { htmlAttributes = new { @class = "form-control", @autofocus = true } })
+                                </div>
+                                @Html.Label("Name", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("EmployeeName", new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+
+                            <div class="row form-group">
+                                @Html.Label("Email", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("OfficeEmail", new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                                @Html.Label("Date of Birth", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("empDateOfBirth", new { htmlAttributes = new { @class = "form-control DateInput" } })
+                                </div>
+                               
+                            </div>
+                            <div class="row form-group">
+                                @Html.Label("Joining Date", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("empJoiningDate", new { htmlAttributes = new { @class = "form-control DateInput" } })
+                                </div>
+                                @Html.Label("Job Type", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("JobTypeList", new SelectList(ViewBag.JobTypeList, "JOB_ID", "JOB_NAME"), "Please select", new { @class = "form-control bordercss" })
+                                </div>
+                              
+                            </div>
+                            <div class="row form-group">
+                                @Html.Label("Designation ", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("DesignationList", null, new { @id = "DesignamtionList", @class = "form-control bordercss" })
+                                </div>
+                                @Html.Label("Branch", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("BranchList", new SelectList(ViewBag.BranchList, "Id", "BrokerBranchName"), "Please select", new { @class = "form-control bordercss" })
+                                </div>
+
+                            </div>
+
+                            <div class="row form-group">
+                                @Html.Label("Department", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("DepartmentList", new SelectList(ViewBag.DepartmentList, "Id", "DepartmentName"), "Please select", new { @class = "form-control bordercss" })
+                                </div>
+                                @Html.Label("Desk", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("DeskList", new SelectList(ViewBag.DeskList, "DESK_ID", "DESK_NAME"), "Please select", new { @class = "form-control bordercss" })
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                @Html.Label("Due Date of Confirmation", htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("DueDateofConfirmation", new { htmlAttributes = new { @class = "form-control DateInput" } })
+                                </div>
+                                <div class="control-label col-md-2">
+                                    <input type="checkbox" id="ckInrement" /><span style="color:black"><b>With Increment</b></span>
+                                </div>
+                                <div class="col-md-4 col-sm-6 col-xs-12" id="divIncrement" style="display:none">
+                                    @Html.Editor("WithIncrement", new { htmlAttributes = new { @class = "form-control", @type = "number" } })
+                                </div>
+                            </div>
+                            <br />
+                            <div class="row form-group">
+                                <div class="control-label col-md-4">
+                                </div>
+                                <div class="control-label col-md-2">
+                                    <button type="submit" class="btn btn-success" id="btnSaveStep1">Save</button>
+                                </div>
+                                <div class="control-label col-md-1">
+                                    <button type="submit" class="btn btn-primary" id="btnNew">New</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <br />
+                    <div class="x_content">
+                        <fieldset>
+                            <legend>Search Option</legend>
+                            <div class="row form-group">
+                                @Html.Label("Employee Code", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("EmployeeCodeSearch", new { htmlAttributes = new { @class = "form-control"} })
+                                </div>
+                                @Html.Label("Name", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.Editor("EmployeeNameSearch", new { htmlAttributes = new { @class = "form-control" } })
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                @Html.Label("Job Type", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("JobTypeList", new SelectList(ViewBag.JobTypeList, "JOB_ID", "JOB_NAME"), "Please select", new { @class = "form-control bordercss",@id="JobTypeId" })
+                                </div>
+                                @Html.Label("Designation", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("DesignationListSearch", new SelectList(ViewBag.DesignationListSearch, "Id", "DesignationName"), "Please select", new { @class = "form-control bordercss", @id = "DesignationId" })
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                               
+                                @Html.Label("Branch", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("BranchList", new SelectList(ViewBag.BranchList, "Id", "BrokerBranchName"), "Please select", new { @class = "form-control bordercss",@id = "BranchId" })
+                                </div>
+                                @Html.Label("Department", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("DepartmentList", new SelectList(ViewBag.DepartmentList, "Id", "DepartmentName"), "Please select", new { @class = "form-control bordercss",@id="DepartmentId" })
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                               
+                                @Html.Label("Desk", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("DeskList", new SelectList(ViewBag.DeskList, "DESK_ID", "DESK_NAME"), "Please select", new { @class = "form-control bordercss",@id="DeskId" })
+                                </div>
+                                @Html.Label("Blood Group ", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("BloodGroupList", new SelectList(ViewBag.BloodGroupList, "BLOOD_GROUP_ID", "BLOOD_GROUP_NAME"), "Please select", new { @class = "form-control bordercss" })
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                @Html.Label("Religion", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("ReligionList", new SelectList(ViewBag.ReligionList, "RELIGION_ID", "RELIGION_NAME"), "Please select", new { @class = "form-control bordercss" })
+                                </div>
+                                @Html.Label("Home District", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-4 col-sm-6 col-xs-12">
+                                    @Html.DropDownList("PerDistrictlist", null, new { @id = "ddlPerDistrictlist", @class = "form-control bordercss" })
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                               
+                                <div class="control-label col-md-5">
+                                </div>
+                                <div class="control-label col-md-1">
+                                    <button type="submit" class="btn btn-primary" id="btnSearch">Search</button>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div id="grid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+}
+
+

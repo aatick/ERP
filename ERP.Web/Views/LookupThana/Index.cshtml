@@ -1,0 +1,275 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+<style>
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+<script type="text/javascript">
+
+    function GetEditDataById(Id) {
+        //window.location.href = "/Batch/Edit/" + BatchId;
+        var link = '@Url.Action("Edit", "LookupThana", new { id = -1 }, "http")'
+        link = link.replace("-1", Id);
+        window.location.href = link;
+    }
+
+    function ThanaDelete(Id) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("ThanaDelete", "LookupThana", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (result) {
+                        $("#grid").data("kendoGrid").dataSource.read();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+    function GetDistrictList() {
+
+        var DivisionId = $("#DivisionList").val();
+        var ddlDistrictlist = $("#ddlDistrictlist");
+
+        if (DivisionId != "" && DivisionId != null) {
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("GetDistrictList", "LookupThana", "http")',
+                data: { DivisionId: DivisionId },
+                dataType: 'json',
+                async: true,
+                success: function (DistrictList) {
+                    // $('#AjaxLoader').hide();
+                    ddlDistrictlist.html('');
+                    ddlDistrictlist.append($('<option></option>').val("").html("Please select"));
+                    $.each(DistrictList, function (id, option) {
+                        ddlDistrictlist.append($('<option></option>').val(option.Id).html(option.DistrictName));
+                    });
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        }
+        else {
+            $("#ddlDistrictlist").empty();
+        }
+    }
+
+    var record = 0;
+
+
+    function GetThanaList() {
+        var DistrictId = $("#ddlDistrictlist").val()
+        var DivisionId = $("#DivisionList").val();
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetThanaList", "LookupThana", "http")',
+                    dataType: "json",
+                    data: { DistrictId: DistrictId, DivisionId: DivisionId }
+                }
+            },
+            pageSize: 20
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 700,
+            groupable: true,
+            reorderable: true,
+            resizable: true,
+            // filterable: true,
+            sortable: true,
+            // columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+            {
+                template: "#= ++record #",
+                title: "SL",
+                width: "10%",
+            },
+            {
+                field: "ThanaName",
+                title: "Thana Name",
+            },
+             {
+                 field: "DistrictName",
+                 title: "District",
+             },
+
+            {
+
+                title: "Action",
+                width: "10%",
+                template: function (dataItem) {
+
+                    return '<a href="#"  onclick="GetEditDataById(' + dataItem.Id + ')"  title="Edit" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a>'
+                    //'<a href="#" title="Delete" onclick="ThanaDelete(' + dataItem.ID + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></a>'
+
+
+                }
+            }
+            ],
+            dataBinding: function () {
+                record = (this.dataSource.page() - 1) * this.dataSource.pageSize();
+            }
+            //dataBound: function () {
+            //    var rows = this.items();
+            //    $(rows).each(function () {
+            //        var index = $(this).index() + 1;
+            //        var rowLabel = $(this).find(".row-number");
+            //        $(rowLabel).html(index);
+            //    });
+            //}
+
+        });
+
+
+        //change event
+        $("#autoSearch").keyup(function () {
+            var selecteditem = $('#autoSearch').val();
+            var kgrid = $("#grid").data("kendoGrid");
+            selecteditem = selecteditem.toUpperCase();
+            var selectedArray = selecteditem.split(" ");
+            if (selecteditem) {
+                //kgrid.dataSource.filter({ field: "UserName", operator: "eq", value: selecteditem });
+                var orfilter = { logic: "or", filters: [] };
+                var andfilter = { logic: "and", filters: [] };
+                $.each(selectedArray, function (i, v) {
+                    if (v.trim() == "") {
+                    }
+                    else {
+                        $.each(selectedArray, function (i, v1) {
+                            if (v1.trim() == "") {
+                            }
+                            else {
+                                orfilter.filters.push({ field: "ThanaName", operator: "contains", value: v1 },
+                                                      { field: "DistrictName", operator: "contains", value: v1 });
+                                andfilter.filters.push(orfilter);
+                                orfilter = { logic: "or", filters: [] };
+                            }
+
+                        });
+                    }
+                });
+                kgrid.dataSource.filter(andfilter);
+            }
+            else {
+                kgrid.dataSource.filter({});
+            }
+
+        });
+    }
+
+
+
+    $(document).ready(function () {
+
+        GetThanaList();
+        $("#DivisionList").change(function () {
+            GetDistrictList();
+        });
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+            //var DistrictId = $("#ddlDistrictlist").val()
+            //if (DistrictId != "0" && DistrictId != "" && DistrictId != null) {
+            //    GetThanaList()
+            //}
+            //else {
+            //    $.alert.open("error", "Select district name");
+            //}
+            GetThanaList()
+        });
+
+    });
+
+</script>
+@Html.ActionLink("Add New", "Create", null, new { @class = "btn btn-primary btn-sm pull-right" })
+
+<div class="page-title">
+    <div class="title_left PageHeader" style="width:90%;">
+        <h3 style="color: white;padding:2px">Thana Information</h3>
+    </div>
+</div>
+<div class="x_panel">
+    <div class="x_title">
+
+        <ul class="nav navbar-right panel_toolbox">
+            <li style="float:right;">
+                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+            </li>
+        </ul>
+        <div class="clearfix"></div>
+    </div>
+    <div class="x_content">
+        <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left">
+            <div class="row">
+                <div class="form-group">
+                    <div class="col-md-1">
+                       
+                    </div>
+                    @Html.Label("Division", htmlAttributes: new { @class = "control-label col-md-1" })
+
+                    <div class="col-md-3">
+                        @Html.DropDownList("DivisionList", new SelectList(ViewBag.DivisionList, "Id", "DivisionName"), "Please select", new { @class = "form-control bordercss" })
+                    </div>
+                    @Html.Label("District", htmlAttributes: new { @class = "control-label col-md-1" })
+
+                    <div class="col-md-3">
+                        @Html.DropDownList("Districtlist", null, new { @id = "ddlDistrictlist", @class = "form-control bordercss" })
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" id="btnSearch" class="btn btn-success">Search</button>
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="form-group">
+                    @Html.Label("Auto Search", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-5">
+                        <input type="text" id="autoSearch" class="form-control" placeholder="Search by thana name or district name" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div id="grid"></div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

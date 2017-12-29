@@ -1,0 +1,215 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+<link href="~/Content/css/bootstrap-datetimepicker.min.css" rel="stylesheet" />
+<script src="~/Content/js/bootstrap-datetimepicker.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        //$('#birthday').daterangepicker({
+        //    singleDatePicker: true,
+        //    calender_style: "picker_4"
+        //}, function (start, end, label) {
+        //    console.log(start.toISOString(), end.toISOString(), label);
+        //});
+
+        $('#birthday').datetimepicker({
+            pickTime: false
+        });
+
+        $("#birthdayTelerik").kendoDatePicker();
+        $("#notifications-switch").kendoMobileSwitch();
+
+
+
+        $('#btnSave').click(function (e) {
+            e.preventDefault();
+            //var submit = true;
+            // evaluate the form using generic validaing
+            console.log($('form'));
+            if (!validator.checkAll($('form'))) {
+                //submit = false;
+                //return true;
+
+            }
+            else {
+
+            }
+            //if (submit)
+            //    this.submit();
+            //return false;
+        });
+        //$("#birthdayTelerik").kendoDatePicker({
+        //    // defines the start view
+        //    start: "year",
+
+        //    // defines when the calendar should return date
+        //    depth: "year",
+
+        //    // display month and year in the input
+        //    format: "MMMM yyyy"
+        //});
+    });
+
+</script>
+
+@using (Html.BeginForm("Create", "Group", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left" }))
+{
+
+    <div class="page-title">
+        <div class="title_left">
+            <h3>SEMESTER</h3>
+        </div>
+    </div>
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>Semester <small>Entry</small></h2>
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <br />
+            <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left">
+                <div class="item form-group">
+                    <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">
+                        First Name <span class="required">*</span>
+                    </label>
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                        <input type="text" id="first-name" required="required" class="form-control col-md-7 col-xs-12">
+                    </div>
+                </div>
+                <div class="item form-group">
+                    <label class="control-label col-md-3 col-sm-3 col-xs-12" for="last-name">
+                        Last Name <span class="required">*</span>
+                    </label>
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                        <input type="text" id="last-name" name="last-name" required="required" class="form-control col-md-7 col-xs-12">
+                    </div>
+                </div>
+                <div class="item form-group">
+                    <label for="middle-name" class="control-label col-md-3 col-sm-3 col-xs-12">Middle Name / Initial</label>
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                        <input id="middle-name" class="form-control col-md-7 col-xs-12" type="text" name="middle-name">
+                    </div>
+                </div>
+                <div class="item form-group">
+                    <label class="control-label col-md-3 col-sm-3 col-xs-12">Gender</label>
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                        <div id="gender" class="btn-group" data-toggle="buttons">
+                            <label class="btn btn-default" data-toggle-class="btn-primary" data-toggle-passive-class="btn-default">
+                                <input type="radio" name="gender" value="male"> &nbsp; Male &nbsp;
+                            </label>
+                            <label class="btn btn-primary active" data-toggle-class="btn-primary" data-toggle-passive-class="btn-default">
+                                <input type="radio" name="gender" value="female" checked=""> Female
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="item form-group">
+                    <label class="control-label col-md-3 col-sm-3 col-xs-12">
+                        Date Of Birth <span class="required">*</span>
+                    </label>
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                        <input id="birthday" class="date-picker form-control col-md-7 col-xs-12" required="required" type="text">
+                    </div>
+                </div>
+                <div class="item form-group">
+                    <label class="control-label col-md-3 col-sm-3 col-xs-12">
+                        Date Of Birth (Kendo Telerik) <span class="required">*</span>
+                    </label>
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                        <input id="birthdayTelerik" class="form-control col-md-7 col-xs-12" required="required" type="text" style="width: 100%">
+                        Notifications <input type="checkbox" id="notifications-switch" checked="checked" />
+                    </div>
+                </div>
+                <div class="ln_solid"></div>
+                <div class="item form-group">
+                    <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                        <button type="submit" class="btn btn-primary">Cancel</button>
+                        <button type="submit" id="btnSave" class="btn btn-success">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="example" role="application">
+        <div class="demo-section k-header">
+            <h2>Invite Attendees</h2>
+            <label for="required">Required</label>
+            <select id="required" multiple="multiple" data-placeholder="Select attendees...">
+                <option>Steven White</option>
+                <option>Nancy King</option>
+                <option>Nancy Davolio</option>
+                <option>Robert Davolio</option>
+                <option>Michael Leverling</option>
+                <option>Andrew Callahan</option>
+                <option>Michael Suyama</option>
+                <option selected value='blue'>Anne King</option>
+                <option>Laura Peacock</option>
+                <option>Robert Fuller</option>
+                <option>Janet White</option>
+                <option>Nancy Leverling</option>
+                <option>Robert Buchanan</option>
+                <option>Margaret Buchanan</option>
+                <option selected value='red'>Andrew Fuller</option>
+                <option>Anne Davolio</option>
+                <option>Andrew Suyama</option>
+                <option>Nige Buchanan</option>
+                <option>Laura Fuller</option>
+            </select>
+            <label for="optional">Optional</label>
+            <select id="optional" multiple="multiple" data-placeholder="Select attendees...">
+                <option>Steven White</option>
+                <option>Nancy King</option>
+                <option>Nancy Davolio</option>
+                <option>Robert Davolio</option>
+                <option>Michael Leverling</option>
+                <option>Andrew Callahan</option>
+                <option>Michael Suyama</option>
+                <option>Anne King</option>
+                <option>Laura Peacock</option>
+                <option>Robert Fuller</option>
+                <option>Janet White</option>
+                <option>Nancy Leverling</option>
+                <option>Robert Buchanan</option>
+                <option>Margaret Buchanan</option>
+                <option>Andrew Fuller</option>
+                <option>Anne Davolio</option>
+                <option>Andrew Suyama</option>
+                <option>Nige Buchanan</option>
+                <option>Laura Fuller</option>
+            </select>
+            <button class="k-button" id="get">Send Invitation</button>
+        </div>
+        <style>
+            .demo-section label {
+                display: block;
+                margin: 15px 0 5px 0;
+            }
+
+            #get {
+                float: right;
+                margin: 25px auto 0;
+            }
+        </style>
+        <script>
+                $(document).ready(function () {
+                    // create MultiSelect from select HTML element
+                    var required = $("#required").kendoMultiSelect().data("kendoMultiSelect");
+                    var optional = $("#optional").kendoMultiSelect({
+                        autoClose: false
+                    }).data("kendoMultiSelect");
+
+                    $("#get").click(function () {
+                        alert("Attendees:\n\nRequired: " + required.value());
+                    });
+                });
+        </script>
+    </div>
+}
+
+

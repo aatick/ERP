@@ -1,0 +1,239 @@
+﻿
+@{
+    ViewBag.Title = "Broker Info|List";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<style>
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+
+<script type="text/javascript">
+
+    function GetEditDataById(Id) {
+        //window.location.href = "/Batch/Edit/" + BatchId;
+        var link = '@Url.Action("BrokerinfoEdit", "Office", new { Id = -1 }, "http")'
+        link = link.replace("-1", Id);
+        window.location.href = link;
+    }
+
+    function DeleteById(Id) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("DeleteBrokerInfo", "Broker", "http")',
+                    data: { Id: Id },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        $("#grid").data("kendoGrid").dataSource.read();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+    var record = 0;
+    function GetBrokerInfo() {
+
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("GetBrokerInfo", "Broker", "http")',
+                    dataType: "json",
+                    data: { }
+                }
+            },
+            pageSize: 20
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 600,
+            groupable: true,
+            reorderable: true,
+            resizable: true,
+            filterable: true,
+            sortable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "Id",
+                hidden: true,
+                filterable: false
+            },
+            {
+                template: "#= ++record #",
+                title: "SL",
+                width: "10%",
+            },
+            {
+                field: "BrokerCode",
+                title: "Broker Code",
+            },
+             {
+                 field: "BrokerName",
+                 title: "Name ",
+             },
+               {
+                   field: "BrokerShortName",
+                   title: "Short Name",
+               },
+                
+                {
+                    field: "RegistrationNo",
+                    title: "Registration No",
+                },
+                {
+                    field: "TotalTrader",
+                    title: "Total Trader",
+                   // hidden: true,
+                },
+                 {
+                     //field: "IsOwner",
+                     title: "Owner",
+                     template: function (dataItem)
+                     {
+                        
+                         if (dataItem.IsOwner == true)
+                         {
+                             return "Yes";
+                         }
+                         else
+                         {
+                             return "No";
+                         }
+                     },
+                    // hidden: true,
+                 },
+                {
+                    field: "FreeLimit",
+                    title: "Free Limit",
+                    hidden: true,
+                },
+                 {
+                     field: "AuthCapital",
+                     title: "Auth Capital",
+                     hidden: true,
+                 },
+                  {
+                      field: "PaidUpCapital",
+                      title: "Paid Up Capital",
+                      hidden: true,
+                  },
+                   {
+                       field: "IssueDate",
+                       title: "Issue Date",
+                       hidden: true,
+                   },
+                    {
+                        field: "DepositMode",
+                        title: "DepositMode",
+                        hidden: true,
+                    },
+
+            {
+                title: "Action",
+                width: "10%",
+                template: function (dataItem) {
+                    return '<a href="#"  onclick="GetEditDataById(' + dataItem.Id + ')"  title="Edit" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a>' //+
+                        //'<a href="#" title="Delete" onclick="DeleteById(' + dataItem.ID + ')" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></a>'
+                }
+            }
+            ],
+            dataBinding: function () {
+                record = (this.dataSource.page() - 1) * this.dataSource.pageSize();
+            }
+        });
+        $("#autoSearch").keyup(function () {
+            var selecteditem = $('#autoSearch').val();
+            var kgrid = $("#grid").data("kendoGrid");
+            selecteditem = selecteditem.toUpperCase();
+            var selectedArray = selecteditem.split(" ");
+            if (selecteditem) {
+                //kgrid.dataSource.filter({ field: "UserName", operator: "eq", value: selecteditem });
+                var orfilter = { logic: "or", filters: [] };
+                var andfilter = { logic: "and", filters: [] };
+                $.each(selectedArray, function (i, v) {
+                    if (v.trim() == "") {
+                    }
+                    else {
+                        $.each(selectedArray, function (i, v1) {
+                            if (v1.trim() == "") {
+                            }
+                            else {
+                                orfilter.filters.push({ field: "BrokerCode", operator: "contains", value: v1 },
+                                                      { field: "BrokerName", operator: "contains", value: v1 },
+                                                      { field: "BrokerShortName", operator: "contains", value: v1 },
+                                                      { field: "RegistrationNo", operator: "contains", value: v1 });
+                                andfilter.filters.push(orfilter);
+                                orfilter = { logic: "or", filters: [] };
+                            }
+
+                        });
+                    }
+                });
+                kgrid.dataSource.filter(andfilter);
+            }
+            else {
+                kgrid.dataSource.filter({});
+            }
+
+        });
+    }
+
+    $(document).ready(function () {
+        GetBrokerInfo();
+    });
+
+</script>
+@*@Html.ActionLink("Add New", "BrokerInfo", null, new { @class = "btn btn-primary btn-sm pull-right" })*@
+@using (Html.BeginForm("BrokerList", "Office", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "BrokerListForm" }))
+{
+
+    <div class="page-title">
+        <div class="title_left">
+            <h4 style="color: rgb(26,187, 156)">Broker information</h4>
+        </div>
+    </div>
+    <div class="x_panel">
+        <div class="x_title">
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <form id="demo-form2" data-parsley-validate>
+                <div class="block_content">
+                    <div class="row">
+                        <div class="form-group">
+                            @Html.Label("Search", htmlAttributes: new { @class = "control-label col-md-1" })
+                            <div class="col-md-5">
+                                <input type="text" id="autoSearch" class="form-control" placeholder="Search by code, name, short name or registration no" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div id="grid"> </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+}
+
+
+
+

@@ -1,0 +1,111 @@
+﻿@model ERP.Web.ViewModels.AspNetRoleViewModel
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('#btnRoleSave').click(function (e) {
+
+            e.preventDefault();
+            if (!validator.checkAll($('form'))) {
+                return false;
+            }
+
+            else {
+
+                $('#AspNetRoleForm').ajaxSubmit({
+                    type: "POST",
+                    target: '#thumbnil',
+                    data: {},
+                    dataType: 'json',
+                    resetForm: true,
+                    success: function (data) {
+                        if (data.data.Id != null) {
+                            $('#Name').val('');
+                            $('#DefaultLinkURL').val('');
+
+                            $(".success").show(800).fadeToggle(3000);
+                        }
+                        else {
+                            $(".failed").show(800).fadeToggle(3000);
+                        }
+                    },
+                    error: function () {
+                        $("#dialog-message").html('<p>Error, Fail to Save.</p>');
+                        $("#dialog-message").dialog({
+                            modal: true,
+                            buttons: {
+                                Ok: function () {
+                                    $(this).dialog("close");
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+
+@Html.ActionLink("Back To List", "Index", null, new { @class = "btn btn-primary btn-sm pull-right" })
+
+@using (Html.BeginForm("Edit", "AspNetRole", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", id = "AspNetRoleForm" }))
+{
+
+<div class="page-title">
+    <div class="title_left PageHeader" style="width:90%;">
+        <h3 style="color: white;padding:3px">Role info edit</h3>
+    </div>
+</div>
+    <div class="x_panel">
+        <div class="x_title">
+            <ul class="nav navbar-right panel_toolbox">
+                <li style="float:right;">
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <br />
+            <form id="demo-form2" data-parsley-validate>
+                <div id="AjaxLoader" class="ajaxLoader"></div>
+                <div class="item form-group">
+                    @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                    <span class="required" style="color:red">*</span>
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", @placeholder = "Name", @required = "required" } })
+                        @Html.HiddenFor(model => model.Id, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                </div>
+                <div class="item form-group">
+                    @Html.LabelFor(model => model.DefaultLinkURL, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                    <span class="required" style="color:red">*</span>
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                        @Html.EditorFor(model => model.DefaultLinkURL, new { htmlAttributes = new { @class = "form-control", @placeholder = "URL", @required = "required" } })
+                    </div>
+                </div>
+                <div class="ln_solid"></div>
+                <div class="item form-group">
+                    <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                        <div class="success" role="alert" style="display:none">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <p class="message-content">Saved Sucessfully</p>
+                        </div>
+                        <div class="failed" role="alert" style="display:none">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <p class="message-content">Fail to save</p>
+                        </div>
+                        <br />
+                        <button type="submit" id="btnRoleSave" class="btn btn-success">Submit</button>
+
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}

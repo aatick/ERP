@@ -1,0 +1,220 @@
+﻿@model ERP.Web.Models.RegisterModel
+@{
+    ViewBag.Title = "Register";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    //var personTypList = ViewBag.PersontTypList as IEnumerable<SelectListItem>;
+    //var personList = ViewBag.PersonList as IEnumerable<SelectListItem>;
+}
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+</style>
+
+<script type="text/javascript">
+    var Mode = "";
+    function LoadRoleList() {
+        var RoleId = $("#RoleId");
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("LoadRoleList", "Account", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                RoleId.html('');
+                $.each(data, function (id, option) {
+                    RoleId.append($('<option></option>').val(option.Value).html(option.Text));
+                });
+
+                if(Mode == "Edit")
+                {
+                    $("#RoleId").val($("#hdnRoleId").val());
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+
+
+    function GetBrokerEmployeeForRegister() {
+        var AllEmployeeList = [];
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetBrokerEmployeeForRegister", "Account", "http")',
+            type: "GET",
+            dataType: "json",
+            async: true,
+            data: {},
+            success: function (Result) {
+                $.each(Result, function (id, option) {
+                    var obj = new Object();
+                    obj.key = option.UserId;
+                    obj.value = option.EmployeeName;
+                    obj.Email = option.Email;
+
+
+                    AllEmployeeList[AllEmployeeList.length] = obj;
+                });
+            },
+            failure: function () {
+                $.alert.open("error", "Failed!");
+            }
+        });
+
+        $('#PersonName').autocomplete({
+            source: AllEmployeeList,
+            select: function (event, ui) {
+                $("#PersonName").val(ui.item.value);
+                $("#UserId").val(ui.item.key);
+                $("#UserName").val(ui.item.Email);
+            }
+        });
+
+    }
+
+
+
+    $(document).ready(function () {
+        Mode = "Edit";
+        $("#RoleId").change(function () {
+            Mode = "";
+        });
+
+        GetBrokerEmployeeForRegister();
+        LoadRoleList();
+
+        $('#btnRegisterSave').click(function (e) {
+            e.preventDefault();
+            if (!validator.checkAll($('form'))) {
+                return false;
+            }
+            else {//RoleId ConfirmPassword Password UserName PersonName
+                if ($("#RoleId").val() != "0" && $("#UserName").val() != "" && $("#PersonName").val() != "") {
+                    $('#RegisterForm').ajaxSubmit({
+                        type: "POST",
+                        target: '#thumbnil',
+                        data: {},
+                        dataType: 'json',
+                        resetForm: true,
+                        success: function (Result) {
+                            if (Result = "OK") {
+                                $(".success").show(800).fadeToggle(3000);
+                            }
+                            else {
+                                $(".failed").show(800).fadeToggle(3000);
+                            }
+                        },
+                        error: function () {
+                            $("#dialog-message").html('<p>Error, Fail to Save.</p>');
+                            $("#dialog-message").dialog({
+                                modal: true,
+                                buttons: {
+                                    Ok: function () {
+                                        $(this).dialog("close");
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+                else {
+                    $.alert.open("error", "All field required");
+                }
+
+            }
+        });
+
+    });
+</script>
+
+@Html.ActionLink("Back To List", "RegisterIndex", null, new { @class = "btn btn-primary btn-sm pull-right" })
+
+
+@using (Html.BeginForm("RegisterEdit", "Account", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal form-label-left", @id = "RegisterForm" }))
+{
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:2px">User registration edit</h3>
+        </div>
+    </div>
+    <div class="x_panel">
+
+        <div class="x_content">
+            <br />
+            <form id="demo-form2" data-parsley-validate>
+                <div class="item form-group">
+                    <br />
+                    <div class="row">
+                        <div class="col-md-2" style="text-align:right">
+                            @Html.Label("Employee Name", htmlAttributes: new { @class = "control-label" })
+                        </div>
+                        <div class="col-md-4">
+                            @Html.EditorFor(model => model.PersonName, new { htmlAttributes = new { @class = "form-control" ,@readonly="readonly"} })
+
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-2" style="text-align:right">
+                            @Html.LabelFor(model => model.UserName, htmlAttributes: new { @class = "control-label" })
+                        </div>
+                        <div class="col-md-4">
+                            @Html.EditorFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.HiddenFor(model => model.UserId, new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                    </div>
+                    @*<div class="row">
+                        <div class="col-md-2" style="text-align:right">
+                            @Html.LabelFor(model => model.Password, htmlAttributes: new { @class = "control-label" })
+                        </div>
+                        <div class="col-md-4">
+                            @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control", @type = "password" } })
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-2" style="text-align:right">
+                            @Html.LabelFor(model => model.ConfirmPassword, htmlAttributes: new { @class = "control-label" })
+                        </div>
+                        <div class="col-md-4">
+                            @Html.EditorFor(model => model.ConfirmPassword, new { htmlAttributes = new { @class = "form-control", @type = "password" } })
+                        </div>
+                    </div>*@
+                    <br />
+                    <div class="row">
+                        <div class="col-md-2" style="text-align:right">
+                            @Html.LabelFor(model => model.RoleId, htmlAttributes: new { @class = "control-label" })
+                        </div>
+                        <div class="col-md-4">
+                            @Html.DropDownList("RoleId", null, new { @class = "form-control" })
+                           @Html.HiddenFor(model => model.RoleId, htmlAttributes: new { @class = "control-label bordercss", @id = "hdnRoleId" })
+                        </div>
+                    </div>
+                </div>
+                <div class="ln_solid"></div>
+                <div class="item form-group">
+                    <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                        <div class="success" role="alert" style="display:none">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <p class="message-content">Saved Sucessfully</p>
+                        </div>
+                        <div class="failed" role="alert" style="display:none">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <p class="message-content">Fail to save</p>
+                        </div>
+                        <br />
+                        <button type="submit" id="btnRegisterSave" class="btn btn-success">Submit</button>
+                        @*<button type="submit" class="btn btn-primary">Cancel</button>*@
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+

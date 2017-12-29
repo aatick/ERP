@@ -1,0 +1,134 @@
+﻿@using Common.Data.CommonDataModel
+@using ERP.Web.Helpers
+@{
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+
+<script type="text/javascript">
+
+
+    function LoadProject(ProjectShortName) {
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("Project_X", "Account", "http")',
+            data: { ProjectName: ProjectShortName },
+            dataType: 'json',
+            async: true,
+            success: function (data) {
+                window.location.href = data.Url;
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+
+
+
+        @*$("#HRM").click(function () {
+            var ProjectName = "HRM";
+            $.ajax({
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("ProjectX", "Account", "http")',
+                data: { ProjectName: ProjectName },
+                dataType: 'json',
+                async: true,
+                success: function (data) {
+                   var link = '@Url.Content("~/" +  -1  + "/" +   -2  + "")'
+                    link = link.replace("-1", data.ControlEx);
+                    link = link.replace("-2", data.ActionPage);
+
+                    window.location.href = link;
+                },
+                error: function (request, status, error) {
+                    alert(request.statusText + "/" + request.statusText + "/" + error);
+                }
+            });
+        });*@
+
+    });
+</script>
+
+
+@*<body>
+        <div>
+            <h1>Mominul Islam</h1>
+            <input  type="submit" id="HRM" value="HRM"/>
+            <input type="submit" id="UPMS" value="UPMS"/>
+        </div>
+    </body>*@
+
+
+
+<div class="x_panel">
+    <div class="x_title">
+        <div class="clearfix"></div>
+    </div>
+    <div class="x_content">
+
+        <div class="col-md-6">
+
+            @{
+                var AllProjectddl = new List<UcasSoftware_Projects>();
+                if (SessionHelper.ddlProjects != null)
+                {
+                    AllProjectddl = SessionHelper.ddlProjects.Where(x => x.ProjectShortName != "Basic").ToList() ?? new List<UcasSoftware_Projects>();
+                }
+            }
+            @if (AllProjectddl.Count > 1)
+            {
+                <a href="#" aria-controls="" role="tab" onclick="LoadProject('0');">
+                    <div class="alert alert-success alert-dismissible fade in" role="alert">
+
+                        <strong>All Projects</strong>
+                    </div>
+                </a>
+            }
+
+            @foreach (var p in AllProjectddl)
+            {
+
+                <a href="#" aria-controls="" role="tab" onclick="LoadProject('@p.ProjectShortName');">
+                    <div class="@p.Style_Css" role="alert">
+
+                        <strong>@p.ProjectShortName</strong>
+                    </div>
+                </a>
+
+            }
+
+
+            @*<div class="x_content bs-example-popovers">
+                    <div class="alert alert-success alert-dismissible fade in" role="alert">
+                        <button type="button" aria-label="Close" id="HRM">
+                        </button>
+                        <strong>Human Resourse Management</strong>
+                    </div>
+                    <div class="alert alert-info alert-dismissible fade in" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        </button>
+                        <strong>Holy guacamole!</strong> Best check yo self, you're not looking too good.
+                    </div>
+                    <div class="alert alert-warning alert-dismissible fade in" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        </button>
+                        <strong>Holy guacamole!</strong> Best check yo self, you're not looking too good.
+                    </div>
+                    <div class="alert alert-danger alert-dismissible fade in" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        </button>
+                        <strong>Holy guacamole!</strong> Best check yo self, you're not looking too good.
+                    </div>
+                </div>*@
+        </div>
+
+    </div>
+</div>
+
+
+

@@ -1,0 +1,330 @@
+﻿@model ERP.Web.ViewModels.AspNetSecurityModuleViewModel
+
+@{
+    ViewBag.Title = "GetAspNetSecurityModule";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var roleList = Model == null ? null : Model.RoleList;
+}
+
+<style type="text/css">
+    th {
+        height: 40px;
+        vertical-align: top;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+
+    span.jtable-column-header-text {
+        margin-top: 0px !important;
+    }
+
+    .k-grid tbody .k-button, .k-ie8 .k-grid tbody button.k-button {
+        min-width: 0;
+    }
+
+    a.k-button.k-button-icontext.k-grid-Edit {
+        min-width: 0;
+    }
+
+    #grid a.k-button.k-button-icontext.k-grid-Edit {
+        min-width: 0;
+    }
+
+
+    /*.k-grid tbody .k-button, .k-ie8 .k-grid tbody button.k-button {
+        min-width: 0;
+    }*/
+    a.k-button.k-button-icontext.k-i-close {
+        min-width: 0;
+    }
+
+    #grid a.k-button.k-button-icontext.k-i-close {
+        min-width: 0;
+    }
+
+    table td .k-button {
+        padding: 0px;
+    }
+
+        table td .k-button span {
+            padding: 9px 14px;
+        }
+
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+
+<script type="text/javascript">
+
+    function Securirty(AspNetSecurityModuleId)
+    {
+        var securityValue = $("#SecurityId" + AspNetSecurityModuleId + " option:selected").val();
+        $("#txtSecurityId" + AspNetSecurityModuleId).val(securityValue);
+    }
+
+    function checkedValue(AspNetSecurityModuleId) {
+        var chkResult = $('#txtCheckId' + AspNetSecurityModuleId).is(":checked");
+        if (chkResult == true) {
+            $("#txtId" + AspNetSecurityModuleId).val('1');
+        }
+        else {
+            $("#txtId" + AspNetSecurityModuleId).val('0');
+        }
+    }
+
+    function SaveRoleSecurityLevel() {
+
+        $("#AjaxLoader").show();
+        var rowCount = $("#grid").data("kendoGrid").dataSource.data().length;
+
+        var allChecks = new Array();
+        var allSecurity = new Array();
+        var allModes = new Array();
+        var allModule = new Array();
+        for (i = 0; i < rowCount; i++) {
+            if ($("#grid").data().kendoGrid._data[i] != null && $("#grid").data().kendoGrid._data[i] != undefined && $("#grid").data().kendoGrid._data[i] != "null" && $("#grid").data().kendoGrid._data[i] != "undefined") {
+                var moduleId = $("#grid").data().kendoGrid._data[i].AspNetSecurityModuleId;
+                var chkTxtId = $('#txtId' + moduleId).attr('id');
+                var chkValue = $('#txtId' + moduleId).val();
+                var obj1 = new Object();
+                obj1.Key = chkTxtId;
+                obj1.Value = chkValue;
+                allChecks[allChecks.length] = obj1;
+
+                var securityTxtId = $('#txtSecurityId' + moduleId).attr('id');
+                var securityValue = $('#txtSecurityId' + moduleId).val();
+                var obj2 = new Object();
+                obj2.Key = securityTxtId;
+                obj2.value = securityValue;
+                allSecurity[allSecurity.length] = obj2;
+
+
+                var modeTxtId = $('#txtMode' + moduleId).attr('id');
+                var modeValue = $('#txtMode' + moduleId).val();
+                var obj3 = new Object();
+                obj3.Key = modeTxtId;
+                obj3.value = modeValue;
+                allModes[allModes.length] = obj3;
+
+
+                allModule[allModule.length] = moduleId;
+
+            }
+        }
+
+        var RoleIds = $('#RoleId').val();
+        var allTrx = new Object();
+        allTrx.allCheck = allChecks; // checkValue
+        allTrx.allDropDown = allSecurity;
+        allTrx.allMode = allModes;
+        allTrx.allModuleId = allModule;
+        allTrx.RoleId = RoleIds;
+
+        var json = JSON.stringify(allTrx);
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("SaveSecurityLevel", "AspNetSecurityModule", "http")',
+            type: "POST",
+            dataType: 'json',
+            async: true,
+            data: json,
+
+            success: function (data) {
+                //field clear
+
+                if (data.Result == 1) {
+                    $('#AjaxLoader').hide();
+                    $(".success").show(800).fadeToggle(3000);
+                }
+                else {
+                    $(".failed").show(800).fadeToggle(3000);
+                }
+            },
+            error: function () {
+                $("#dialog-message").html('<p>Error, Fail to Save.</p>');
+                $("#dialog-message").dialog({
+                    modal: true,
+                    buttons: {
+                        Ok: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            }
+
+        });
+
+    }
+
+    $(document).ready(function () {
+
+        $("#RoleId").change(function () {
+            var RoleId = $("#RoleId").val();
+            if (RoleId != "") {
+                var dataSource = new kendo.data.DataSource({
+                    transport: {
+                        read: {
+                             url: '@Url.Action("GetAspNetSecurityModule", "AspNetSecurityModule", "http")',
+                            dataType: "json",
+                            data: { RoleId: RoleId, ProjectShortName: "HRM" }
+                        }
+                    },
+                    group: { field: "ParentName" }
+                });
+
+                $("#grid").kendoGrid({
+                    dataSource: dataSource,
+                    height: 550,
+                    groupable: false,
+                    reorderable: true,
+                    filterable: true,
+                    sortable: true,
+                    columnMenu: true,
+                    pageable: {
+                        refresh: true,
+                        pageSizes: true,
+                        buttonCount: 5
+                    },
+                    columns: [
+                    {
+                        title: "Select",
+                        template: function (dataItem) {
+                            if (dataItem.Mode == 'S') {
+                                return "<input type='checkbox' style='width:20px;height:20px;' id='txtCheckId" + dataItem.AspNetSecurityModuleId + "' onclick='checkedValue(" + dataItem.AspNetSecurityModuleId + ")' />" +
+                                    "<input type='text' style='display:none' value='0' id='txtId" + dataItem.AspNetSecurityModuleId + "'/>" +
+                                    "<input type='text' style='display:none' value='S' id='txtMode" + dataItem.AspNetSecurityModuleId + "'/>"
+                            }
+                            else { // when checkbox is checked -- U
+                                return "<input type='checkbox' style='width:20px;height:20px;' checked id='txtCheckId" + dataItem.AspNetSecurityModuleId + "' onclick = 'checkedValue(" + dataItem.AspNetSecurityModuleId + ")'/>" +
+
+                                       "<input type='text' style='display:none' value='1' id='txtId" + dataItem.AspNetSecurityModuleId + "'/>" +
+                                       "<input type='text' style='display:none' value='U' id='txtMode" + dataItem.AspNetSecurityModuleId + "'/>"
+                            }
+                        }
+                    },
+                    {
+                        field: "AspNetSecurityModuleId",
+                        hidden: true,
+                        filterable: false
+                    },
+
+                    {
+                        field: "linkText",
+                        title: "Menu Name",
+                    },
+                    {
+                        field: "ParentName",
+                        title: "Module Name",
+                        hidden: true,
+
+                    },
+                    {
+                        field: "SecurityLevelId",
+                        title: "Security Level",
+                        template: function (dataItem) {
+                            if (dataItem.SecurityLevelId == 2)
+                            {
+                                return '<select  style="height:30px;width:200px" onchange="Securirty(' + dataItem.AspNetSecurityModuleId + ')"  id="SecurityId' + dataItem.AspNetSecurityModuleId + '"><option value="1">Readonly</option><option value="2" selected>Add</option><option value="3">Update</option><option value="4">Delete</option><option value="5">Super Admin</option></select>' +
+                                    "<input type='text' style='display:none' value='2' id='txtSecurityId" + dataItem.AspNetSecurityModuleId + "'/>"
+                            }
+
+                            else if (dataItem.SecurityLevelId == 3)
+                            {
+                                return '<select style="height:25px;width:160px" onchange="Securirty(' + dataItem.AspNetSecurityModuleId + ')" id="SecurityId' + dataItem.AspNetSecurityModuleId + '"><option value="1">Readonly</option><option value="2">Add</option><option value="3" selected>Update</option><option value="4">Delete</option><option value="5">Super Admin</option></select>' +
+                                    "<input type='text' style='display:none' value='3' id='txtSecurityId" + dataItem.AspNetSecurityModuleId + "'/>"
+                            }
+
+                            else if (dataItem.SecurityLevelId == 4) {
+                                return '<select style="height:25px;width:160px" onchange="Securirty(' + dataItem.AspNetSecurityModuleId + ')" id="SecurityId' + dataItem.AspNetSecurityModuleId + '"><option value="1">Readonly</option><option value="2">Add</option><option value="3">Update</option><option value="4" selected>Delete</option><option value="5">Super Admin</option></select>' +
+                                    "<input type='text' style='display:none' value='4' id='txtSecurityId" + dataItem.AspNetSecurityModuleId + "'/>"
+                            }
+
+                            else if (dataItem.SecurityLevelId == 5) {
+                                return '<select style="height:25px;width:160px" onchange="Securirty(' + dataItem.AspNetSecurityModuleId + ')" id="SecurityId' + dataItem.AspNetSecurityModuleId + '"><option value="1">Readonly</option><option value="2">Add</option><option value="3">Update</option><option value="4">Delete</option><option value="5" selected>Super Admin</option></select>' +
+                                    "<input type='text' style='display:none' style='display:none' value='5' id='txtSecurityId" + dataItem.AspNetSecurityModuleId + "'/>"
+                            }
+
+                            else {
+                                return '<select style="height:25px;width:160px" onchange="Securirty(' + dataItem.AspNetSecurityModuleId + ')" id="SecurityId' + dataItem.AspNetSecurityModuleId + '"><option value="1" selected>Readonly</option><option value="2">Add</option><option value="3">Update</option><option value="4">Delete</option><option value="5">Super Admin</option></select>' +
+                                    "<input type='text' style='display:none' value='1' id='txtSecurityId" + dataItem.AspNetSecurityModuleId + "'/>"
+                            }
+                        }
+                    },
+                ]
+                }).data("kendoGrid");
+
+            }
+        });
+
+            $('#btnSave').click(function (e) {
+                SaveRoleSecurityLevel();
+            });
+    });
+
+</script>
+
+<div class="x_panel">
+
+    <div class="page-title">
+        <div class="title_left PageHeader" style="width:90%;">
+            <h3 style="color: white;padding:3px">Security role</h3>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <br />
+    <div class="x_content">
+        <div class="row">
+            <div class="col-md-2">
+            </div>
+            <div class="col-md-1">
+                @Html.LabelFor(model => model.RoleId, htmlAttributes: new { @class = "control-label" })
+            </div>
+            <div class="col-md-4">
+                @Html.DropDownListFor(model => model.RoleId, roleList, new { @class = "form-control bordercss" })
+            </div>
+            <div class="col-md-2">
+                <button type="submit" id="btnSave" class="btn btn-success">Submit</button>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col-md-2">
+            </div>
+            <div class="col-md-6">
+                <div class="success" role="alert" style="display:none">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <p class="message-content">Saved Sucessfully</p>
+                </div>
+                <div class="failed" role="alert" style="display: none">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <p class="message-content">Fail to save</p>
+                </div>
+            </div>
+
+        </div>
+        <br />
+        <br />
+        <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div id="grid"></div>
+                </div>
+            </div>
+            @*<div>
+                    <select style="height:30px;width:200px"></select>
+                </div>*@
+        </form>
+        <script>
+        </script>
+    </div>
+</div>
+<div id="AjaxLoader" class="ajaxLoader"></div>

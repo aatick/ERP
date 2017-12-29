@@ -1,0 +1,60 @@
+﻿@model ERP.Web.Models.LoginModel
+
+@{
+    ViewBag.Title = "Log in";
+    Layout = "~/Views/Shared/_LayoutLogin.cshtml";
+}
+
+<style type="text/css">
+    .login-button{
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            outline: 0;
+            background-color: white;
+            border: 0;
+            padding: 10px 15px;
+            color: #2A3F54;
+            border-radius: 3px;
+            width: 250px;
+            cursor: pointer;
+            font-size: 18px;
+            -webkit-transition-duration: 0.25s;
+            transition-duration: 0.25s;
+    }
+    input[type=text] {
+        border: 3px double #CCCCCC;
+    }
+        input[type=text]:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+    input[type=Password] {
+        border: 3px double #CCCCCC;
+    }
+
+        input[type=Password]:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+</style>
+@using (Html.BeginForm(new { ReturnUrl = ViewBag.ReturnUrl }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+
+    <div class="form-group">
+        @Html.TextBoxFor(m => m.UserName, new { @class = "form-control", @placeholder = "User Email" })
+        @Html.ValidationMessageFor(m => m.UserName)
+    </div>
+    <div class="form-group">
+        @Html.PasswordFor(m => m.Password, new { @class = "form-control", @placeholder = "Password" })
+        @Html.ValidationMessageFor(m => m.Password)
+    </div>
+    <div class="form-group">
+        @*<button type="submit" id="login-button">Login</button>*@
+        <input type="submit" name="login" class="login-button" value="LOGIN">
+    </div>
+
+}
+

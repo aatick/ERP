@@ -1,0 +1,365 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+}
+
+<style>
+    .bordercss {
+        border: 3px double #CCCCCC;
+        color: black;
+    }
+
+        .bordercss:focus {
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            border: 2px solid rgba(81, 203, 238, 1);
+        }
+
+    .k-grouping-header {
+        background-color: #1ABB9C;
+    }
+</style>
+
+<script type="text/javascript">
+
+    @*function GetEditDataById(Id) {
+
+        var link = '@Url.Action("BrokerEmployeeInfoEdit", "Broker", new { Id = -1 }, "http")';
+        link = link.replace("-1", Id);
+        window.location.href = link;
+    }*@
+    function GetPrintDataById(StaffId) {
+
+        window.location.href = '@Url.Action("StaffDetails", "StaffInfo")?StaffId=' + StaffId;
+    }
+
+
+
+    function DeleteEmployeeInfoById(StaffId) {
+        $.alert.open('confirm', 'Are you sure you want to delete this record?', function (button) {
+            if (button == 'yes') {
+                $.ajax({
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    url: '@Url.Action("StaffInfoDelete", "StaffInfo", "http")',
+                    data: { StaffId: StaffId },
+                    dataType: 'json',
+                    async: true,
+                    success: function (data) {
+                        $("#grid").data("kendoGrid").dataSource.read();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.statusText + "/" + request.statusText + "/" + error);
+                    }
+                });
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
+
+    @*var dataSource = new kendo.data.DataSource({
+    transport: {
+        read: {
+            url: '@Url.Action("GetStaffInformation", "StaffInfo", "http")',
+            dataType: "json"
+        }
+    }
+});*@
+/////////////////////////////////////////////////////
+//$(".ob-icon-only", "#grid").parent().css("min-width", 0);
+    //////////////////////////////////////////
+
+
+
+    function EmployeeInfoList() {
+
+        var EmployeeCode = $("#EmployeeCodeSearch").val().trim();
+        var Employeename = $("#EmployeeNameSearch").val();
+        var DesignationId = $("#DesignationId").val() == "" ? "0" : $("#DesignationId").val();
+        var BranchId = $("#BranchId").val() == "" ? "0" : $("#BranchId").val();
+        var DeptId = $("#DepartmentId").val() == "" ? "0" : $("#DepartmentId").val();
+        var DeskId = $("#DeskId").val() == "" ? "0" : $("#DeskId").val();
+        var JobTypeId = $("#JobTypeId").val() == "" ? "0" : $("#JobTypeId").val();
+        var BloodGroupId = $("#BloodGroupList").val() == "" ? "0" : $("#BloodGroupList").val();
+        var DistrictId = $("#ddlPerDistrictlist").val() == "" ? "0" : $("#ddlPerDistrictlist").val();
+        var ReligionId = $("#ReligionList").val() == "" ? "0" : $("#ReligionList").val();
+
+
+
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '@Url.Action("EmployeeInfoList", "Employee", "http")',
+                    dataType: "json",
+                    data: { EmployeeCode: EmployeeCode, Employeename: Employeename, DesignationId: DesignationId, BranchId: BranchId, DeptId: DeptId, BloodGroupId: BloodGroupId, DeskId: DeskId, JobTypeId: JobTypeId, DistrictId: DistrictId, ReligionId: ReligionId }
+                }
+            },
+            pageSize: 15,
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: 600,
+            groupable: true,
+            reorderable: true,
+            filterable: true,
+            sortable: true,
+            resizable: true,
+            columnMenu: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            columns: [{
+                field: "EMP_ID",
+                hidden: true,
+                filterable: false
+            },
+            {
+                field: "RowSl",
+                title: "SL",
+                width: "10%"
+            },
+            //{
+            //    template: "<div class='customer-photo' >" +
+            //                        "<img src='/Broker/RetrieveImage/" + "#:Id#" + "' alt='No Image' height=50 width=50 class='img-circle' /> </div>",
+            //    //field: "StaffImage",
+            //    title: "Image",
+            //    filterable: false,
+            //    width: "8%",
+            //},
+             {
+                 field: "EMP_OFFICE_CODE",
+                 title: "Code",
+                 width: "10%",
+                 groupable: false
+             },
+            {
+                field: "EMP_NAME",
+                title: "Name",
+                width: "25%",
+                groupable: false
+            },
+            {
+                field: "EMP_DESG_NAME",
+                title: "Designation",
+                width: "15%",
+            },
+             {
+                 field: "EMP_BRANCH_NAME",
+                 title: "Branch",
+             },
+            {
+                field: "EMP_DEPT_NAME",
+                title: "Department",
+            },
+            {
+                field: "EMP_DESK_NAME",
+                title: "Desk"
+            },
+            ////
+            {
+                field: "emp_father_name",
+                title: "Father Name",
+                hidden: true
+            },
+            {//,,,,,,,,,,emp_passport_no,emp_permanent_address,PermanantDistrict,emp_personal_mail_address,emp_phone_office,emp_phone_residance,emp_present_address,PresentDistrict,emp_spouse_contact_no,emp_spouse_name,marital_status_name,religion_name
+                field: "emp_mother_name",
+                title: "Mother Name",
+                hidden: true
+            },
+            {
+                field: "blood_group_name",
+                title: "Blood Group",
+                hidden: true
+            },
+             {
+                 field: "emergency_contact_person_name",
+                 title: "Emergency Contact Person",
+                 hidden: true
+             },
+            {
+                field: "emergency_contact_no",
+                title: "Emergency Contact No",
+                hidden: true
+            },
+
+            {
+                field: "CountryName",
+                title: "Country",
+                hidden: true
+            },
+            {
+                field: "emp_gender",
+                title: "Gender",
+                hidden: true
+            },
+            {
+                field: "emp_mobile",
+                title: "Mobile",
+                hidden: true
+            },
+            {
+                field: "emp_nation_id_no",
+                title: "National Id",
+                hidden: true
+            },
+             {
+                 field: "OfficeEmail",
+                 title: "Office Email",
+                 hidden:true
+             },
+            {
+                title: "Action",
+                width: "10%",
+                template: function (dataItem) {
+                    return '<a href="#"  onclick="GetEditDataById(' + dataItem.EMP_ID + ')"  title="Edit" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i></a>'
+                    //<a href='#' data-toggle='tooltip' class='k-button k-button-icontext k-grid-Edit' title='Delete' onclick='DeleteEmployeeInfoById(" + dataItem.Id + ")'><i class='fa fa-trash-o fa'></i></a>  <a href='#' data-toggle='tooltip'class='k-button k-button-icontext k-grid-Edit' title='Print' onclick='GetPrintDataById(" + dataItem.Id + ")'><i class='fa fa-print'></i></a>"
+                }
+            }
+            ]
+        });
+    }
+
+
+    function GetEditDataById(EMP_ID)
+    {
+         @*@Html.ActionLink("Add New", "Create", "Employee", new { EmployeeId = 1 },null)*@
+        var link = '@Url.Action("Create", "Employee", new { EmployeeId = -1 }, "http")'
+        link = link.replace("-1", EMP_ID);
+        window.location.href = link;
+    }
+
+
+    function GetPer_DistrictList() {
+
+        var ddlDistrictlist = $("#ddlPerDistrictlist");
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("GetDistrictList", "Employee", "http")',
+            data: {},
+            dataType: 'json',
+            async: true,
+            success: function (DistrictList) {
+                // $('#AjaxLoader').hide();
+                ddlDistrictlist.html('');
+                ddlDistrictlist.append($('<option></option>').val("0").html("Please select"));
+                $.each(DistrictList, function (id, option) {
+                    ddlDistrictlist.append($('<option></option>').val(option.Id).html(option.DistrictName));
+                });
+
+            },
+            error: function (request, status, error) {
+                alert(request.statusText + "/" + request.statusText + "/" + error);
+            }
+        });
+
+    }
+    $(document).ready(function () {
+
+        EmployeeInfoList()
+        GetPer_DistrictList();
+        $("#btnSearch").click(function (e) { e.preventDefault(); EmployeeInfoList(); });
+
+        $("#btnSearch").click(function (e) {
+
+            e.preventDefault();
+
+            GetBrokerEmployeeList()
+        });
+
+    });
+</script>
+
+
+<div class="x_panel">
+    <div class="x_title">
+        <div class="page-title">
+            <div class="title_left PageHeader" style="width:90%;">
+                <h3 style="color: white;padding:2px">&nbsp;&nbsp; Employee information</h3>
+            </div>
+            @Html.ActionLink("Add New", "Create", "Employee", new { EmployeeId = 0 }, new { @class = "btn btn-primary btn-sm pull-right" })
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="x_content">
+        <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left">
+            <fieldset>
+                <legend>Search Option</legend>
+                <div class="row form-group">
+                    @Html.Label("Employee Code", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        @Html.Editor("EmployeeCodeSearch", new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                    @Html.Label("Name", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        @Html.Editor("EmployeeNameSearch", new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                </div>
+                <div class="row form-group">
+                    @Html.Label("Job Type", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        @Html.DropDownList("JobTypeList", new SelectList(ViewBag.JobTypeList, "JOB_ID", "JOB_NAME"), "Please select", new { @class = "form-control bordercss", @id = "JobTypeId" })
+                    </div>
+                    @Html.Label("Designation", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        @Html.DropDownList("DesignationListSearch", new SelectList(ViewBag.DesignationListSearch, "Id", "DesignationName"), "Please select", new { @class = "form-control bordercss", @id = "DesignationId" })
+                    </div>
+                </div>
+                <div class="row form-group">
+
+                    @Html.Label("Branch", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        @Html.DropDownList("BranchList", new SelectList(ViewBag.BranchList, "Id", "BrokerBranchName"), "Please select", new { @class = "form-control bordercss", @id = "BranchId" })
+                    </div>
+                    @Html.Label("Department", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        @Html.DropDownList("DepartmentList", new SelectList(ViewBag.DepartmentList, "Id", "DepartmentName"), "Please select", new { @class = "form-control bordercss", @id = "DepartmentId" })
+                    </div>
+                </div>
+                <div class="row form-group">
+
+                    @Html.Label("Desk", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        @Html.DropDownList("DeskList", new SelectList(ViewBag.DeskList, "DESK_ID", "DESK_NAME"), "Please select", new { @class = "form-control bordercss", @id = "DeskId" })
+                    </div>
+                    @Html.Label("Blood Group ", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        @Html.DropDownList("BloodGroupList", new SelectList(ViewBag.BloodGroupList, "BLOOD_GROUP_ID", "BLOOD_GROUP_NAME"), "Please select", new { @class = "form-control bordercss" })
+                    </div>
+                </div>
+                <div class="row form-group">
+                    @Html.Label("Religion", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        @Html.DropDownList("ReligionList", new SelectList(ViewBag.ReligionList, "RELIGION_ID", "RELIGION_NAME"), "Please select", new { @class = "form-control bordercss" })
+                    </div>
+                    @Html.Label("Home District", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-xs-12">
+                        @Html.DropDownList("PerDistrictlist", null, new { @id = "ddlPerDistrictlist", @class = "form-control bordercss" })
+                    </div>
+                </div>
+                <div class="row form-group">
+                   
+                    <div class="control-label col-md-5">
+                    </div>
+                    <div class="control-label col-md-1">
+                        <button type="submit" class="btn btn-primary" id="btnSearch">Search</button>
+                    </div>
+                </div>
+            </fieldset>
+            <br />
+            <div class="row">
+                <div class="col-sm-12">
+                    <div id="grid"></div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+

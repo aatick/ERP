@@ -1,0 +1,65 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Unauthorized Access</title>
+    <link href="~/Content/css/bootstrap.min.css" rel="stylesheet">
+    <style type="text/css">
+        body {
+            background: #eeeeee;
+            padding-top: 100px;
+        }
+
+        .content {
+            background-color: #fff;
+            padding: 40px !important;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .limsg {
+            padding: 15px;
+        }
+
+            .limsg ul {
+                margin: 5px 0px 25px -25px;
+                color: #666666;
+            }
+
+        .linfo-text-h {
+            margin: 10px 0px 10px 0px;
+            color: #666666;
+            line-height: 24px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    @*<div>
+            <h2 style="color:red">You are not authorized for requested page</h2>
+        </div>*@
+    <div class="container">
+        <div class="container-fluid col-sm-8 col-sm-offset-2 content">
+            <div class="row">
+                <br>
+                <div class="col-sm-12 limsg">
+                    <div class="text-center">
+                        <img src="~/images/error-icon.png" alt="" height="105" width="105">
+                    </div>
+                    <div class="text-center linfo-text-h">ERROR! You are not authorized to access the requested page.</div>
+                </div>
+                <div class="col-sm-12 limsg text-center" style="margin-top:-15px;">
+                    <a class="btn btn-primary" href="@Url.Action("Projects", "Home")">Go to Home</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

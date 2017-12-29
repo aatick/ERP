@@ -1,0 +1,242 @@
+﻿@using Common.Data.CommonDataModel
+@{
+    ViewBag.Title = "Report Access Control";
+    Layout = "~/Views/Shared/_LayoutUcasportfolio.cshtml";
+    var users = (List<AspNetUser>)ViewBag.Users;
+    var modules = (List<AspNetSecurityModule>)ViewBag.ReportModules;
+    var reports = (List<ReportInformation>)ViewBag.Reports;
+    var projects = (List<UcasSoftware_Projects>)ViewBag.Projects;
+}
+<style type="text/css">
+    .panel-custom > .panel-heading {
+        /*background: #26B99A !important;*/
+        color: #FFFFFF !important;
+    }
+
+    .panel-custom .panel-body .row:not(:last-child) {
+        margin-bottom: 10px;
+    }
+
+    .panel-custom .panel-body .radio {
+        margin-top: 0px;
+    }
+
+    .panel-custom .panel-body .radio-text, .panel-custom .panel-body input[type=text] {
+        color: #73879C;
+    }
+
+    .panel-custom .label-container {
+        text-align: right;
+    }
+
+    input[type=text]:read-only {
+        background: #FFFFFF;
+        cursor: default;
+    }
+
+    #error > .panel {
+        margin-bottom: 20px;
+    }
+
+        #error > .panel > .panel-heading {
+            padding: 0px 5px 0px 15px;
+        }
+
+    .radio-container label {
+        cursor: pointer;
+        padding: 5px;
+    }
+
+        .radio-container label.active {
+            background: #0e73a9;
+            border-radius: 4px;
+            /*margin-left: 10px;*/
+        }
+
+            .radio-container label.active span.radio-text {
+                color: #FFFFFF;
+            }
+
+    .report-module {
+        background: #f9f9f9;
+    }
+
+        .report-module .k-icon {
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+    .panel-report .panel-body table {
+        margin-bottom: 0px;
+    }
+
+        .panel-report .panel-body table thead {
+            color: #1ABB9C;
+        }
+
+    .panel-report .panel-body {
+        padding: 10px 0px 0px 0px;
+    }
+</style>
+<div class="row">
+    <div class="col-sm-offset-1 col-sm-10">
+        <div class="panel panel-success panel-custom">
+            <div class="panel-heading PageHeader">
+                <h3 class="panel-title">Report Access Control</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("User :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-3">
+                        <select class="input-sm form-control" id="cmbUser">
+                            <option value="0">Select User</option>
+                            @foreach (var u in users)
+                            {
+                                <option value="@u.UserId">@u.UserName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-sm-2 label-container">
+                        @Html.Label("Modules :", new { @class = "control-label" })
+                    </div>
+                    <div class="col-sm-3">
+                        <select class="input-sm form-control" id="cmbProjects">
+                            <option value="0">All</option>
+                            @foreach (var pr in projects)
+                            {
+                                <option value="@pr.ProjectShortName">@pr.ProjectName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="button" name="btnSubmit" id="btnSubmit" class="btn btn-sm btn-success" value="Submit" />
+                    </div>
+                </div>
+
+                <div class="row" id="divReportContainer" style="display: none;">
+                    <div class="col-sm-12">
+                        <div class="panel panel-success panel-custom panel-report">
+                            <div class="panel-heading PageHeader">
+                                <h3 class="panel-title">Report List</h3>
+                            </div>
+                            <div class="panel-body">
+                                <table class="table table-responsive">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">Select</th>
+                                            <th>Report Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var m in modules)
+                                        {
+                                            <tr class="report-module">
+                                                <td colspan="2">
+                                                    <span data-module="@(m.AspNetSecurityModuleId)" class="k-icon k-i-collapse"></span>
+                                                    @m.LinkText
+                                                </td>
+                                            </tr>
+                                            foreach (var r in reports.Where(x => x.AspNetSecurityModuleId == m.AspNetSecurityModuleId).ToList())
+                                            {
+                                                <tr class="module-@r.AspNetSecurityModuleId">
+                                                    <td class="text-center">
+                                                        <input id="chkReport@(r.Id)" type="checkbox" value="@r.Id" style="height: 20px; width: 20px;" class="checkbox checkbox-inline" />
+                                                    </td>
+                                                    <td>
+                                                        @r.ReportName
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="~/Scripts/jquery.maskedinput-1.3.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(document).on("click", ".k-icon", function () {
+            var module = $(this).attr("data-module");
+            $(this).toggleClass("k-i-collapse k-i-expand");
+            $(".module-" + module).toggle();
+        });
+    });
+    $("#cmbUser,#cmbProjects").on("change", function () {
+        $(".panel-report input[type=checkbox]").prop('checked', false);
+        var userid = parseInt($("#cmbUser option:selected").val());
+        var projectShortName = $("#cmbProjects option:selected").val();
+        if (userid == 0) {
+            $("#divReportContainer").slideUp();
+        } else {
+            var jsonData = { userid: userid, projectShortName: projectShortName };
+            $.ajax({
+                type: "Post",
+                url: '@Url.Action("GetAccessReportList", "Access")',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(jsonData),
+                dataType: "json",
+                success: function (data) {
+                    $.each(data.Report, function (i, d) {
+                        $("#chkReport" + d.ReportId).prop("checked", true);
+                    });
+                    $(".k-icon").each(function () {
+                        var module = parseInt($(this).attr("data-module"));
+                        var isExist = false;
+                        $.each(data.Module, function (i, d) {
+                            if (d.AspNetSecurityModuleId == module) {
+                                isExist = true;
+                                return false;
+                            }
+                            return true;
+                        });
+                        if (isExist == false) {
+                            $(this).parents(".report-module").hide();
+                            $(".module-" + module).hide();
+                        } else {
+                            $(this).parents(".report-module").show();
+                            $(".module-" + module).show();
+                        }
+                    });
+                    $("#divReportContainer").slideDown();
+                },
+            });
+        }
+    });
+    $("#btnSubmit").on('click', function () {
+        var userid = parseInt($("#cmbUser").val());
+        var reportList = [];
+
+        if (userid == 0) {
+            $.alert.open("Error!", "Please select a user.");
+            return false;
+        }
+        if ($(".panel-report input[type=checkbox]:checked").length == 0) {
+            $.alert.open("Error!", "No report is selected.");
+            return false;
+        }
+        $(".panel-report input[type=checkbox]:checked").each(function () {
+            reportList.push($(this).val());
+        });
+        var jsonData = { userid: userid, reportList: reportList };
+        $.ajax({
+            type: "Post",
+            url: '@Url.Action("SetReportAccess", "Access")',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(jsonData),
+            dataType: "json",
+            success: function (data) {
+                if (data == true) {
+                    $.alert.open("Success", "Saved successfully.");
+                }
+            },
+        });
+    });
+</script>
