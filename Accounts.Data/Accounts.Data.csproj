@@ -1,0 +1,156 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F804AAE1-D2D4-4331-966D-0A9C1296CC7E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Accounts.Data</RootNamespace>
+    <AssemblyName>UCAS.Accounts.Data</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>%24/FinalERP/ERP/Accounts.Data</SccProjectName>
+    <SccLocalPath>.</SccLocalPath>
+    <SccAuxPath>https://ucasbd.visualstudio.com</SccAuxPath>
+    <SccProvider>{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CodeFirstStoreFunctions">
+      <HintPath>..\packages\CodeFirstStoreFunctions.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.EntityFramework">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.EntityFramework.2.2.1\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AccountsDataModel\AccLastVoucher.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsDataModel\AccountingInterface.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsDataModel\AccountsDbContext.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsDataModel\AccSubledger.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsDataModel\AccTransactionFor.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsDataModel\AccVoucherEntrySpecialDateAccess.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsDataModel\AccVoucherEntrySpecialDateAccessHistory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsDataModel\AccVoucherType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsDataModel\AutoVoucherCollectionResult.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsDataModel\Budget.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsRepository\AccAutoVoucherCollectionRepository.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsRepository\AccBankBranchGLRepository.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsRepository\AccLastVoucherRepository.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsRepository\AccNoteRepository.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsRepository\AccSubLedgerRepository.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsRepository\AccTransactionForRepository.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsRepository\AccVoucherTypeRepository.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsRepository\BudgetRepository.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsRepository\VoucherSpecialAccessHistoryRepository.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AccountsRepository\VoucherSpecialAccessRepository.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="DBDetailModels\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common.Data\Common.Data.csproj">
+      <Project>{aa2fef50-98a8-4354-9482-c5b8be7964b4}</Project>
+      <Name>Common.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utility\Utility.csproj">
+      <Project>{797d720f-e1f5-4745-aaf9-e9e03911d450}</Project>
+      <Name>Utility</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
