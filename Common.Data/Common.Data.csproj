@@ -1,0 +1,172 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{AA2FEF50-98A8-4354-9482-C5B8BE7964B4}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Common.Data</RootNamespace>
+    <AssemblyName>UCAS.Common.Data</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CodeFirstStoreFunctions">
+      <HintPath>..\packages\CodeFirstStoreFunctions.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.EntityFramework, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.Identity.EntityFramework.2.2.1\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ApplicationUser.cs" />
+    <Compile Include="CommonDataModel\AccBankBranchGL.cs" />
+    <Compile Include="CommonDataModel\AccCategory.cs" />
+    <Compile Include="CommonDataModel\AccChart.cs" />
+    <Compile Include="CommonDataModel\AccNote.cs" />
+    <Compile Include="CommonDataModel\AccTransactionMode.cs" />
+    <Compile Include="CommonDataModel\AccTrxDetail.cs" />
+    <Compile Include="CommonDataModel\AccTrxMaster.cs" />
+    <Compile Include="CommonDataModel\ApplicationLog.cs" />
+    <Compile Include="CommonDataModel\ApplicationSetting.cs" />
+    <Compile Include="CommonDataModel\AspNetRole.cs" />
+    <Compile Include="CommonDataModel\AspNetRoleModule.cs" />
+    <Compile Include="CommonDataModel\AspNetSecurityLevel.cs" />
+    <Compile Include="CommonDataModel\AspNetSecurityModule.cs" />
+    <Compile Include="CommonDataModel\AspNetUser.cs" />
+    <Compile Include="CommonDataModel\AspNetUserClaim.cs" />
+    <Compile Include="CommonDataModel\AspNetUserLogin.cs" />
+    <Compile Include="CommonDataModel\AspNetUserRole.cs" />
+    <Compile Include="CommonDataModel\BrokerBranch.cs" />
+    <Compile Include="CommonDataModel\BrokerDepartment.cs" />
+    <Compile Include="CommonDataModel\BrokerEmployee.cs" />
+    <Compile Include="CommonDataModel\BrokerInformation.cs" />
+    <Compile Include="CommonDataModel\CommonDbContext.cs" />
+    <Compile Include="CommonDataModel\EMP_PERSONAL_DETAILS_PROFILE.cs" />
+    <Compile Include="CommonDataModel\EMP_PROFILE.cs" />
+    <Compile Include="CommonDataModel\LookupCountry.cs" />
+    <Compile Include="CommonDataModel\LookupDesignation.cs" />
+    <Compile Include="CommonDataModel\LookupDistrict.cs" />
+    <Compile Include="CommonDataModel\LookupDivision.cs" />
+    <Compile Include="CommonDataModel\LookupOccupation.cs" />
+    <Compile Include="CommonDataModel\LookupRelation.cs" />
+    <Compile Include="CommonDataModel\LookupThana.cs" />
+    <Compile Include="CommonDataModel\Office.cs" />
+    <Compile Include="CommonDataModel\Organization.cs" />
+    <Compile Include="CommonDataModel\ReportAccess.cs" />
+    <Compile Include="CommonDataModel\ReportInformation.cs" />
+    <Compile Include="CommonDataModel\UcasSoftware_Projects.cs" />
+    <Compile Include="CommonDataModel\UserLogin.cs" />
+    <Compile Include="CommonRepository\AccBankBranchGLRepository.cs" />
+    <Compile Include="CommonRepository\AccCategoryRepository.cs" />
+    <Compile Include="CommonRepository\AccChartRepository.cs" />
+    <Compile Include="CommonRepository\AccNoteRepository.cs" />
+    <Compile Include="CommonRepository\AccTransactionModeRepository.cs" />
+    <Compile Include="CommonRepository\AccTrxDetailRepository.cs" />
+    <Compile Include="CommonRepository\AccTrxMasterRepository.cs" />
+    <Compile Include="CommonRepository\ApplicationLogRepository.cs" />
+    <Compile Include="CommonRepository\ApplicationSettingRepository.cs" />
+    <Compile Include="CommonRepository\AspNetRoleModuleRepository.cs" />
+    <Compile Include="CommonRepository\AspNetRoleRepository.cs" />
+    <Compile Include="CommonRepository\AspNetSecurityModuleRepository.cs" />
+    <Compile Include="CommonRepository\BrokerBranchRepository.cs" />
+    <Compile Include="CommonRepository\BrokerDepartmentRepository.cs" />
+    <Compile Include="CommonRepository\BrokerEmployeeRepository.cs" />
+    <Compile Include="CommonRepository\BrokerInfoRepository.cs" />
+    <Compile Include="CommonRepository\EmployeeDetailsRepository.cs" />
+    <Compile Include="CommonRepository\EmployeeProfileRepository.cs" />
+    <Compile Include="CommonRepository\LookupCountryRepository.cs" />
+    <Compile Include="CommonRepository\LookupDesignationRepository.cs" />
+    <Compile Include="CommonRepository\LookupDistrictRepository.cs" />
+    <Compile Include="CommonRepository\LookupDivitionRepository.cs" />
+    <Compile Include="CommonRepository\LookupOccupationRepository.cs" />
+    <Compile Include="CommonRepository\LookupThanaRepository.cs" />
+    <Compile Include="CommonRepository\Lookup_RelationRepository.cs" />
+    <Compile Include="CommonRepository\OrganizationRepository.cs" />
+    <Compile Include="CommonRepository\ReportAccessRepository.cs" />
+    <Compile Include="CommonRepository\ReportInformationRepository.cs" />
+    <Compile Include="CommonRepository\SecurityRepository.cs" />
+    <Compile Include="CommonRepository\UserLoginRepository.cs" />
+    <Compile Include="CommonRepository\UserRepository.cs" />
+    <Compile Include="DBDetailModels\DBAccChartDetailModel.cs" />
+    <Compile Include="DBDetailModels\DBApplicationSettingsDetail.cs" />
+    <Compile Include="Infrastructure\DatabaseFactoryCodeFirst.cs" />
+    <Compile Include="Infrastructure\Disposable.cs" />
+    <Compile Include="Infrastructure\IDatabaseFactoryCodeFirst.cs" />
+    <Compile Include="Infrastructure\IRepository.cs" />
+    <Compile Include="Infrastructure\IUnitOfWorkCodeFirst.cs" />
+    <Compile Include="Infrastructure\RepositoryBaseCodeFirst.cs" />
+    <Compile Include="Infrastructure\UnitOfWorkCodeFirst.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UserManagementEntities.cs" />
+    <Compile Include="ValidationResult.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BasicDataAccess\BasicDataAccess.csproj">
+      <Project>{a4217791-fd4b-437e-b6e4-4970b4261480}</Project>
+      <Name>BasicDataAccess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utility\Utility.csproj">
+      <Project>{797d720f-e1f5-4745-aaf9-e9e03911d450}</Project>
+      <Name>Utility</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
