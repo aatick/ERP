@@ -1,0 +1,49 @@
+﻿/*[class^=axis] path, [class^=axis] line {
+    fill: none;
+    stroke: #999999;
+    shape-rendering: crispEdges;
+}
+
+[class^=axis] text {
+    font-size: 11px;
+    fill: #666666;
+    font-weight: bold;
+}
+
+.axis-y text {
+    font-size: 11.5px;
+}*/
+/*******d3-tooltip-Start********/
+.d3-tooltip {
+    display: none;
+    position: absolute;
+    background: #5c5c5c;
+    color: #FFFFFF;
+    font: 11px Arial;
+    text-align: center;
+    padding: 5px;
+    line-height: 15px;
+    border-radius: 4px;
+    width: auto;
+    z-index: 999999999;
+}
+
+.d3-tooltip-label {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.d3-tooltip-value {
+    font-size: 12px;
+}
+/*******d3-tooltip--End********/
+#map {
+    height: 350px;
+    margin: 0 auto;
+}
+
+.highcharts-button, .highcharts-title, .highcharts-legend, .highcharts-container > svg > text:last-child {
+    display: none;
+}
+
+
